@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error(`stderr: ${data}`);
     });
 
-    process.on("close", (code) => {
+    process.on("close", () => {
       if (output && typeof output === 'string') {
         try {
           const parsedOutput = JSON.parse(output);
