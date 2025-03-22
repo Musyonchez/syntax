@@ -1,6 +1,6 @@
 from pygments import lex
 from pygments.lexers import PythonLexer, JavascriptLexer
-from pygments.token import Keyword, Punctuation, Operator, Number, Name
+from pygments.token import Keyword, Punctuation, Operator, Number
 
 def remove_keywords_and_symbols(code: str, language: str):
     """Removes keywords, punctuation, and operators from the given code"""
