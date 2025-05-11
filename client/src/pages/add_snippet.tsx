@@ -1,46 +1,46 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { useDispatch } from "react-redux";
-import { addSnippet } from "../store/actions";
+import { useDispatch, useSelector } from "react-redux";
+import { addSnippet, setAddSnippetStatus } from "../store/actions";
+import { RootState } from "../store";
 
 const AddSnippet = () => {
   const dispatch = useDispatch();
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
   const [language, setLanguage] = useState("python");
+  const status = useSelector((state: RootState) => state.addSnippetStatus);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !content || !language) return;
+    if (!title || !content || !language) {
+      return;
+    }
 
-    const createdAt = new Date().toISOString();
-    const userId = 1; // 🧪 Temporary: hardcoded until auth/user feature is ready
-
-    try {
-      const data = {
+    dispatch(
+      addSnippet({
         title,
         content,
         language,
-        createdAt,
-        userId,
-      };
+        createdAt: new Date().toISOString(),
+        userId: 1,
+      })
+    );
+  };
 
-      // 🧠 Optionally update Redux if needed
-      dispatch(addSnippet(data));
-
-      // const response = await api.addSnippet(data); // This calls your backend
-      // dispatch(addSnippet(response));
-      // console.log(response); // This will show { id: ... }
-
-      // ✅ Clear inputs
+  // Reset form and status on success
+  useEffect(() => {
+    if (status === "success") {
       setTitle("");
       setContent("");
       setLanguage("python");
-    } catch (error) {
-      console.error("❌ Error adding snippet:", error);
+
+      setTimeout(() => {
+        dispatch(setAddSnippetStatus("idle"));
+      }, 3000);
     }
-  };
+  }, [status]);
 
   return (
     <>
@@ -111,9 +111,20 @@ def add(a, b):
             <button
               type="submit"
               className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700"
+              disabled={status === "loading"}
             >
-              Save Snippet
+              {status === "loading" ? "Saving..." : "Save Snippet"}
             </button>
+            {status === "success" && (
+              <p className="mt-4 text-green-400">
+                ✅ Snippet added successfully!
+              </p>
+            )}
+            {status === "error" && (
+              <p className="mt-4 text-red-400">
+                ❌ Failed to add snippet. Try again.
+              </p>
+            )}
           </form>
 
           <div className="mt-12 bg-gray-800 p-6 rounded-lg">
