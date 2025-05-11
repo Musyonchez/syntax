@@ -2,14 +2,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from strawberry.fastapi import GraphQLRouter
 
-from app.routers.snippet import Query as SnippetQuery
+from app.routers.snippet import Query as SnippetQuery, Mutation as SnippetMutation
 from app.routers import snippet
 
 import strawberry
 
 app = FastAPI(title="SyntaxMem API")
 
-schema = strawberry.Schema(query=SnippetQuery)
+
+schema = strawberry.Schema(query=SnippetQuery, mutation=SnippetMutation)
 graphql_app = GraphQLRouter(schema)
 
 app.include_router(graphql_app, prefix="/graphql")
@@ -27,3 +28,6 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"message": "Welcome to SyntaxMem API!"}
+
+
+

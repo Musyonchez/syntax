@@ -21,18 +21,77 @@ async def list_items():
 class SnippetType:
     id: int
     title: str
+    language: str
     content: str
+    created_at: str
+    user_id: int
 
+@strawberry.type
+class SnippetSummaryType:
+    id: int
+    # title: str
+    # content: str
 
 @strawberry.type
 class Query:
     @strawberry.field
-    async def snippets(self) -> List[SnippetType]:
+    async def getSnippets(self) -> List[SnippetType]:
         async with SessionLocal() as session:
+            print("was here")
             result = await session.execute(
-                text("SELECT id, title, content FROM snippets")  # <-- Wrap in text()
+                text(
+                    "SELECT id, title, content, language, created_at, user_id FROM snippets"
+                )
             )
             return [
-                SnippetType(id=row[0], title=row[1], content=row[2])
+                SnippetType(
+                    id=row[0],
+                    title=row[1],
+                    content=row[2],
+                    language=row[3],
+                    created_at=row[4],
+                    user_id=row[5],
+                )
                 for row in result.fetchall()
             ]
+
+
+@strawberry.type
+class Mutation:
+    @strawberry.mutation
+    async def add_snippet(
+        self,
+        title: str,
+        content: str,
+        language: str,
+        created_at: str,
+        user_id: int,
+    ) -> SnippetType:
+        async with SessionLocal() as session:
+            # Insert the new snippet
+            print(title, content)
+            result = await session.execute(
+                text(
+                    """
+                    INSERT INTO snippets (title, content, language, created_at, user_id)
+                    VALUES (:title, :content, :language, :created_at, :user_id)
+                    RETURNING id, title, content, language, created_at, user_id
+                """
+                ),
+                {
+                    "title": title,
+                    "content": content,
+                    "language": language,
+                    "created_at": created_at,
+                    "user_id": user_id,
+                },
+            )
+            # new_id = result.scalar()  # Get the newly inserted ID
+            await session.commit()
+
+            row = result.fetchone()
+            # return SnippetType(id=row[0], title=row[1], content=row[2], language=row[3])
+
+            return SnippetSummaryType(
+                id=row[0]
+            )

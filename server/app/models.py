@@ -6,3 +6,6 @@ class Snippet(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
     content = Column(String)
+    language = Column(String)
+    created_at = Column(String)
+    user_id = Column(Integer)
