@@ -1,19 +1,29 @@
-import { createStore, applyMiddleware } from "redux";
+import { combineReducers, createStore, applyMiddleware } from "redux";
 import createSagaMiddleware from "redux-saga";
-import { Provider } from "react-redux";
-import reducer from "./reducers";
-import rootSaga from "./sagas";
+import { snippetReducer, snippetSaga } from "./snippet_store";
+import { userReducer, userSaga } from "./user_store";
+import { all } from "redux-saga/effects";
 
+// Combine reducers
+const rootReducer = combineReducers({
+  snippet: snippetReducer,
+  user: userReducer,
+});
+
+// Root saga
+function* rootSaga() {
+  yield all([snippetSaga(), userSaga()]);
+}
+
+// Create the saga middleware
 const sagaMiddleware = createSagaMiddleware();
-const store = createStore(reducer, applyMiddleware(sagaMiddleware));
+
+// Create the Redux store
+const store = createStore(rootReducer, applyMiddleware(sagaMiddleware));
+
+// Run the root saga
 sagaMiddleware.run(rootSaga);
 
-// Export RootState type for use in typed selectors and hooks
-export type RootState = ReturnType<typeof store.getState>;
-
-
+// Export types and store
+export type RootState = ReturnType<typeof rootReducer>;
 export default store;
-export { Provider };
-
-
-

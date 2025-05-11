@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useDispatch, useSelector } from "react-redux";
-import { addSnippet, setAddSnippetStatus } from "../store/actions";
+import { addSnippet, setAddSnippetStatus } from "../store/snippet_store/actions";
 import { RootState } from "../store";
 
 const AddSnippet = () => {
@@ -10,7 +10,7 @@ const AddSnippet = () => {
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
   const [language, setLanguage] = useState("python");
-  const status = useSelector((state: RootState) => state.addSnippetStatus);
+  const status = useSelector((state: RootState) => state.snippet.addSnippetStatus);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
