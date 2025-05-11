@@ -70,7 +70,7 @@ class Mutation:
         async with SessionLocal() as session:
             # Insert the new snippet
             print(title, content)
-            await session.execute(
+            result = await session.execute(
                 text(
                     """
                     INSERT INTO snippets (title, content, language, created_at, user_id)
@@ -89,9 +89,14 @@ class Mutation:
             # new_id = result.scalar()  # Get the newly inserted ID
             await session.commit()
 
-            # row = result.fetchone()
+            row = result.fetchone()
             # return SnippetType(id=row[0], title=row[1], content=row[2], language=row[3])
 
-            # return SnippetSummaryType(
-            #     id=row[0]
-            # )
+            return SnippetType(
+                id=row[0],
+                title=row[1],
+                content=row[2],
+                language=row[3],
+                created_at=row[4],
+                user_id=row[5],
+            )

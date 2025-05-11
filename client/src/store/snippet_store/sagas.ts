@@ -1,10 +1,10 @@
 import { call, put, takeEvery } from "redux-saga/effects";
 import { ApolloClient, NormalizedCacheObject } from "@apollo/client";
 import { ADD_SNIPPET, FETCH_SNIPPETS, setSnippets } from "./actions";
-import { GET_SNIPPETS } from "../graphql/queries";
+import { GET_SNIPPETS } from "../../graphql/snippets/queries";
 import { setAddSnippetStatus } from "./actions";
-import { ADD_SNIPPET as ADD_SNIPPET_MUT } from "../graphql/mutations";
-import apolloClient from "../apollo/client";
+import { ADD_SNIPPET as ADD_SNIPPET_MUT } from "../../graphql/snippets/mutations";
+import apolloClient from "../../apollo/client";
 
 function* fetchSnippetsSaga() {
   const { data } = yield call([apolloClient, apolloClient.query], {
