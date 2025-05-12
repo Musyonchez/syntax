@@ -1,9 +1,3 @@
-// action types for snippets
-export const FETCH_SNIPPETS = "FETCH_SNIPPETS";
-export const SET_ADD_SNIPPET_STATUS = "SET_ADD_SNIPPET_STATUS";
-export const SET_SNIPPETS = "SET_SNIPPETS";
-export const ADD_SNIPPET = "ADD_SNIPPET";
-
 // action types for users
 export const FETCH_USERS = "FETCH_USERS";
 export const SET_USERS = "SET_USERS";
@@ -12,39 +6,15 @@ export const SET_USER = "SET_USER";
 export const ADD_USER = "ADD_USER";
 export const SET_ADD_USER_STATUS = "SET_ADD_USER_STATUS";
 
-// Snippet payload interface
-export interface SnippetPayload {
-  title: string;
-  content: string;
-  language: string;
-  createdAt: string;
-  userId: number;
-}
 
 // User payload interface
 export interface UserPayload {
   username: string;
   email: string;
-  password: string;
+  image: string;
+  createdAt: string;
 }
 
-// Snippet action creators
-export const fetchSnippets = () => ({ type: FETCH_SNIPPETS });
-
-export const setSnippets = (snippets: any[]) => ({
-  type: SET_SNIPPETS,
-  payload: snippets,
-});
-
-export const addSnippet = (payload: SnippetPayload) => ({
-  type: ADD_SNIPPET,
-  payload,
-});
-
-export const setAddSnippetStatus = (status: "idle" | "loading" | "success" | "error") => ({
-  type: SET_ADD_SNIPPET_STATUS,
-  payload: status,
-});
 
 // User action creators
 export const fetchUsers = () => ({ type: FETCH_USERS });
@@ -54,9 +24,9 @@ export const setUsers = (users: any[]) => ({
   payload: users,
 });
 
-export const fetchUser = (id: number) => ({
+export const fetchUser = (email: string) => ({
   type: FETCH_USER,
-  payload: { id },
+  payload: { email },
 });
 
 export const setUser = (user: any) => ({
@@ -69,7 +39,7 @@ export const addUser = (payload: UserPayload) => ({
   payload,
 });
 
-export const setAddUserStatus = (status: "idle" | "loading" | "success" | "error") => ({
+export const setAddUserStatus = (status: "idle" | "loading" | "success" | "error" | "not_found") => ({
   type: SET_ADD_USER_STATUS,
   payload: status,
 });

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String
 from .database import Base
 
 # Snippet Model
@@ -9,7 +9,7 @@ class Snippet(Base):
     content = Column(String)
     language = Column(String)
     created_at = Column(String)  # Use UTC time as default
-    user_id = Column(Integer, index=True)
+    user_id = Column(String)
 
 
 
@@ -18,8 +18,8 @@ class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    password = Column(String, nullable=False)
+    image = Column(String, nullable=False)
     username = Column(String, index=True)
-    created_at = Column(DateTime)  # Default to current time
+    created_at = Column(String)  # Default to current time
 
 

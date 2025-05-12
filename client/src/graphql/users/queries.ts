@@ -14,11 +14,12 @@ export const GET_USERS = gql`
 
 
 export const GET_USER = gql`
-  query GetUser($id: Int!) {
-    getUser(id: $id) {
+  query GetUser($email: String!) {
+    getUser(email: $email) {
       id
       username
       email
+      image
       createdAt
     }
   }

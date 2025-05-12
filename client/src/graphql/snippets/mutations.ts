@@ -6,7 +6,7 @@ export const ADD_SNIPPET = gql`
     $content: String!
     $language: String!
     $createdAt: String!
-    $userId: Int!
+    $userId: String!
   ) {
     addSnippet(
       title: $title
