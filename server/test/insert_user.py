@@ -4,7 +4,7 @@ from server.app.database import SessionLocal
 
 async def add_sample_user():
     async with SessionLocal() as session:
-        new_user = User(name="john_doe", email="john@example.com", password="securepass")  # Use user-related fields
+        new_user = User(username="john_doe", email="john@example.com", image="securepass", created_at="14.14.14")  # Use user-related fields
         session.add(new_user)
         await session.commit()
 

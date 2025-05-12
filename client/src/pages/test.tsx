@@ -99,7 +99,7 @@ const UserList = () => {
     const newUser = {
       username: "testuser",
       email: "test@example.com",
-      password: "jdfhslfsdh",
+      image: "jdfhslfsdh",
       createdAt: new Date().toISOString(),
     };
     dispatch(addUser(newUser));

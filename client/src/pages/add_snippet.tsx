@@ -2,15 +2,40 @@ import React, { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useDispatch, useSelector } from "react-redux";
-import { addSnippet, setAddSnippetStatus } from "../store/snippet_store/actions";
+import {
+  addSnippet,
+  setAddSnippetStatus,
+} from "../store/snippet_store/actions";
 import { RootState } from "../store";
+import { useSession, signOut } from "next-auth/react";
+import { fetchUser } from "../store/user_store/actions";
+
 
 const AddSnippet = () => {
   const dispatch = useDispatch();
+  const { data: session } = useSession();
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
   const [language, setLanguage] = useState("python");
-  const status = useSelector((state: RootState) => state.snippet.addSnippetStatus);
+  const status = useSelector(
+    (state: RootState) => state.snippet.addSnippetStatus
+  );
+  const userDBData = useSelector((state: RootState) => state.user.user);
+
+  useEffect(() => {
+    if (!userDBData && session?.user?.email) {
+      // Try to fetch user from backend
+      dispatch(fetchUser(session.user.email));
+    }
+  }, [session?.user?.email, userDBData]);
+
+  useEffect(() => {
+    // After fetch completes, check again
+    if (!userDBData && session?.user?.email) {
+      alert("User not found in database. Logging out.");
+      signOut({ callbackUrl: "/login" }); // or your login route
+    }
+  }, [userDBData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,13 +43,16 @@ const AddSnippet = () => {
       return;
     }
 
+    console.log(userDBData)
+
+
     dispatch(
       addSnippet({
         title,
         content,
         language,
         createdAt: new Date().toISOString(),
-        userId: 1,
+        userId: String(userDBData.userId), // Convert to string
       })
     );
   };

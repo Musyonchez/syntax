@@ -24,7 +24,7 @@ class SnippetType:
     language: str
     content: str
     created_at: str
-    user_id: int
+    user_id: str
 
 @strawberry.type
 class SnippetSummaryType:
@@ -65,7 +65,7 @@ class Mutation:
         content: str,
         language: str,
         created_at: str,
-        user_id: int,
+        user_id: str,
     ) -> SnippetType:
         async with SessionLocal() as session:
             # Insert the new snippet

@@ -1,5 +1,5 @@
 import strawberry
-from typing import List
+from typing import List, Optional
 from sqlalchemy import text
 from app.database import SessionLocal
 from fastapi import APIRouter
@@ -18,6 +18,7 @@ class UserType:
     id: int
     email: str
     username: str
+    image: str
     created_at: str
 
 
@@ -27,24 +28,27 @@ class Query:
     async def getUsers(self) -> List[UserType]:
         async with SessionLocal() as session:
             result = await session.execute(
-                text("SELECT id, email, username, created_at FROM users")
+                text("SELECT id, email, username, image, created_at FROM users")
             )
             return [
                 UserType(
                     id=row[0],
                     email=row[1],
                     username=row[2],
-                    created_at=row[3]
+                    image=row[3],
+                    created_at=row[4],
                 )
                 for row in result.fetchall()
             ]
-    
+
     @strawberry.field
-    async def getUser(self, user_id: int) -> UserType:
+    async def getUser(self, email: str) -> Optional[UserType]:
         async with SessionLocal() as session:
             result = await session.execute(
-                text("SELECT id, email, username, created_at FROM users WHERE id = :user_id"),
-                {"user_id": user_id},
+                text(
+                    "SELECT id, email, username, image, created_at FROM users WHERE email = :email"
+                ),
+                {"email": email},
             )
             row = result.fetchone()
             if row:
@@ -52,7 +56,8 @@ class Query:
                     id=row[0],
                     email=row[1],
                     username=row[2],
-                    created_at=row[3]
+                    image=row[3],
+                    created_at=row[4],
                 )
             return None  # Or handle the case when user doesn't exist
 
@@ -64,30 +69,52 @@ class Mutation:
         self,
         username: str,
         email: str,
-        password: str,  # For simplicity, storing the password directly (hash it before storing in production)
+        image: str,
         created_at: str,
     ) -> UserType:
         async with SessionLocal() as session:
+            # Step 1: Check if user exists
             result = await session.execute(
                 text(
+                    "SELECT id, username, email, image, created_at FROM users WHERE email = :email"
+                ),
+                {"email": email},
+            )
+            existing_user = result.fetchone()
+
+            # Step 2: If found, return existing user
+            if existing_user:
+                return UserType(
+                    id=existing_user[0],
+                    username=existing_user[1],
+                    email=existing_user[2],
+                    image=existing_user[3],
+                    created_at=existing_user[4],
+                )
+
+            # Step 3: If not found, insert new user
+            insert_result = await session.execute(
+                text(
                     """
-                    INSERT INTO users (username, email, password, created_at)
-                    VALUES (:username, :email, :password, :created_at)
-                    RETURNING id, username, email, created_at
-                    """
+                    INSERT INTO users (username, email, image, created_at)
+                    VALUES (:username, :email, :image, :created_at)
+                    RETURNING id, username, email, image, created_at
+                """
                 ),
                 {
                     "username": username,
                     "email": email,
-                    "password": password,  # Don't store raw passwords in real apps, hash it
+                    "image": image,
                     "created_at": created_at,
                 },
             )
-            row = result.fetchone()
+            new_user = insert_result.fetchone()
             await session.commit()
+
             return UserType(
-                id=row[0],
-                email=row[1],
-                username=row[2],
-                created_at=row[3]
+                id=new_user[0],
+                username=new_user[1],
+                email=new_user[2],
+                image=new_user[3],
+                created_at=new_user[4],
             )

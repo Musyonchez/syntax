@@ -9,7 +9,7 @@ export interface SnippetPayload {
   content: string;
   language: string;
   createdAt: string;
-  userId: number;
+  userId: string;
 }
 export const fetchSnippets = () => ({ type: FETCH_SNIPPETS });
 
