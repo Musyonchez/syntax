@@ -27,7 +27,6 @@ function* fetchUsersSaga() {
 function* fetchUserSaga(action: any) {
   try {
     const { email } = action.payload;
-    console.log("User fetched", email)
     const { data } = yield call([apolloClient, apolloClient.query], {
       query: GET_USER,
       variables: { email }, // ✅ Now it's correct
@@ -36,7 +35,6 @@ function* fetchUserSaga(action: any) {
     if (data.getUser) {
       yield put(setUser(data.getUser));
     } else {
-      console.warn("User not found");
       yield put(setAddUserStatus("not_found")); // or whatever status makes sense
     }
       } catch (error) {

@@ -1,6 +1,6 @@
 import strawberry
 from typing import List
-from sqlalchemy import text  # <-- Add this import
+from sqlalchemy import text  
 
 # from app.models import Snippet
 from app.database import SessionLocal
@@ -25,12 +25,13 @@ class SnippetType:
     content: str
     created_at: str
     user_id: str
+    favorite: bool
+    solveCount: int
 
 @strawberry.type
 class SnippetSummaryType:
     id: int
-    # title: str
-    # content: str
+
 
 @strawberry.type
 class Query:
@@ -40,7 +41,7 @@ class Query:
             print("was here")
             result = await session.execute(
                 text(
-                    "SELECT id, title, content, language, created_at, user_id FROM snippets"
+                    "SELECT id, title, content, language, created_at, user_id, favorite, solveCount FROM snippets"
                 )
             )
             return [
@@ -51,6 +52,8 @@ class Query:
                     language=row[3],
                     created_at=row[4],
                     user_id=row[5],
+                    favorite=row[6],
+                    solveCount=row[7],
                 )
                 for row in result.fetchall()
             ]
@@ -73,9 +76,9 @@ class Mutation:
             result = await session.execute(
                 text(
                     """
-                    INSERT INTO snippets (title, content, language, created_at, user_id)
-                    VALUES (:title, :content, :language, :created_at, :user_id)
-                    RETURNING id, title, content, language, created_at, user_id
+                    INSERT INTO snippets (title, content, language, created_at, user_id, favorite, solveCount)
+                    VALUES (:title, :content, :language, :created_at, :user_id, :favorite, :solveCount)
+                    RETURNING id, title, content, language, created_at, user_id, favorite, solveCount
                 """
                 ),
                 {
@@ -84,6 +87,8 @@ class Mutation:
                     "language": language,
                     "created_at": created_at,
                     "user_id": user_id,
+                    "favorite": False,
+                    "solveCount": 0,
                 },
             )
             # new_id = result.scalar()  # Get the newly inserted ID
@@ -92,11 +97,8 @@ class Mutation:
             row = result.fetchone()
             # return SnippetType(id=row[0], title=row[1], content=row[2], language=row[3])
 
-            return SnippetType(
+            return SnippetSummaryType(
                 id=row[0],
-                title=row[1],
-                content=row[2],
-                language=row[3],
-                created_at=row[4],
-                user_id=row[5],
             )
+
+

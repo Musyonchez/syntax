@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String
 from .database import Base
 
 # Snippet Model
@@ -8,8 +8,11 @@ class Snippet(Base):
     title = Column(String)
     content = Column(String)
     language = Column(String)
-    created_at = Column(String)  # Use UTC time as default
+    created_at = Column(String)
     user_id = Column(String)
+    favorite = Column(Boolean, default=False)
+    solveCount = Column(Integer, default=0)  # Use Integer instead of Number
+
 
 
 

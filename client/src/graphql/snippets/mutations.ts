@@ -16,9 +16,6 @@ export const ADD_SNIPPET = gql`
       userId: $userId
     ) {
       id
-      title
-      content
-      language
     }
   }
 `;

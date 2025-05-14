@@ -10,7 +10,6 @@ import { RootState } from "../store";
 import { useSession, signOut } from "next-auth/react";
 import { fetchUser } from "../store/user_store/actions";
 
-
 const AddSnippet = () => {
   const dispatch = useDispatch();
   const { data: session } = useSession();
@@ -23,36 +22,26 @@ const AddSnippet = () => {
   const userDBData = useSelector((state: RootState) => state.user.user);
 
   useEffect(() => {
-    if (!userDBData && session?.user?.email) {
-      // Try to fetch user from backend
+    if (session?.user?.email && userDBData?.email !== session?.user?.email) {
       dispatch(fetchUser(session.user.email));
+      console.log("dispatch useeffect add snippect")
     }
-  }, [session?.user?.email, userDBData]);
-
-  useEffect(() => {
-    // After fetch completes, check again
-    if (!userDBData && session?.user?.email) {
-      alert("User not found in database. Logging out.");
-      signOut({ callbackUrl: "/login" }); // or your login route
-    }
-  }, [userDBData]);
+  }, [session, dispatch]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !content || !language) {
+    if (!title || !content || !language || !userDBData) {
       return;
     }
 
     console.log(userDBData)
-
-
     dispatch(
       addSnippet({
         title,
         content,
         language,
         createdAt: new Date().toISOString(),
-        userId: String(userDBData.userId), // Convert to string
+        userId: String(userDBData.id), // Convert to string
       })
     );
   };
@@ -119,7 +108,7 @@ const AddSnippet = () => {
 
             <div>
               <label htmlFor="code" className="block mb-1 font-medium">
-                Paste Your Code:
+                Paste Your Code: <span className=" text-red-500">NOTE: It is advisable the code be already formated</span>
               </label>
               <textarea
                 id="code"

@@ -6,6 +6,11 @@ export const GET_SNIPPETS = gql`
       id
       title
       content
+      language
+      userId
+      createdAt
+      favorite
+      solveCount
     }
   }
 `;
