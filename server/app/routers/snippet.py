@@ -1,6 +1,6 @@
 import strawberry
-from typing import List
-from sqlalchemy import text  
+from typing import List, Optional
+from sqlalchemy import text
 
 # from app.models import Snippet
 from app.database import SessionLocal
@@ -27,6 +27,7 @@ class SnippetType:
     user_id: str
     favorite: bool
     solveCount: int
+
 
 @strawberry.type
 class SnippetSummaryType:
@@ -57,6 +58,31 @@ class Query:
                 )
                 for row in result.fetchall()
             ]
+
+    @strawberry.field
+    async def getSnippet(self, id: str) -> Optional[SnippetType]:
+        async with SessionLocal() as session:
+            print("was here")
+            result = await session.execute(
+                text(
+                    "SELECT id, title, content, language, created_at, user_id, favorite, solveCount FROM snippets WHERE id = :id"
+                ),
+                {"id": id},
+            )
+            row = result.fetchone()
+
+            if row:
+                return SnippetType(
+                    id=row[0],
+                    title=row[1],
+                    content=row[2],
+                    language=row[3],
+                    created_at=row[4],
+                    user_id=row[5],
+                    favorite=row[6],
+                    solveCount=row[7],
+                )
+            return None
 
 
 @strawberry.type
@@ -100,5 +126,3 @@ class Mutation:
             return SnippetSummaryType(
                 id=row[0],
             )
-
-

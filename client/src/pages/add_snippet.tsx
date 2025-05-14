@@ -7,7 +7,7 @@ import {
   setAddSnippetStatus,
 } from "../store/snippet_store/actions";
 import { RootState } from "../store";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { fetchUser } from "../store/user_store/actions";
 
 const AddSnippet = () => {
