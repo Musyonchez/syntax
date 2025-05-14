@@ -34,8 +34,8 @@ function* fetchUserSaga(action: any) {
     // Dispatch an action to set the single user in the state
     if (data.getUser) {
       yield put(setUser(data.getUser));
-    } else {
-      yield put(setAddUserStatus("not_found")); // or whatever status makes sense
+    // } else {
+    //   yield put(setAddUserStatus("not_found")); // or whatever status makes sense
     }
       } catch (error) {
     console.error("Fetch user failed:", error);

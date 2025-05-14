@@ -39,7 +39,7 @@ export const addUser = (payload: UserPayload) => ({
   payload,
 });
 
-export const setAddUserStatus = (status: "idle" | "loading" | "success" | "error" | "not_found") => ({
+export const setAddUserStatus = (status: "idle" | "loading" | "success" | "error" ) => ({
   type: SET_ADD_USER_STATUS,
   payload: status,
 });
