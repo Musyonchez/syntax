@@ -1,0 +1,4 @@
+sqlite3 test.db
+.tables
+DROP TABLE IF EXISTS snippets;
+.exit

@@ -13,7 +13,11 @@ export default function reducer(state = initialState, action: any) {
     case SET_USERS:
       return { ...state, users: action.payload };
     case SET_USER:
-      return { ...state, user: action.payload }; // Update single user state
+      if (JSON.stringify(state.user) === JSON.stringify(action.payload)) {
+        return state; // No actual change
+      }
+      return { ...state, user: action.payload };
+
     case SET_ADD_USER_STATUS:
       return { ...state, addUserStatus: action.payload };
     default:
