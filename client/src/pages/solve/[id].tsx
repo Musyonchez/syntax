@@ -48,13 +48,15 @@ const SolvePage: React.FC = () => {
   };
 
   const renderContentWithInputs = () => {
-    if (!snippet?.content) return null;
+    if (!snippet?.content) {
+      return null;
+    }
 
     // Example: Replace ___ with input boxes
     let parts = snippet.content.split("___");
     return (
-      <pre className="bg-black text-white p-4 rounded whitespace-pre-wrap leading-loose">
-        {parts.map((part, i) => (
+      <pre className="bg-gray-900 text-white p-4 rounded whitespace-pre-wrap leading-loose">
+    {parts.map((part: string, i: number) => (
           <React.Fragment key={i}>
             {part}
             {i < userInputs.length && (
@@ -62,7 +64,7 @@ const SolvePage: React.FC = () => {
                 type="text"
                 value={userInputs[i]}
                 onChange={(e) => handleChange(i, e.target.value)}
-                className="inline-block w-20 mx-1 px-1 rounded border border-gray-400 text-black"
+                className="inline-block w-20 mx-1 px-1 rounded border border-gray-400 text-black bg-white"
               />
             )}
           </React.Fragment>
@@ -118,16 +120,6 @@ const SolvePage: React.FC = () => {
           Submit
         </button>
       </main>
-      <p className="mt-2 text-sm text-gray-400">Status: {status}</p>
-
-      {status === "success" && (
-        <p className="mt-4 text-green-400">✅ Snippet added successfully!</p>
-      )}
-      {status === "error" && (
-        <p className="mt-4 text-red-400">
-          ❌ Failed to add snippet. Try again.
-        </p>
-      )}
       <Footer />
     </div>
   );

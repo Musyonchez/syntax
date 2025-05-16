@@ -1,6 +1,8 @@
 import strawberry
 from typing import List, Optional
 from sqlalchemy import text
+from app.masking import mask_code_content  # Adjust import based on your structure
+
 
 # from app.models import Snippet
 from app.database import SessionLocal
@@ -69,20 +71,21 @@ class Query:
                 ),
                 {"id": id},
             )
-            row = result.fetchone()
+            if row := result.fetchone():
+                original_content = row[2]
+                masked_content = mask_code_content(original_content, row[3])
 
-            if row:
                 return SnippetType(
                     id=row[0],
                     title=row[1],
-                    content=row[2],
+                    content=masked_content,  # masked content goes here
                     language=row[3],
                     created_at=row[4],
                     user_id=row[5],
                     favorite=row[6],
                     solveCount=row[7],
                 )
-            return None
+        return None
 
 
 @strawberry.type
