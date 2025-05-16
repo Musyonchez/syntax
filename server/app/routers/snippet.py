@@ -70,6 +70,7 @@ class Query:
         ifmask: bool = False, 
         difficulty: Optional[int] = None
     ) -> Optional[SnippetType]:
+        print(id,ifmask,difficulty)
         # Enforce rule: ifmask is True, difficulty must be provided
         if ifmask and difficulty is None:
             raise ValueError("Difficulty must be provided if ifmask is True.")
