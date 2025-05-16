@@ -45,7 +45,7 @@ function* fetchSnippetSaga(action: any) {
     });
 
     if (data.getSnippet) {
-      console.log(data.getSnippet)
+      console.log(id,ifmask,difficulty,data.getSnippet)
       yield put(setSnippet(data.getSnippet));
       yield put(setFetchSnippetStatus("success"));
     } else {

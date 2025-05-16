@@ -1,136 +1,238 @@
-// import React, { useState } from "react";
-// import { useDispatch } from "react-redux";
-// import { addSnippet } from "../store/actions";
-// import Navbar from "@/components/Navbar";
+import React, { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/router";
+import { useDispatch, useSelector } from "react-redux";
+import stringSimilarity from "string-similarity";
+import { RootState } from "@/store";
+import {
+  fetchSnippet,
+  setFetchSnippetStatus,
+} from "@/store/snippet_store/actions";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
-// const AddSnippetForm = () => {
-//   const dispatch = useDispatch();
-//   const [title, setTitle] = useState("");
-//   const [content, setContent] = useState("");
-
-//   const handleSubmit = (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (!title || !content) return;
-
-//     dispatch(addSnippet({ title, content }));
-
-//     // Clear inputs
-//     setTitle("");
-//     setContent("");
-//   };
-
-//   return (
-//     <>
-//       <Navbar />
-//       <form onSubmit={handleSubmit}>
-//         <h2>Add New Snippet</h2>
-//         <div>
-//           <label>Title:</label>
-//           <input
-//             type="text"
-//             value={title}
-//             onChange={(e) => setTitle(e.target.value)}
-//           />
-//         </div>
-//         <div>
-//           <label>Content:</label>
-//           <textarea
-//             rows={5}
-//             value={content}
-//             onChange={(e) => setContent(e.target.value)}
-//           />
-//         </div>
-//         <button type="submit">Add Snippet</button>
-//       </form>
-//     </>
-//   );
-// };
-
-// export default AddSnippetForm;
-
-// import React, { useEffect } from "react";
-// import { useSelector, useDispatch } from "react-redux";
-// import { fetchSnippets, addSnippet } from "../store/users_store/actions";
-
-// const SnippetList = () => {
-//   const dispatch = useDispatch();
-
-//   // Access snippets from Redux store
-//   const snippets = useSelector((state: any) => state.snippets);
-
-//   useEffect(() => {
-//     // Dispatch action to fetch snippets on component mount
-//     dispatch(fetchSnippets());
-//   }, [dispatch]);
-
-//   return (
-//     <div>
-//       {snippets.map((snippet: any) => (
-//         <div key={snippet.id}>
-//           <h3>{snippet.title}</h3>
-//           <pre>{snippet.content}</pre>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// };
-
-// export default SnippetList;
-
-
-
-
-import React, { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { fetchUsers, addUser } from "../store/user_store/actions";
-import { RootState } from "../store/";
-
-const UserList = () => {
+const SolvePage: React.FC = () => {
+  const router = useRouter();
   const dispatch = useDispatch();
+  const { id } = router.query;
 
-  const users = useSelector((state: RootState) => state.user.users);
-  const status = useSelector((state: RootState) => state.user.addUserStatus);
+  const snippet = useSelector((state: RootState) => state.snippet.snippet);
+  const status = useSelector(
+    (state: RootState) => state.snippet.fetchSnippetStatus
+  );
 
+  const [userInputs, setUserInputs] = useState<string[]>([]);
+  const [answerMatches, setAnswerMatches] = useState<boolean[]>([]); // true/false per answer
+  const [difficulty, setDifficulty] = useState<number>(5);
+  const [debouncedDifficulty, setDebouncedDifficulty] =
+    useState<number>(difficulty);
+
+  // Reference for scrolling
+  const topRef = useRef<HTMLDivElement>(null);
+
+  // Debounce difficulty input
   useEffect(() => {
-    dispatch(fetchUsers());
-  }, [dispatch]);
+    const handler = setTimeout(() => {
+      setDebouncedDifficulty(difficulty);
+    }, 400);
 
-  const handleAddUser = () => {
-    const newUser = {
-      username: "testuser",
-      email: "test@example.com",
-      image: "jdfhslfsdh",
-      createdAt: new Date().toISOString(),
+    return () => {
+      clearTimeout(handler);
     };
-    dispatch(addUser(newUser));
+  }, [difficulty]);
+
+  // Fetch snippet on id or debounced difficulty change
+  useEffect(() => {
+    if (typeof id === "string") {
+      dispatch(fetchSnippet(id, true, debouncedDifficulty));
+      resetAll(); // Reset inputs and matches when snippet changes
+    }
+  }, [id, debouncedDifficulty]);
+
+  // Setup user inputs array on snippet load
+  useEffect(() => {
+    if (snippet?.maskedContent) {
+      const blanksCount = (snippet.maskedContent.match(/___/g) || []).length;
+      setUserInputs(new Array(blanksCount).fill(""));
+      setAnswerMatches(new Array(blanksCount).fill(false));
+    }
+  }, [snippet]);
+
+  // Reset everything
+  const resetAll = () => {
+    if (snippet?.maskedContent) {
+      const blanksCount = (snippet.maskedContent.match(/___/g) || []).length;
+      setUserInputs(new Array(blanksCount).fill(""));
+      setAnswerMatches(new Array(blanksCount).fill(false));
+    }
+  };
+
+  // Handle user input change
+  const handleChange = (index: number, value: string) => {
+    const updatedInputs = [...userInputs];
+    updatedInputs[index] = value;
+    setUserInputs(updatedInputs);
+  };
+
+  // Submit handler - compare answers with string similarity
+  const handleSubmit = () => {
+    if (!snippet?.answer) {
+      return;
+    }
+
+    const threshold = 0.8; // similarity threshold for match (adjust as needed)
+    const matches = snippet.answer.map((correctAns: string, i: number) => {
+      const userAns = userInputs[i] || "";
+      const similarity = stringSimilarity.compareTwoStrings(
+        userAns.trim().toLowerCase(),
+        correctAns.trim().toLowerCase()
+      );
+      return similarity >= threshold;
+    });
+
+    setAnswerMatches(matches);
+
+    // Scroll to top after submit
+    topRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Render masked content with inputs and highlighting + tooltip on incorrect
+  const renderMaskedContentWithInputs = () => {
+    if (!snippet?.maskedContent) {
+      return null;
+    }
+
+    const parts = snippet.maskedContent.split("___");
+
+    return (
+      <pre className="bg-gray-900 text-white p-4 rounded whitespace-pre-wrap leading-loose">
+        {parts.map((part: string, i: number) => (
+          <React.Fragment key={i}>
+            {part}
+            {i < userInputs.length && (
+              <Tooltip
+                content={answerMatches[i] ? "" : snippet.answer[i]}
+                visible={!answerMatches[i]}
+              >
+                <input
+                  type="text"
+                  value={userInputs[i]}
+                  onChange={(e) => handleChange(i, e.target.value)}
+                  className={`bg-transparent border-b 
+                    ${
+                      answerMatches[i]
+                        ? "border-green-400 text-green-400"
+                        : "border-red-500 text-red-500 animate-pulse"
+                    }
+                    w-20 mx-1 px-1 focus:outline-none focus:border-b-2
+                    placeholder-gray-500 transition-all duration-150
+                  `}
+                  spellCheck={false}
+                />
+              </Tooltip>
+            )}
+          </React.Fragment>
+        ))}
+      </pre>
+    );
+  };
+
+  // Tooltip component for hover box
+  const Tooltip: React.FC<{
+    content: string;
+    visible: boolean;
+    children: React.ReactNode;
+  }> = ({ content, visible, children }) => {
+    return (
+      <span className="relative group inline-block">
+        {children}
+        {visible && (
+          <div
+            className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2
+            w-max max-w-xs bg-gray-800 text-white text-xs rounded px-2 py-1
+            opacity-0 group-hover:opacity-100 transition-opacity duration-300
+            pointer-events-none z-10
+            whitespace-normal break-words
+            shadow-lg"
+          >
+            {content}
+          </div>
+        )}
+      </span>
+    );
   };
 
   return (
-    <div>
-      <h2>User List</h2>
+    <div className="bg-[#000d2a] min-h-screen flex flex-col" ref={topRef}>
+      <Navbar />
+      <main className="flex-grow p-6 max-w-4xl mx-auto text-white">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold">Solve Snippet</h1>
+          <button
+            onClick={resetAll}
+            className="bg-gray-700 hover:bg-gray-600 text-white text-sm px-4 py-1 rounded transition"
+            aria-label="Reset inputs and answers"
+          >
+            Reset
+          </button>
+        </div>
 
-      {status === "loading" && <p>Loading users...</p>}
-      {status === "error" && (
-        <p style={{ color: "red" }}>Failed to add user. Please try again.</p>
-      )}
-      {status === "success" && (
-        <p style={{ color: "green" }}>User added successfully!</p>
-      )}
-
-      {users && users.length > 0 ? (
-        users.map((user: any) => (
-          <div key={user.id} style={{ marginBottom: "1rem" }}>
-            <h3>{user.username}</h3>
-            <p>{user.email}</p>
+        {status !== "idle" && (
+          <div className="mb-4 p-3 rounded text-sm font-medium">
+            {status === "loading" && (
+              <p className="text-yellow-300 bg-yellow-800 bg-opacity-20 px-3 py-2 rounded">
+                ⏳ Loading snippet...
+              </p>
+            )}
+            {status === "success" && (
+              <p className="text-green-300 bg-green-800 bg-opacity-20 px-3 py-2 rounded">
+                ✅ Snippet loaded successfully!
+              </p>
+            )}
+            {status === "error" && (
+              <p className="text-red-300 bg-red-800 bg-opacity-20 px-3 py-2 rounded">
+                ❌ Failed to load snippet. Please try again.
+              </p>
+            )}
+            {status === "not_found" && (
+              <p className="text-gray-300 bg-gray-700 bg-opacity-20 px-3 py-2 rounded">
+                ⚠️ Snippet not found.
+              </p>
+            )}
           </div>
-        ))
-      ) : (
-        <p>No users found.</p>
-      )}
+        )}
 
-      <button onClick={handleAddUser}>Add Test User</button>
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-2">{snippet?.title}</h2>
+          {renderMaskedContentWithInputs()}
+        </div>
+
+        <button
+          className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 mb-6"
+          onClick={handleSubmit}
+        >
+          Submit
+        </button>
+
+        {/* Difficulty slider */}
+        <div className="flex items-center space-x-4 mb-4">
+          <label htmlFor="difficulty" className="text-white font-medium">
+            Difficulty:
+          </label>
+          <input
+            id="difficulty"
+            type="range"
+            min={1}
+            max={10}
+            value={difficulty}
+            onChange={(e) => setDifficulty(parseInt(e.target.value))}
+            className="w-48"
+          />
+          <span className="text-white font-semibold">{difficulty}</span>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 };
 
-export default UserList;
+export default SolvePage;
