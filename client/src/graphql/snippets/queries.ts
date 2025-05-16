@@ -16,8 +16,8 @@ export const GET_SNIPPETS = gql`
 `;
 
 export const GET_SNIPPET = gql`
-  query GetSnippet($id: String!) {
-    getSnippet(id: $id) {
+  query GetSnippet($id: String!, $ifmask: Boolean = false, $difficulty: Int) {
+    getSnippet(id: $id, ifmask: $ifmask, difficulty: $difficulty) {
       id
       title
       content
@@ -26,6 +26,9 @@ export const GET_SNIPPET = gql`
       createdAt
       favorite
       solveCount
+      maskedContent
+      answer
     }
   }
 `;
+

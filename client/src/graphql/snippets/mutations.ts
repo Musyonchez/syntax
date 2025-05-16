@@ -19,3 +19,18 @@ export const ADD_SNIPPET = gql`
     }
   }
 `;
+
+export const ADD_FAVORITE = gql`
+  mutation AddFavorite($id: Int!, $type: String!) {
+    addFavorite(id: $id, type: $type) {
+      id
+      title
+      content
+      language
+      createdAt
+      userId
+      favorite
+      solveCount
+    }
+  }
+`;
