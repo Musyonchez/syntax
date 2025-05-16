@@ -31,12 +31,13 @@ export const getStaticPaths = async () => {
   };
 }
     """
-
+    difficulty = 5
+    
     print("\n--- Python Code Masking ---")
-    print(mask_code_content(test_python, "python"))
+    print(mask_code_content(test_python, "python", difficulty))
 
     print("\n--- JavaScript Code Masking ---")
-    print(mask_code_content(test_js, "javascript"))
+    print(mask_code_content(test_js, "javascript", difficulty))
 
 
 

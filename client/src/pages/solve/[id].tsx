@@ -2,9 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store";
-import { fetchSnippet, setFetchSnippetStatus } from "@/store/snippet_store/actions";
+import {
+  fetchSnippet,
+  setFetchSnippetStatus,
+} from "@/store/snippet_store/actions";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+
+//pulse to encourage hover
 
 const SolvePage: React.FC = () => {
   const router = useRouter();
@@ -16,16 +21,38 @@ const SolvePage: React.FC = () => {
     (state: RootState) => state.snippet.fetchSnippetStatus
   );
   const [userInputs, setUserInputs] = useState<string[]>([]);
+  const [difficulty, setDifficulty] = useState<number>(5); // default difficulty 5
+  const [debouncedDifficulty, setDebouncedDifficulty] =
+    useState<number>(difficulty);
 
+  // Debounce the difficulty input to avoid too many dispatches
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedDifficulty(difficulty);
+    }, 2000); // 300–500ms is a good range
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [difficulty]);
+
+  // Fetch snippet only when debounced difficulty changes
   useEffect(() => {
     if (typeof id === "string") {
-      dispatch(fetchSnippet(id as string));
+      dispatch(fetchSnippet(id, true, debouncedDifficulty));
     }
-  }, [id, dispatch]);
+  }, [debouncedDifficulty]);
+
+  // Optional: on initial load (with current difficulty)
+  useEffect(() => {
+    if (typeof id === "string") {
+      dispatch(fetchSnippet(id, true, difficulty));
+    }
+  }, [id, true, dispatch]);
 
   useEffect(() => {
-    if (snippet?.content) {
-      const blanksCount = (snippet.content.match(/___/g) || []).length;
+    if (snippet?.maskedContent) {
+      const blanksCount = (snippet.maskedContent.match(/___/g) || []).length;
       setUserInputs(new Array(blanksCount).fill(""));
     }
   }, [snippet]);
@@ -35,11 +62,10 @@ const SolvePage: React.FC = () => {
       const timer = setTimeout(() => {
         dispatch(setFetchSnippetStatus("idle"));
       }, 3000);
-  
+
       return () => clearTimeout(timer); // cleanup in case the component unmounts or status changes early
     }
   }, [status, dispatch]);
-  
 
   const handleChange = (index: number, value: string) => {
     const updatedInputs = [...userInputs];
@@ -47,16 +73,16 @@ const SolvePage: React.FC = () => {
     setUserInputs(updatedInputs);
   };
 
-  const renderContentWithInputs = () => {
-    if (!snippet?.content) {
+  const renderMaskedContentWithInputs = () => {
+    if (!snippet?.maskedContent) {
       return null;
     }
 
     // Example: Replace ___ with input boxes
-    let parts = snippet.content.split("___");
+    let parts = snippet.maskedContent.split("___");
     return (
       <pre className="bg-gray-900 text-white p-4 rounded whitespace-pre-wrap leading-loose">
-    {parts.map((part: string, i: number) => (
+        {parts.map((part: string, i: number) => (
           <React.Fragment key={i}>
             {part}
             {i < userInputs.length && (
@@ -64,7 +90,7 @@ const SolvePage: React.FC = () => {
                 type="text"
                 value={userInputs[i]}
                 onChange={(e) => handleChange(i, e.target.value)}
-                className="inline-block w-20 mx-1 px-1 rounded border border-gray-400 text-black bg-white"
+                className="bg-transparent border-b border-gray-500 text-white w-20 mx-1 px-1 focus:outline-none focus:border-b-2 focus:border-blue-400 placeholder-gray-500 transition-all duration-150"
               />
             )}
           </React.Fragment>
@@ -72,8 +98,6 @@ const SolvePage: React.FC = () => {
       </pre>
     );
   };
-
-  console.log("snippet from sole/id", snippet);
 
   return (
     <div className="bg-[#000d2a] min-h-screen flex flex-col">
@@ -107,7 +131,7 @@ const SolvePage: React.FC = () => {
 
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-2">{snippet?.title}</h2>
-          {renderContentWithInputs()}
+          {renderMaskedContentWithInputs()}
         </div>
 
         <button
@@ -119,6 +143,23 @@ const SolvePage: React.FC = () => {
         >
           Submit
         </button>
+
+        {/* Difficulty slider and current value */}
+        <div className="flex items-center space-x-4 mb-4">
+          <label htmlFor="difficulty" className="text-white font-medium">
+            Difficulty:
+          </label>
+          <input
+            id="difficulty"
+            type="range"
+            min={1}
+            max={10}
+            value={difficulty}
+            onChange={(e) => setDifficulty(parseInt(e.target.value))}
+            className="w-48"
+          />
+          <span className="text-white font-semibold">{difficulty}</span>
+        </div>
       </main>
       <Footer />
     </div>

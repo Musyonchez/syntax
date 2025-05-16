@@ -6,6 +6,8 @@ export const SET_SNIPPET = "SET_SNIPPET";
 export const SET_FETCH_SNIPPET_STATUS = "SET_FETCH_SNIPPET_STATUS";
 export const ADD_SNIPPET = "ADD_SNIPPET";
 export const SET_ADD_SNIPPET_STATUS = "SET_ADD_SNIPPET_STATUS";
+export const ADD_FAVORITE = "ADD_FAVORITE";
+export const SET_ADD_FAVORITE_STATUS = "SET_ADD_FAVORITE_STATUS";
 
 export interface SnippetPayload {
   title: string;
@@ -21,7 +23,14 @@ export const setSnippets = (snippets: any[]) => ({
   payload: snippets,
 });
 
-export const fetchSnippet = (id: string) => ({ type: FETCH_SNIPPET, payload: { id } });
+export const fetchSnippet = (
+  id: string,
+  ifmask: boolean = false,
+  difficulty?: number
+) => ({
+  type: FETCH_SNIPPET,
+  payload: { id, ifmask, difficulty },
+});
 
 export const setSnippet = (snippet: any[]) => ({
   type: SET_SNIPPET,
@@ -44,5 +53,20 @@ export const setAddSnippetStatus = (
   status: "idle" | "loading" | "success" | "error"
 ) => ({
   type: SET_ADD_SNIPPET_STATUS,
+  payload: status,
+});
+
+export const addFavorite = (
+  id: number,
+  type: "single" | "group" = "single"
+) => ({
+  type: ADD_FAVORITE,
+  payload: { id, type },
+});
+
+export const setAddFavoriteStatus = (
+  status: "idle" | "loading" | "success" | "error"
+) => ({
+  type: SET_ADD_FAVORITE_STATUS,
   payload: status,
 });
