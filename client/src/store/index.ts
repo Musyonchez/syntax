@@ -2,17 +2,23 @@ import { combineReducers, createStore, applyMiddleware } from "redux";
 import createSagaMiddleware from "redux-saga";
 import { snippetReducer, snippetSaga } from "./snippet_store";
 import { userReducer, userSaga } from "./user_store";
+import { leaderboardReducer, leaderboardSaga } from "./leaderboard_store";
 import { all } from "redux-saga/effects";
 
 // Combine reducers
 const rootReducer = combineReducers({
   snippet: snippetReducer,
   user: userReducer,
+  leaderboard: leaderboardReducer, // ✅ Added leaderboard reducer
 });
 
 // Root saga
 function* rootSaga() {
-  yield all([snippetSaga(), userSaga()]);
+  yield all([
+    snippetSaga(),
+    userSaga(),
+    leaderboardSaga(), // ✅ Added leaderboard saga
+  ]);
 }
 
 // Create the saga middleware

@@ -7,11 +7,15 @@ import {
   fetchSnippet,
   setFetchSnippetStatus,
 } from "@/store/snippet_store/actions";
+import { addLeaderboardEntry } from "@/store/leaderboard_store/actions";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useSession } from "next-auth/react";
+import { fetchUser } from "../../store/user_store/actions";
 
 const SolvePage: React.FC = () => {
   const router = useRouter();
+  const { data: session } = useSession();
   const dispatch = useDispatch();
   const { id } = router.query;
 
@@ -27,6 +31,19 @@ const SolvePage: React.FC = () => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [threshold, setThreshold] = useState<number>(0.5);
   const ifmask = true;
+  const userDBData = useSelector((state: RootState) => state.user.user);
+
+  type Result = {
+    match: boolean;
+    similarity: number;
+  };
+
+  useEffect(() => {
+    if (session?.user?.email && userDBData?.email !== session?.user?.email) {
+      dispatch(fetchUser(session.user.email));
+      console.log("dispatch useeffect add snippect");
+    }
+  }, [session, dispatch]);
 
   // Debounce the difficulty input to avoid too many dispatches
   useEffect(() => {
@@ -79,7 +96,9 @@ const SolvePage: React.FC = () => {
   };
 
   const renderMaskedContentWithInputs = () => {
-    if (!snippet?.maskedContent) return null;
+    if (!snippet?.maskedContent) {
+      return null;
+    }
 
     const parts = snippet.maskedContent.split("___");
     const blanksCount = parts.length - 1;
@@ -122,23 +141,67 @@ const SolvePage: React.FC = () => {
     );
   };
 
-  // Submit handler - compare answers with string similarity
   const handleSubmit = () => {
-    if (!snippet?.answer) {
+    if (!snippet?.answer && !snippet?.language) {
       return;
     }
+    if (!userInputs.some((input) => input.trim() !== "")) {
+      alert("You have to fill at least one blank");
+      return; // Stop the submission or scoring process here
+    }
 
-    const matches = snippet.answer.map((correctAns: string, i: number) => {
+    const results = snippet.answer.map((correctAns: string, i: number) => {
       const userAns = userInputs[i] || "";
       const similarity = stringSimilarity.compareTwoStrings(
         userAns.trim(),
         correctAns.trim()
       );
-      return similarity >= threshold;
+      return {
+        match: similarity >= threshold,
+        similarity,
+      };
     });
 
+    const matches = results.map((r: Result) => r.match);
+    const similarities = results.map((r: Result) => r.similarity);
+
+    console.log("matches", matches);
+
+    const averageSimilarity =
+      similarities.reduce((sum: number, sim: number) => sum + sim, 0) /
+      similarities.length;
+
+    console.log("averageSimilarity", averageSimilarity);
+    // Normalize difficulty if needed (assuming 1–10 scale)
+    const normalizedDifficulty = Math.min(1, (difficulty || 1) / 10);
+    console.log("threshold", threshold);
+    console.log("difficulty", difficulty);
+
+    // Compute weighted score: difficulty is weighted more heavily
+    const score = Math.min(
+      100,
+      Math.round(
+        Math.pow(averageSimilarity, 1.5) * 80 +
+          Math.pow(normalizedDifficulty, 0.7) * 20
+      )
+    );
+    console.log("score", score);
+
     setAnswerMatches(matches);
-    setHasSubmitted(true); // mark as submitted
+    setHasSubmitted(true);
+
+    dispatch(
+      addLeaderboardEntry({
+        language: snippet?.language,
+        score,
+        userId: String(userDBData.id),
+        userName: String(userDBData.username),
+        similarity: averageSimilarity,
+        difficulty: difficulty,
+        snippetId: String(snippet.id),
+        dateOfSubmission: new Date().toISOString(),
+      })
+    );
   };
 
   const handleResetAll = () => {
@@ -166,8 +229,8 @@ const SolvePage: React.FC = () => {
               className=" flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white text-sm px-3 py-2 rounded-lg shadow-md"
               aria-label="Reset inputs and answers"
             >
-             <span>🔁</span>
-             <span>Reset</span>
+              <span>🔁</span>
+              <span>Reset</span>
             </button>
           </div>
 

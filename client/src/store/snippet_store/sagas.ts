@@ -106,5 +106,5 @@ export default function* rootSaga() {
   yield takeEvery(FETCH_SNIPPETS, fetchSnippetsSaga);
   yield takeEvery(FETCH_SNIPPET, fetchSnippetSaga);
   yield takeEvery(ADD_SNIPPET, addSnippetSaga);
-  yield takeEvery(ADD_FAVORITE, addFavoriteSaga); // Added favorite saga watcher
+  yield takeEvery(ADD_FAVORITE, addFavoriteSaga); 
 }

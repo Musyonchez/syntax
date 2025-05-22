@@ -2,3 +2,13 @@ sqlite3 test.db
 .tables
 DROP TABLE IF EXISTS snippets;
 .exit
+
+sqlite3 test.db
+.headers on
+.mode column
+.tables
+SELECT * FROM leaderboard;
+.exit
+
+
+DROP TABLE IF EXISTS leaderboard;
