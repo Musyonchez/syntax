@@ -79,7 +79,6 @@ function* addSnippetSaga(action: any) {
 function* addFavoriteSaga(action: any) {
   try {
     yield put(setAddFavoriteStatus("loading"));
-    console.log("in addfavorites")
 
     const { id, type = "single" } = action.payload;
 
