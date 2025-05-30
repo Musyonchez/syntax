@@ -1,25 +1,28 @@
+import strawberry
+from app.routers import leaderboard, snippet, user  # REST routers
+from app.routers.leaderboard import Mutation as LeaderboardMutation
+from app.routers.leaderboard import Query as LeaderboardQuery
+from app.routers.snippet import Mutation as SnippetMutation
+from app.routers.snippet import Query as SnippetQuery
+from app.routers.user import Mutation as UserMutation
+from app.routers.user import Query as UserQuery
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from strawberry.fastapi import GraphQLRouter
 
-from app.routers.snippet import Query as SnippetQuery, Mutation as SnippetMutation
-from app.routers.user import Query as UserQuery, Mutation as UserMutation
-from app.routers.leaderboard import Query as LeaderboardQuery, Mutation as LeaderboardMutation
-
-from app.routers import snippet, user, leaderboard  # REST routers
-
-import strawberry
-
 app = FastAPI(title="SyntaxMem API")
+
 
 # Combine Snippet, User, and Leaderboard GraphQL schemas into one
 @strawberry.type
 class CombinedQuery(SnippetQuery, UserQuery, LeaderboardQuery):
     pass
 
+
 @strawberry.type
 class CombinedMutation(SnippetMutation, UserMutation, LeaderboardMutation):
     pass
+
 
 # Create the combined schema
 combined_schema = strawberry.Schema(query=CombinedQuery, mutation=CombinedMutation)
@@ -43,6 +46,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/")
 def read_root():

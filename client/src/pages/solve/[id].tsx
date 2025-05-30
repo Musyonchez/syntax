@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import stringSimilarity from "string-similarity";
@@ -21,7 +21,7 @@ const SolvePage: React.FC = () => {
 
   const snippet = useSelector((state: RootState) => state.snippet.snippet);
   const status = useSelector(
-    (state: RootState) => state.snippet.fetchSnippetStatus
+    (state: RootState) => state.snippet.fetchSnippetStatus,
   );
   const [userInputs, setUserInputs] = useState<string[]>([]);
   const [difficulty, setDifficulty] = useState<number>(5); // default difficulty 5
@@ -154,7 +154,7 @@ const SolvePage: React.FC = () => {
       const userAns = userInputs[i] || "";
       const similarity = stringSimilarity.compareTwoStrings(
         userAns.trim(),
-        correctAns.trim()
+        correctAns.trim(),
       );
       return {
         match: similarity >= threshold,
@@ -182,8 +182,8 @@ const SolvePage: React.FC = () => {
       100,
       Math.round(
         Math.pow(averageSimilarity, 1.5) * 80 +
-          Math.pow(normalizedDifficulty, 0.7) * 20
-      )
+          Math.pow(normalizedDifficulty, 0.7) * 20,
+      ),
     );
     console.log("score", score);
 
@@ -200,7 +200,7 @@ const SolvePage: React.FC = () => {
         difficulty: difficulty,
         snippetId: String(snippet.id),
         dateOfSubmission: new Date().toISOString(),
-      })
+      }),
     );
   };
 
@@ -220,13 +220,13 @@ const SolvePage: React.FC = () => {
       <main className="flex-grow p-6 max-w-4xl mx-auto text-white">
         <div className="flex flex-col items-center justify-between mb-6 w-full">
           {/* Title Row */}
-          <div className="flex w-full items-center justify-between">
+          <div className="flex max-sm:flex-col-reverse w-full items-end sm:items-center justify-between">
             <h1 className="text-3xl font-extrabold text-[#A0FF70] drop-shadow-lg text-center w-full">
               🧠 Solve the Snippet
             </h1>
             <button
               onClick={handleResetAll}
-              className=" flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white text-sm px-3 py-2 rounded-lg shadow-md"
+              className=" flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white text-sm px-3 py-2 max-sm:mb-3 w-fit rounded-lg shadow-md"
               aria-label="Reset inputs and answers"
             >
               <span>🔁</span>
@@ -268,17 +268,17 @@ const SolvePage: React.FC = () => {
           </div>
         )}
 
-        <section className="mb-8 bg-gradient-to-br from-indigo-900 via-[#001848] to-[#000a32] p-6 rounded-2xl shadow-lg border border-indigo-700">
-          <h2 className="text-2xl font-semibold mb-4 tracking-tight text-indigo-200 drop-shadow-sm">
+        <section className="mb-8 bg-gradient-to-br from-indigo-900 via-[#001848] to-[#000a32] p-2 rounded-2xl shadow-lg border border-indigo-700">
+          <h2 className="text-2xl font-semibold mb-4 tracking-tight text-indigo-200 drop-shadow-sm text-center sm:text-left">
             {snippet?.title || "Snippet Title"}
           </h2>
 
-          <div className="bg-[#001b55] p-6 rounded-xl font-mono text-white whitespace-pre-wrap leading-relaxed shadow-inner border border-indigo-600">
+          <div className="bg-[#001b55] p-2 rounded-xl font-mono text-white whitespace-pre-wrap leading-relaxed shadow-inner border border-indigo-600">
             {renderMaskedContentWithInputs()}
           </div>
         </section>
 
-        <div className="flex flex-row items-center justify-between bg-gradient-to-br from-indigo-900 via-[#001848] to-[#000a32] rounded-xl p-6 shadow-lg space-x-8 mb-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between bg-gradient-to-br from-indigo-900 via-[#001848] to-[#000a32] rounded-xl p-6 shadow-lg max-sm:space-y-3 sm:space-x-8 mb-6">
           {/* Submit Button */}
           <button
             className="bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-2 rounded-xl shadow-md transition-all duration-200"

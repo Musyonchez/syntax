@@ -17,10 +17,10 @@ import toast from "react-hot-toast";
 const PracticePage: React.FC = () => {
   const dispatch = useDispatch();
   const snippets = useSelector(
-    (state: RootState) => state.snippet.snippets || []
+    (state: RootState) => state.snippet.snippets || [],
   );
   const status = useSelector(
-    (state: RootState) => state.snippet.addFavoriteStatus
+    (state: RootState) => state.snippet.addFavoriteStatus,
   );
   const [search, setSearch] = useState<string>("");
   const [filter, setFilter] = useState<
@@ -50,12 +50,12 @@ const PracticePage: React.FC = () => {
     if (filter === "newest") {
       filtered.sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
     } else if (filter === "oldest") {
       filtered.sort(
         (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
     } else if (filter === "favorites") {
       filtered = filtered.filter((s) => s.favorite);
@@ -65,7 +65,7 @@ const PracticePage: React.FC = () => {
 
     if (search.trim()) {
       filtered = filtered.filter((s) =>
-        s.title.toLowerCase().includes(search.toLowerCase())
+        s.title.toLowerCase().includes(search.toLowerCase()),
       );
     }
 
@@ -98,7 +98,7 @@ const PracticePage: React.FC = () => {
     <div className="bg-[#000d2a] min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow">
-        <div className="flex flex-wrap items-center justify-between px-4">
+        <div className="flex flex-col md:flex-row items-center justify-between px-4 mt-2 max-md:space-y-3">
           <SnippetFilters
             search={search}
             setSearch={setSearch}
