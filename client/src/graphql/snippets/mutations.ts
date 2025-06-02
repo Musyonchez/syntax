@@ -34,3 +34,18 @@ export const ADD_FAVORITE = gql`
     }
   }
 `;
+
+export const DELETE_SNIPPET = gql`
+  mutation DeleteSnippet($id: Int!, $type: String!) {
+    deleteSnippet(id: $id, type: $type) {
+      id
+      title
+      content
+      language
+      createdAt
+      userId
+      favorite
+      solveCount
+    }
+  }
+`;

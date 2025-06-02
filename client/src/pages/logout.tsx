@@ -5,7 +5,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const Logout = () => {
-  const router = useRouter();
   const { data: session } = useSession();
 
   return (

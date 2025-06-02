@@ -1,20 +1,21 @@
-import { call, put, takeEvery } from "redux-saga/effects";
+import { call, put, takeLatest } from "redux-saga/effects";
 import {
-  ADD_SNIPPET,
-  FETCH_SNIPPETS,
-  setSnippets,
-  setAddSnippetStatus,
   FETCH_SNIPPET,
-  setSnippet,
-  setFetchSnippetStatus,
+  FETCH_SNIPPETS,
+  ADD_SNIPPET,
   ADD_FAVORITE,
+  DELETE_SNIPPET,
+  setSnippet,
+  setSnippets,
+  setFetchSnippetStatus,
+  setAddSnippetStatus,
   setAddFavoriteStatus,
-  setSnippets as setSnippetsAfterFavorite, // reuse to update group favorites
-  setSnippet as setSnippetAfterFavorite,   // reuse to update single snippet favorite
+  setDeleteSnippetStatus,
 } from "./actions";
 import { GET_SNIPPETS, GET_SNIPPET } from "../../graphql/snippets/queries";
 import { ADD_SNIPPET as ADD_SNIPPET_MUT } from "../../graphql/snippets/mutations";
-import { ADD_FAVORITE as ADD_FAVORITE_MUT } from "../../graphql/snippets/mutations"; // <-- you'll create this mutation
+import { ADD_FAVORITE as ADD_FAVORITE_MUT } from "../../graphql/snippets/mutations";
+import { DELETE_SNIPPET as DELETE_SNIPPET_MUT } from "../../graphql/snippets/mutations";
 import apolloClient from "../../apollo/client";
 
 function* fetchSnippetsSaga() {
@@ -45,7 +46,7 @@ function* fetchSnippetSaga(action: any) {
     });
 
     if (data.getSnippet) {
-      console.log(id,ifmask,difficulty,data.getSnippet)
+      console.log(id, ifmask, difficulty, data.getSnippet);
       yield put(setSnippet(data.getSnippet));
       yield put(setFetchSnippetStatus("success"));
     } else {
@@ -56,7 +57,6 @@ function* fetchSnippetSaga(action: any) {
     yield put(setFetchSnippetStatus("error"));
   }
 }
-
 
 function* addSnippetSaga(action: any) {
   try {
@@ -89,9 +89,9 @@ function* addFavoriteSaga(action: any) {
 
     // data.addFavorite returns either an array of snippets (group) or single snippet array
     if (type === "group") {
-      yield put(setSnippetsAfterFavorite(data.addFavorite));
+      yield put(setSnippets(data.addFavorite));
     } else {
-      yield put(setSnippetAfterFavorite(data.addFavorite[0])); // single snippet array
+      yield put(setSnippet(data.addFavorite[0])); // single snippet array
     }
 
     yield put(setAddFavoriteStatus("success"));
@@ -101,9 +101,35 @@ function* addFavoriteSaga(action: any) {
   }
 }
 
+function* deleteSnippetSaga(action: any) {
+  try {
+    yield put(setDeleteSnippetStatus("loading"));
+
+    const { id, type = "single" } = action.payload;
+
+    const { data } = yield call([apolloClient, apolloClient.mutate], {
+      mutation: DELETE_SNIPPET_MUT,
+      variables: { id, type },
+    });
+
+    // data.addFavorite returns either an array of snippets (group) or single snippet array
+    if (type === "group") {
+      yield put(setSnippets(data.deleteSnippet));
+    } else {
+      yield put(setSnippet(data.deleteSnippet[0])); // single snippet array
+    }
+
+    yield put(setDeleteSnippetStatus("success"));
+  } catch (error) {
+    console.error("Delete Snippet failed:", error);
+    yield put(setDeleteSnippetStatus("error"));
+  }
+}
+
 export default function* rootSaga() {
-  yield takeEvery(FETCH_SNIPPETS, fetchSnippetsSaga);
-  yield takeEvery(FETCH_SNIPPET, fetchSnippetSaga);
-  yield takeEvery(ADD_SNIPPET, addSnippetSaga);
-  yield takeEvery(ADD_FAVORITE, addFavoriteSaga); 
+  yield takeLatest(FETCH_SNIPPETS, fetchSnippetsSaga);
+  yield takeLatest(FETCH_SNIPPET, fetchSnippetSaga);
+  yield takeLatest(ADD_SNIPPET, addSnippetSaga);
+  yield takeLatest(ADD_FAVORITE, addFavoriteSaga);
+  yield takeLatest(DELETE_SNIPPET, deleteSnippetSaga);
 }

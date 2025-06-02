@@ -6,7 +6,9 @@ import Footer from "@/components/Footer";
 import {
   addFavorite,
   setAddFavoriteStatus,
+  setDeleteSnippetStatus,
   fetchSnippets,
+  deleteSnippet,
 } from "@/store/snippet_store/actions";
 import SnippetCard from "@/components/snippets/SnippetCard";
 import SnippetFilters from "@/components/snippets/SnippetFilters";
@@ -94,6 +96,14 @@ const PracticePage: React.FC = () => {
     dispatch(setAddFavoriteStatus("idle"));
   };
 
+  const handleDelete = (id: String) => {
+    if (!id || status === "loading") {
+      return;
+    }
+    dispatch(deleteSnippet(Number(id), "group"));
+    dispatch(setDeleteSnippetStatus("idle"));
+  };
+
   return (
     <div className="bg-[#000d2a] min-h-screen flex flex-col">
       <Navbar />
@@ -114,6 +124,7 @@ const PracticePage: React.FC = () => {
               key={snippet.id}
               snippet={snippet}
               onToggleFavorite={handleAddFavorites}
+              onToggleDelete={handleDelete}
             />
           ))}
         </div>

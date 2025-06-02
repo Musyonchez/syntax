@@ -38,10 +38,9 @@ app.include_router(snippet.router, prefix="/snippets", tags=["Snippets"])
 app.include_router(user.router, prefix="/users", tags=["Users"])
 app.include_router(leaderboard.router, prefix="/leaderboard", tags=["Leaderboard"])
 
-# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "https://syntaxmemdev.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

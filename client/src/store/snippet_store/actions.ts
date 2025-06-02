@@ -8,6 +8,8 @@ export const ADD_SNIPPET = "ADD_SNIPPET";
 export const SET_ADD_SNIPPET_STATUS = "SET_ADD_SNIPPET_STATUS";
 export const ADD_FAVORITE = "ADD_FAVORITE";
 export const SET_ADD_FAVORITE_STATUS = "SET_ADD_FAVORITE_STATUS";
+export const DELETE_SNIPPET = "DELETE_SNIPPET";
+export const SET_DELETE_SNIPPET_STATUS = "SET_ADD_FAVORITE_STATUS";
 
 export interface SnippetPayload {
   title: string;
@@ -26,7 +28,7 @@ export const setSnippets = (snippets: any[]) => ({
 export const fetchSnippet = (
   id: string,
   ifmask: boolean = false,
-  difficulty?: number
+  difficulty?: number,
 ) => ({
   type: FETCH_SNIPPET,
   payload: { id, ifmask, difficulty },
@@ -38,7 +40,7 @@ export const setSnippet = (snippet: any[]) => ({
 });
 
 export const setFetchSnippetStatus = (
-  status: "idle" | "loading" | "success" | "error" | "not_found"
+  status: "idle" | "loading" | "success" | "error" | "not_found",
 ) => ({
   type: SET_FETCH_SNIPPET_STATUS,
   payload: status,
@@ -50,7 +52,7 @@ export const addSnippet = (payload: SnippetPayload) => ({
 });
 
 export const setAddSnippetStatus = (
-  status: "idle" | "loading" | "success" | "error"
+  status: "idle" | "loading" | "success" | "error",
 ) => ({
   type: SET_ADD_SNIPPET_STATUS,
   payload: status,
@@ -58,15 +60,30 @@ export const setAddSnippetStatus = (
 
 export const addFavorite = (
   id: number,
-  type: "single" | "group" = "single"
+  type: "single" | "group" = "single",
 ) => ({
   type: ADD_FAVORITE,
   payload: { id, type },
 });
 
 export const setAddFavoriteStatus = (
-  status: "idle" | "loading" | "success" | "error"
+  status: "idle" | "loading" | "success" | "error",
 ) => ({
   type: SET_ADD_FAVORITE_STATUS,
+  payload: status,
+});
+
+export const deleteSnippet = (
+  id: number,
+  type: "single" | "group" = "single",
+) => ({
+  type: DELETE_SNIPPET,
+  payload: { id, type },
+});
+
+export const setDeleteSnippetStatus = (
+  status: "idle" | "loading" | "success" | "error",
+) => ({
+  type: SET_DELETE_SNIPPET_STATUS,
   payload: status,
 });

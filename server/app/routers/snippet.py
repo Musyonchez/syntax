@@ -1,15 +1,15 @@
-import strawberry
 from typing import List, Optional
-from sqlalchemy import text
-from app.masking import mask_code_content  # Adjust import based on your structure
 
+import strawberry
 
 # from app.models import Snippet
 from app.database import SessionLocal
+from app.masking import mask_code_content  # Adjust import based on your structure
+from fastapi import APIRouter
+from sqlalchemy import text
 
 # from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import APIRouter
 
 router = APIRouter()
 
@@ -65,15 +65,10 @@ class Query:
 
     @strawberry.field
     async def getSnippet(
-        self, 
-        id: str, 
-        ifmask: bool = False, 
-        difficulty: Optional[int] = None
+        self, id: str, ifmask: bool = False, difficulty: Optional[int] = None
     ) -> Optional[SnippetType]:
-        print(id,ifmask,difficulty)
+        print(id, ifmask, difficulty)
         # Enforce rule: ifmask is True, difficulty must be provided
-        if ifmask and difficulty is None:
-            raise ValueError("Difficulty must be provided if ifmask is True.")
 
         async with SessionLocal() as session:
             result = await session.execute(
@@ -98,7 +93,13 @@ class Query:
 
                 original_content = row[2]
                 language = row[3]
-                masked_content, answer = mask_code_content(original_content, language, difficulty)
+                if difficulty is not None:
+                    masked_content, answer = mask_code_content(
+                        original_content, language, difficulty
+                    )
+                    print(type(answer))  # should show <class 'list'>
+                else:
+                    raise ValueError("Difficulty must be provided if ifmask is True.")
 
                 return SnippetType(
                     id=row[0],
@@ -115,7 +116,6 @@ class Query:
         return None
 
 
-
 @strawberry.type
 class Mutation:
     @strawberry.mutation
@@ -126,7 +126,7 @@ class Mutation:
         language: str,
         created_at: str,
         user_id: str,
-    ) -> SnippetType:
+    ) -> SnippetSummaryType:
         async with SessionLocal() as session:
             # Insert the new snippet
             print(title, content)
@@ -152,18 +152,16 @@ class Mutation:
             await session.commit()
 
             row = result.fetchone()
-            # return SnippetType(id=row[0], title=row[1], content=row[2], language=row[3])
-
+            if not row:
+                raise ValueError("Snippet not found")
             return SnippetSummaryType(
                 id=row[0],
             )
-    
-
 
     @strawberry.mutation
     async def add_favorite(self, id: int, type: str = "single") -> List[SnippetType]:
         async with SessionLocal() as session:
-            print(id,type)
+            print(id, type)
             # Fetch current favorite value
             result = await session.execute(
                 text("SELECT favorite FROM snippets WHERE id = :id"),
@@ -186,7 +184,73 @@ class Mutation:
             # Decide what to return
             if type == "group":
                 result = await session.execute(
-                    text("SELECT id, title, content, language, created_at, user_id, favorite, solveCount FROM snippets")
+                    text(
+                        "SELECT id, title, content, language, created_at, user_id, favorite, solveCount FROM snippets"
+                    )
+                )
+                rows = result.fetchall()
+                if not row:
+                    raise ValueError("Snippet not found")
+                return [
+                    SnippetType(
+                        id=row[0],
+                        title=row[1],
+                        content=row[2],
+                        language=row[3],
+                        created_at=row[4],
+                        user_id=row[5],
+                        favorite=row[6],
+                        solveCount=row[7],
+                    )
+                    for row in rows
+                ]
+            else:  # type == "single"
+                result = await session.execute(
+                    text(
+                        "SELECT id, title, content, language, created_at, user_id, favorite, solveCount FROM snippets WHERE id = :id"
+                    ),
+                    {"id": id},
+                )
+                row = result.fetchone()
+                if not row:
+                    raise ValueError("Snippet not found")
+                return [
+                    SnippetType(
+                        id=row[0],
+                        title=row[1],
+                        content=row[2],
+                        language=row[3],
+                        created_at=row[4],
+                        user_id=row[5],
+                        favorite=row[6],
+                        solveCount=row[7],
+                    )
+                ]
+
+    @strawberry.mutation
+    async def delete_snippet(self, id: int, type: str = "group") -> List[SnippetType]:
+        async with SessionLocal() as session:
+            print(id, type)
+            result = await session.execute(
+                text("Select 1 FROM snippets WHERE id = :id"),
+                {"id": id},
+            )
+            exists = result.scalar()
+            if not exists:
+                raise ValueError("Snippet not found")
+
+            await session.execute(
+                text("DELETE FROM snippets WHERE id = :id"),
+                {"id": id},
+            )
+
+            await session.commit()
+            # Decide what to return
+            if type == "group":
+                result = await session.execute(
+                    text(
+                        "SELECT id, title, content, language, created_at, user_id, favorite, solveCount FROM snippets"
+                    )
                 )
                 rows = result.fetchall()
                 return [
@@ -204,10 +268,14 @@ class Mutation:
                 ]
             else:  # type == "single"
                 result = await session.execute(
-                    text("SELECT id, title, content, language, created_at, user_id, favorite, solveCount FROM snippets WHERE id = :id"),
+                    text(
+                        "SELECT id, title, content, language, created_at, user_id, favorite, solveCount FROM snippets WHERE id = :id"
+                    ),
                     {"id": id},
                 )
                 row = result.fetchone()
+                if not row:
+                    raise ValueError("Snippet not found")
                 return [
                     SnippetType(
                         id=row[0],
