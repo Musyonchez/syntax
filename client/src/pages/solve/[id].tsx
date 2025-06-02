@@ -145,6 +145,7 @@ const SolvePage: React.FC = () => {
     if (!snippet?.answer && !snippet?.language) {
       return;
     }
+
     if (!userInputs.some((input) => input.trim() !== "")) {
       alert("You have to fill at least one blank");
       return; // Stop the submission or scoring process here

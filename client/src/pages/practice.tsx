@@ -6,7 +6,9 @@ import Footer from "@/components/Footer";
 import {
   addFavorite,
   setAddFavoriteStatus,
+  setDeleteSnippetStatus,
   fetchSnippets,
+  deleteSnippet,
 } from "@/store/snippet_store/actions";
 import SnippetCard from "@/components/snippets/SnippetCard";
 import SnippetFilters from "@/components/snippets/SnippetFilters";
@@ -91,7 +93,13 @@ const PracticePage: React.FC = () => {
       return;
     }
     dispatch(addFavorite(Number(id), "group"));
-    dispatch(setAddFavoriteStatus("idle"));
+  };
+
+  const handleDelete = (id: string) => {
+    if (!id || status === "loading") {
+      return;
+    }
+    dispatch(deleteSnippet(Number(id), "group"));
   };
 
   return (
@@ -114,6 +122,7 @@ const PracticePage: React.FC = () => {
               key={snippet.id}
               snippet={snippet}
               onToggleFavorite={handleAddFavorites}
+              onToggleDelete={handleDelete}
             />
           ))}
         </div>

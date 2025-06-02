@@ -1,8 +1,10 @@
 import random
-from pygments import lex
-from pygments.lexers import PythonLexer, JavascriptLexer
-from pygments.token import Keyword, Punctuation, Operator, Name, Comment
+from typing import List, Tuple
 
+from pygments import lex
+from pygments.lexer import Lexer
+from pygments.lexers import JavascriptLexer, PythonLexer
+from pygments.token import Comment, Keyword, Name, Operator, Punctuation
 
 # Alternatives You might consider (if you want smarter control later):
 # Token importance weighting:
@@ -56,7 +58,9 @@ from pygments.token import Keyword, Punctuation, Operator, Name, Comment
 #         return masked_code
 
 
-def mask_code_content(code: str, language: str, difficulty: int = 5) -> str:
+def mask_code_content(
+    code: str, language: str, difficulty: int = 5
+) -> Tuple[str, List[str]]:
     """
     Masks language-specific tokens in code for user practice.
     Difficulty is an integer from 1 (easiest) to 10 (hardest).
@@ -74,7 +78,9 @@ def mask_code_content(code: str, language: str, difficulty: int = 5) -> str:
         raise ValueError("Unsupported language. Use 'python' or 'javascript'.")
 
 
-def mask_tokens_in_code(code, lexer, difficulty):
+def mask_tokens_in_code(
+    code: str, lexer: Lexer, difficulty: int
+) -> Tuple[str, List[str]]:
     masked_code = ""
     answers = []
     probability = difficulty / 10  # Convert difficulty to probability: 0.1–1.0
