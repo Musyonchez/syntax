@@ -9,7 +9,7 @@ export const SET_ADD_SNIPPET_STATUS = "SET_ADD_SNIPPET_STATUS";
 export const ADD_FAVORITE = "ADD_FAVORITE";
 export const SET_ADD_FAVORITE_STATUS = "SET_ADD_FAVORITE_STATUS";
 export const DELETE_SNIPPET = "DELETE_SNIPPET";
-export const SET_DELETE_SNIPPET_STATUS = "SET_ADD_FAVORITE_STATUS";
+export const SET_DELETE_SNIPPET_STATUS = "SET_DELETE_SNIPPET_STATUS";
 
 export interface SnippetPayload {
   title: string;

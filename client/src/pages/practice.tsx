@@ -93,15 +93,13 @@ const PracticePage: React.FC = () => {
       return;
     }
     dispatch(addFavorite(Number(id), "group"));
-    dispatch(setAddFavoriteStatus("idle"));
   };
 
-  const handleDelete = (id: String) => {
+  const handleDelete = (id: string) => {
     if (!id || status === "loading") {
       return;
     }
     dispatch(deleteSnippet(Number(id), "group"));
-    dispatch(setDeleteSnippetStatus("idle"));
   };
 
   return (
