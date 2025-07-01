@@ -1,4 +1,5 @@
 // src/pages/login.tsx
+import React from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -24,7 +25,7 @@ const LoginPage = () => {
       };
       dispatch(addUser(newUser));
     }
-  }, [session, dispatch]);
+  }, [session, dispatch, status]);
 
   useEffect(() => {
     if (status === "success") {
@@ -41,7 +42,8 @@ const LoginPage = () => {
             🌟 Welcome back, Coder
           </h1>
           <p className="text-lg text-gray-300">
-            The snippets' are lonely without you. Let's reconnect and build something legendary.
+            The snippets&apos; are lonely without you. Let&apos;s reconnect and
+            build something legendary.
           </p>
 
           <button
@@ -54,7 +56,9 @@ const LoginPage = () => {
           <div className="text-sm text-gray-400 space-y-1">
             {status === "loading" && <p>🔄 Setting things up for you...</p>}
             {status === "error" && (
-              <p className="text-red-400">⚠️ Something went wrong. Try again.</p>
+              <p className="text-red-400">
+                ⚠️ Something went wrong. Try again.
+              </p>
             )}
             {status === "success" && (
               <p className="text-green-400">✅ User added! Redirecting...</p>

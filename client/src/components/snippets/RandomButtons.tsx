@@ -1,3 +1,5 @@
+import React from "react";
+
 interface RandomButtonsProps {
   onOpenRandom: (type: "all" | "favorites" | "frequent") => void;
 }
@@ -28,4 +30,3 @@ const RandomButtons: React.FC<RandomButtonsProps> = ({ onOpenRandom }) => {
 };
 
 export default RandomButtons;
-

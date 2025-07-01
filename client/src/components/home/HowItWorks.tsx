@@ -1,3 +1,5 @@
+import React from "react";
+
 // components/home/HowItWorks.tsx
 const HowItWorks = () => (
   <section className="py-20 px-6">
@@ -37,4 +39,3 @@ const HowItWorks = () => (
 );
 
 export default HowItWorks;
-

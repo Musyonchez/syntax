@@ -1,3 +1,4 @@
+import React from "react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store";
@@ -12,12 +13,19 @@ import LeaderboardStatus from "@/components/leaderboard/Status";
 import LeaderboardEntries from "@/components/leaderboard/Entries";
 
 const VALID_LANGUAGES = ["Python", "Javascript"];
-const VALID_TIME_CATEGORIES = ["daily", "weekly", "monthly", "half-yearly", "yearly", "all-time"];
+const VALID_TIME_CATEGORIES = [
+  "daily",
+  "weekly",
+  "monthly",
+  "half-yearly",
+  "yearly",
+  "all-time",
+];
 
 export default function LeaderboardPage() {
   const dispatch = useDispatch();
   const { leaderboard, fetchLeaderboardStatus } = useSelector(
-    (state: RootState) => state.leaderboard
+    (state: RootState) => state.leaderboard,
   );
 
   const [selectedTime, setSelectedTime] = useState("daily");
@@ -53,7 +61,8 @@ export default function LeaderboardPage() {
           Current Category:{" "}
           <span className="text-white font-semibold">
             🏆 {selectedTime.charAt(0).toUpperCase() + selectedTime.slice(1)}{" "}
-            {selectedLanguage.charAt(0).toUpperCase() + selectedLanguage.slice(1)}
+            {selectedLanguage.charAt(0).toUpperCase() +
+              selectedLanguage.slice(1)}
           </span>
         </p>
 

@@ -1,3 +1,5 @@
+import React from "react";
+
 // components/home/LeaderboardCTA.tsx
 
 import Link from "next/link";

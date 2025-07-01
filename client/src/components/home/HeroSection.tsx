@@ -1,3 +1,5 @@
+import React from "react";
+
 // components/home/HeroSection.tsx
 
 import Link from "next/link";

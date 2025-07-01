@@ -1,3 +1,5 @@
+import React from "react";
+
 interface SnippetFiltersProps {
   search: string;
   setSearch: (value: string) => void;
@@ -39,4 +41,3 @@ const SnippetFilters: React.FC<SnippetFiltersProps> = ({
 };
 
 export default SnippetFilters;
-

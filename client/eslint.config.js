@@ -3,6 +3,7 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
+// @ts-expect-error: no type definitions for this ESLint plugin
 import pluginNext from "@next/eslint-plugin-next";
 
 export default [
@@ -27,13 +28,10 @@ export default [
       "@next/next": pluginNext,
     },
     rules: {
-      // React rules
       ...pluginReact.configs.recommended.rules,
-      // React Hooks rules
       ...pluginReactHooks.configs.recommended.rules,
-      // Next.js rules
       ...pluginNext.configs.recommended.rules,
-      // You can override or add custom rules here
+      "react/react-in-jsx-scope": "off",
     },
   },
 ];

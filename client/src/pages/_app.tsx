@@ -1,3 +1,5 @@
+import React from "react";
+
 // src/pages/_app.tsx
 
 import { SessionProvider } from "next-auth/react";
@@ -17,8 +19,8 @@ function MyApp({ Component, pageProps }: AppProps) {
         <Provider store={store}>
           <>
             <Component {...pageProps} />
-            <Toaster 
-              position="top-right" 
+            <Toaster
+              position="top-right"
               toastOptions={{
                 style: {
                   background: "#333",

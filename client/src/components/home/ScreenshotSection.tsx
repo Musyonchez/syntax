@@ -1,3 +1,5 @@
+import React from "react";
+
 // components/home/ScreenshotSection.tsx
 
 import Image from "next/image";

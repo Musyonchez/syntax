@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Logo from "../../public/images/logo.png";
 import { useRouter } from "next/router";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 const Navbar = () => {
   const router = useRouter();

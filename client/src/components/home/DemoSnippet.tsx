@@ -1,3 +1,5 @@
+import React from "react";
+
 // components/home/DemoSnippet.tsx
 
 const DemoSnippet = () => (
