@@ -7,3 +7,4 @@ python-multipart==0.*
 pydantic==2.*
 email-validator==2.*
 python-dotenv==1.*
+a2wsgi==1.*

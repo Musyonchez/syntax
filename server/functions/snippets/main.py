@@ -10,6 +10,8 @@ from typing import Optional, Dict, Any, List
 from bson import ObjectId
 import sys
 import os
+from a2wsgi import ASGIMiddleware
+
 
 # Add shared modules to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
@@ -47,7 +49,7 @@ class CreateSnippetRequest(BaseModel):
     """Create new snippet request"""
     title: str = Field(..., min_length=1, max_length=100)
     content: str = Field(..., min_length=10, max_length=10000)
-    language: str = Field(..., regex="^(python|javascript)$")
+    language: str = Field(..., pattern="^(python|javascript)$")
     difficulty: int = Field(..., ge=1, le=10)
     is_public: bool = False
 
@@ -56,14 +58,14 @@ class SubmitSnippetRequest(BaseModel):
     """Submit snippet for review request"""
     title: str = Field(..., min_length=1, max_length=100)
     content: str = Field(..., min_length=10, max_length=10000)
-    language: str = Field(..., regex="^(python|javascript)$")
+    language: str = Field(..., pattern="^(python|javascript)$")
     difficulty: int = Field(..., ge=1, le=10)
     description: str = Field("", max_length=500)
 
 
 class ReviewSnippetRequest(BaseModel):
     """Admin review snippet request"""
-    action: str = Field(..., regex="^(approve|reject)$")
+    action: str = Field(..., pattern="^(approve|reject)$")
     review_notes: str = Field("", max_length=500)
 
 
@@ -629,4 +631,4 @@ async def review_snippet_submission(
 @functions_framework.http
 def main(request):
     """Cloud Function entry point"""
-    return app(request.environ, lambda status, headers: None)
+    return ASGIMiddleware(app)

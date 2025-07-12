@@ -10,6 +10,8 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional, Dict, Any
 import sys
 import os
+from a2wsgi import ASGIMiddleware
+
 
 # Add shared modules to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
@@ -276,4 +278,4 @@ async def delete_user_account(user_data: Dict[str, Any] = Depends(verify_token))
 @functions_framework.http
 def main(request):
     """Cloud Function entry point"""
-    return app(request.environ, lambda status, headers: None)
+    return ASGIMiddleware(app)
