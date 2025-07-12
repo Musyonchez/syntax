@@ -10,10 +10,13 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional, Dict, Any
 from .database import get_users_collection
 
-# JWT configuration
-JWT_SECRET = os.getenv("JWT_SECRET", "your-super-secret-jwt-key-change-in-production")
-JWT_ALGORITHM = "HS256"
-JWT_EXPIRATION_HOURS = 24 * 30  # 30 days
+# Import configuration
+from .config import config
+
+# JWT configuration from config
+JWT_SECRET = config.JWT_SECRET
+JWT_ALGORITHM = config.JWT_ALGORITHM
+JWT_EXPIRATION_HOURS = config.JWT_EXPIRATION_HOURS
 
 security = HTTPBearer()
 
