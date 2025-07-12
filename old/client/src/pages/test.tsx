@@ -17,7 +17,7 @@ const SolvePage: React.FC = () => {
 
   const snippet = useSelector((state: RootState) => state.snippet.snippet);
   const status = useSelector(
-    (state: RootState) => state.snippet.fetchSnippetStatus
+    (state: RootState) => state.snippet.fetchSnippetStatus,
   );
 
   const [userInputs, setUserInputs] = useState<string[]>([]);
@@ -84,7 +84,7 @@ const SolvePage: React.FC = () => {
       const userAns = userInputs[i] || "";
       const similarity = stringSimilarity.compareTwoStrings(
         userAns.trim().toLowerCase(),
-        correctAns.trim().toLowerCase()
+        correctAns.trim().toLowerCase(),
       );
       return similarity >= threshold;
     });
