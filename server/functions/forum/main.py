@@ -10,6 +10,8 @@ from typing import Optional, Dict, Any, List
 from bson import ObjectId
 import sys
 import os
+from a2wsgi import ASGIMiddleware
+
 
 # Add shared modules to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
@@ -46,7 +48,7 @@ class CreatePostRequest(BaseModel):
     """Create forum post request (dev only)"""
     title: str = Field(..., min_length=5, max_length=200)
     content: str = Field(..., min_length=10, max_length=5000)
-    type: str = Field(..., regex="^(announcement|question|update)$")
+    type: str = Field(..., pattern="^(announcement|question|update)$")
     is_pinned: bool = False
 
 
@@ -60,8 +62,8 @@ class CreateCommentRequest(BaseModel):
 class VoteRequest(BaseModel):
     """Vote request"""
     target_id: str  # Post or comment ID
-    target_type: str = Field(..., regex="^(post|comment)$")
-    vote_type: str = Field(..., regex="^(up|down)$")
+    target_type: str = Field(..., pattern="^(post|comment)$")
+    vote_type: str = Field(..., pattern="^(up|down)$")
 
 
 class ForumPostResponse(BaseModel):
@@ -109,7 +111,7 @@ async def health_check():
 
 @app.get("/posts")
 async def get_forum_posts(
-    type_filter: Optional[str] = Query(None, regex="^(announcement|question|update)$"),
+    type_filter: Optional[str] = Query(None, pattern="^(announcement|question|update)$"),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=50),
     user_data: Optional[Dict[str, Any]] = Depends(optional_auth)
@@ -317,7 +319,7 @@ async def get_forum_post(
 @app.get("/posts/{post_id}/comments")
 async def get_post_comments(
     post_id: str,
-    sort_by: str = Query("score", regex="^(score|date)$"),
+    sort_by: str = Query("score", pattern="^(score|date)$"),
     user_data: Optional[Dict[str, Any]] = Depends(optional_auth)
 ):
     """
@@ -729,4 +731,4 @@ async def delete_forum_post(
 @functions_framework.http
 def main(request):
     """Cloud Function entry point"""
-    return app(request.environ, lambda status, headers: None)
+    return ASGIMiddleware(app)
