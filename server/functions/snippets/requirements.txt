@@ -6,3 +6,4 @@ PyJWT==2.*
 python-multipart==0.*
 pydantic==2.*
 pygments==2.*
+python-dotenv==1.*

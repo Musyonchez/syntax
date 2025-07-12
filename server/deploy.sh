@@ -94,7 +94,13 @@ deploy_function() {
         return 1
     fi
     
-    # Deploy function
+    # Check if .env file exists
+    if [[ ! -f ".env" ]]; then
+        echo -e "${RED}❌ .env file not found. Please create it from .env.example${NC}"
+        return 1
+    fi
+    
+    # Deploy function with environment variables from .env file
     gcloud functions deploy $func_name \
         --runtime $RUNTIME \
         --trigger-http \
@@ -104,7 +110,7 @@ deploy_function() {
         --region=$REGION \
         --memory=512MB \
         --timeout=540s \
-        --set-secrets='MONGODB_URI=mongodb-uri:latest,JWT_SECRET=jwt-secret:latest' \
+        --env-vars-file=.env \
         --quiet
     
     if [[ $? -eq 0 ]]; then
@@ -163,25 +169,38 @@ deploy_all_functions() {
     fi
 }
 
-# Create secrets if they don't exist
-create_secrets() {
-    echo -e "${BLUE}🔐 Checking secrets...${NC}"
+# Validate environment file
+validate_env() {
+    echo -e "${BLUE}🔐 Validating environment variables...${NC}"
     
-    # Check MongoDB URI secret
-    if ! gcloud secrets describe mongodb-uri &> /dev/null; then
-        echo -e "${YELLOW}Creating mongodb-uri secret...${NC}"
-        echo "mongodb+srv://musyonchez:2qVvUWngpEiVajWV@cluster1.oa0hiaa.mongodb.net/syntaxmem?retryWrites=true&w=majority&appName=Cluster1" | \
-        gcloud secrets create mongodb-uri --data-file=-
+    if [[ ! -f ".env" ]]; then
+        echo -e "${RED}❌ .env file not found${NC}"
+        echo -e "${YELLOW}💡 Please copy .env.example to .env and fill in your values:${NC}"
+        echo "   cp .env.example .env"
+        echo "   # Then edit .env with your actual values"
+        return 1
     fi
     
-    # Check JWT secret
-    if ! gcloud secrets describe jwt-secret &> /dev/null; then
-        echo -e "${YELLOW}Creating jwt-secret...${NC}"
-        # Generate a random JWT secret
-        openssl rand -base64 32 | gcloud secrets create jwt-secret --data-file=-
+    # Check for required variables
+    local required_vars=("MONGODB_URI" "JWT_SECRET" "DATABASE_NAME")
+    local missing_vars=()
+    
+    for var in "${required_vars[@]}"; do
+        if ! grep -q "^${var}=" .env || grep -q "^${var}=$" .env || grep -q "^${var}=your-" .env; then
+            missing_vars+=("$var")
+        fi
+    done
+    
+    if [[ ${#missing_vars[@]} -gt 0 ]]; then
+        echo -e "${RED}❌ Missing or incomplete environment variables:${NC}"
+        for var in "${missing_vars[@]}"; do
+            echo "   - $var"
+        done
+        echo -e "${YELLOW}💡 Please update your .env file with actual values${NC}"
+        return 1
     fi
     
-    echo -e "${GREEN}✅ Secrets configured${NC}"
+    echo -e "${GREEN}✅ Environment variables validated${NC}"
 }
 
 # List deployed functions
@@ -201,7 +220,7 @@ main() {
     check_gcloud
     set_project
     enable_apis
-    create_secrets
+    validate_env
     
     echo ""
     echo "======================================"
@@ -227,10 +246,10 @@ case "${1:-}" in
     "list")
         list_functions
         ;;
-    "secrets")
+    "validate")
         check_gcloud
         set_project
-        create_secrets
+        validate_env
         ;;
     "single")
         if [[ -z "$2" || -z "$3" ]]; then
@@ -240,7 +259,7 @@ case "${1:-}" in
         fi
         check_gcloud
         set_project
-        create_secrets
+        validate_env
         deploy_function "$2" "$3"
         ;;
     *)

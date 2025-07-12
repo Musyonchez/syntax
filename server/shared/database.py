@@ -5,10 +5,14 @@ import os
 import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Optional
+from dotenv import load_dotenv
 
-# MongoDB connection string
-MONGODB_URI = "mongodb+srv://musyonchez:2qVvUWngpEiVajWV@cluster1.oa0hiaa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1"
-DATABASE_NAME = "syntaxmem"
+# Import configuration
+from .config import config
+
+# MongoDB configuration from config
+MONGODB_URI = config.MONGODB_URI
+DATABASE_NAME = config.DATABASE_NAME
 
 # Global client instance
 _client: Optional[AsyncIOMotorClient] = None

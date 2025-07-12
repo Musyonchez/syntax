@@ -20,10 +20,13 @@ from shared.utils import generate_id, current_timestamp, create_response, create
 
 app = FastAPI(title="SyntaxMem Auth Service")
 
+# Import configuration
+from shared.config import config
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://syntaxmem.dev", "http://localhost:3000"],
+    allow_origins=config.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
