@@ -1,0 +1,23 @@
+# SyntaxMem Server Dependencies
+# Core framework
+functions-framework==3.*
+fastapi==0.104.*
+
+# Database
+motor==3.*
+pymongo==4.*
+
+# Authentication
+PyJWT==2.*
+python-multipart==0.*
+
+# Code processing
+pygments==2.*
+
+# Utilities
+python-dotenv==1.*
+pydantic==2.*
+
+# Development
+pytest==7.*
+pytest-asyncio==0.*
