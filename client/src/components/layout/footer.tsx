@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { motion } from "framer-motion"
-import { Code, Heart, Github, Twitter, Mail } from "lucide-react"
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Code, Heart, Github, Twitter, Mail } from "lucide-react";
 
 const footerLinks = {
   Product: [
@@ -28,17 +28,17 @@ const footerLinks = {
     { label: "Terms of Service", href: "/terms", external: false },
     { label: "Cookie Policy", href: "/cookies", external: false },
   ],
-}
+};
 
 const socialLinks = [
   { icon: Github, href: "https://github.com/syntaxmem", label: "GitHub" },
   { icon: Twitter, href: "#", label: "Twitter" },
   { icon: Mail, href: "mailto:hello@syntaxmem.dev", label: "Email" },
-]
+];
 
 export function Footer() {
   return (
-    <footer className="border-t bg-background">
+    <footer className="border-t bg-background w-full flex justify-center">
       <div className="container py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
           {/* Brand Column */}
@@ -50,12 +50,12 @@ export function Footer() {
               <span className="text-xl font-bold">SyntaxMem</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
-              Master programming through interactive code completion challenges. 
+              Master programming through interactive code completion challenges.
               Practice, compete, and improve your coding skills.
             </p>
             <div className="mt-6 flex space-x-4">
               {socialLinks.map((social) => {
-                const Icon = social.icon
+                const Icon = social.icon;
                 return (
                   <motion.a
                     key={social.label}
@@ -69,7 +69,7 @@ export function Footer() {
                     <Icon className="h-4 w-4" />
                     <span className="sr-only">{social.label}</span>
                   </motion.a>
-                )
+                );
               })}
             </div>
           </div>
@@ -114,5 +114,6 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }
+
