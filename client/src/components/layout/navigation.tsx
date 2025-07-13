@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Moon,
   Sun,
@@ -43,6 +43,11 @@ export function Navigation() {
   const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -119,19 +124,23 @@ export function Navigation() {
             onClick={toggleTheme}
             className="hidden md:flex h-9 w-9"
           >
-            <motion.div
-              key={theme}
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              exit={{ scale: 0, rotate: 180 }}
-              transition={{ duration: 0.2 }}
-            >
-              {theme === "dark" ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-            </motion.div>
+            {mounted ? (
+              <motion.div
+                key={theme}
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                exit={{ scale: 0, rotate: 180 }}
+                transition={{ duration: 0.2 }}
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+              </motion.div>
+            ) : (
+              <div className="h-4 w-4" />
+            )}
             <span className="sr-only">Toggle theme</span>
           </Button>
 
@@ -311,12 +320,21 @@ export function Navigation() {
                     onClick={toggleTheme}
                     className="w-full justify-start space-x-3 px-3 py-3 h-auto mb-2"
                   >
-                    {theme === "dark" ? (
-                      <Sun className="h-5 w-5" />
+                    {mounted ? (
+                      <>
+                        {theme === "dark" ? (
+                          <Sun className="h-5 w-5" />
+                        ) : (
+                          <Moon className="h-5 w-5" />
+                        )}
+                        <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                      </>
                     ) : (
-                      <Moon className="h-5 w-5" />
+                      <>
+                        <div className="h-5 w-5" />
+                        <span>Toggle Theme</span>
+                      </>
                     )}
-                    <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
                   </Button>
                 </motion.div>
 
