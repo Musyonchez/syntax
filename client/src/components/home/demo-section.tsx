@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { useState } from "react"
-import { Play, CheckCircle } from "lucide-react"
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { Play, CheckCircle } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const demoSnippet = {
   language: "Python",
@@ -20,58 +20,58 @@ numbers = [x**2 for x in _____(11) if x __ 2 == 0]
 print(_______)`,
   blanks: ["range", "%", "numbers"],
   currentBlanks: ["", "", ""],
-}
+};
 
 export function DemoSection() {
-  const [currentBlankIndex, setCurrentBlankIndex] = useState(0)
-  const [userInputs, setUserInputs] = useState(["", "", ""])
-  const [showResult, setShowResult] = useState(false)
-  const [isDemo, setIsDemo] = useState(false)
+  const [currentBlankIndex, setCurrentBlankIndex] = useState(0);
+  const [userInputs, setUserInputs] = useState(["", "", ""]);
+  const [showResult, setShowResult] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
 
   const startDemo = () => {
-    setIsDemo(true)
-    setCurrentBlankIndex(0)
-    setUserInputs(["", "", ""])
-    setShowResult(false)
-    
+    setIsDemo(true);
+    setCurrentBlankIndex(0);
+    setUserInputs(["", "", ""]);
+    setShowResult(false);
+
     // Auto-fill demonstration
     const fillBlanks = async () => {
       for (let i = 0; i < demoSnippet.blanks.length; i++) {
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        setCurrentBlankIndex(i)
-        setUserInputs(prev => {
-          const newInputs = [...prev]
-          newInputs[i] = demoSnippet.blanks[i]
-          return newInputs
-        })
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        setCurrentBlankIndex(i);
+        setUserInputs((prev) => {
+          const newInputs = [...prev];
+          newInputs[i] = demoSnippet.blanks[i];
+          return newInputs;
+        });
       }
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setShowResult(true)
-    }
-    
-    fillBlanks()
-  }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setShowResult(true);
+    };
+
+    fillBlanks();
+  };
 
   const resetDemo = () => {
-    setIsDemo(false)
-    setCurrentBlankIndex(0)
-    setUserInputs(["", "", ""])
-    setShowResult(false)
-  }
+    setIsDemo(false);
+    setCurrentBlankIndex(0);
+    setUserInputs(["", "", ""]);
+    setShowResult(false);
+  };
 
   const renderCodeWithBlanks = () => {
-    const code = demoSnippet.maskedCode
-    let blankIndex = 0
-    
-    return code.split('_____').map((part, index) => {
-      if (index === 0) return part
-      
-      const currentInput = userInputs[blankIndex] || ""
-      const isCorrect = currentInput === demoSnippet.blanks[blankIndex]
-      const isCurrent = currentBlankIndex === blankIndex && isDemo
-      
-      blankIndex++
-      
+    const code = demoSnippet.maskedCode;
+    let blankIndex = 0;
+
+    return code.split("_____").map((part, index) => {
+      if (index === 0) return part;
+
+      const currentInput = userInputs[blankIndex] || "";
+      const isCorrect = currentInput === demoSnippet.blanks[blankIndex];
+      const isCurrent = currentBlankIndex === blankIndex && isDemo;
+
+      blankIndex++;
+
       return (
         <span key={index}>
           <span
@@ -79,19 +79,19 @@ export function DemoSection() {
               isCurrent
                 ? "border-primary bg-primary/10 animate-pulse"
                 : showResult
-                ? isCorrect
-                  ? "border-green-500 bg-green-500/10"
-                  : "border-red-500 bg-red-500/10"
-                : "border-muted bg-muted/50"
+                  ? isCorrect
+                    ? "border-green-500 bg-green-500/10"
+                    : "border-red-500 bg-red-500/10"
+                  : "border-muted bg-muted/50"
             }`}
           >
             {currentInput || (isCurrent ? "..." : "___")}
           </span>
           {part}
         </span>
-      )
-    })
-  }
+      );
+    });
+  };
 
   return (
     <section className="py-20 bg-muted/30">
@@ -107,7 +107,8 @@ export function DemoSection() {
               See It In Action
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Experience how SyntaxMem helps you learn through interactive code completion
+              Experience how SyntaxMem helps you learn through interactive code
+              completion
             </p>
           </motion.div>
 
@@ -119,29 +120,40 @@ export function DemoSection() {
             className="mt-12"
           >
             <Card className="mx-auto max-w-3xl">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <CardTitle className="text-xl">{demoSnippet.title}</CardTitle>
-                  <Badge variant="secondary">{demoSnippet.language}</Badge>
-                  <Badge variant="outline">
-                    Difficulty: {demoSnippet.difficulty}/10
-                  </Badge>
+              <CardHeader className="flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center max-sm:justify-center max-sm:w-full sm:gap-3">
+                  <CardTitle className="text-xl text-center sm:text-left">
+                    {demoSnippet.title}
+                  </CardTitle>
+                  <div className="flex items-center gap-2 max-sm:justify-center max-sm:w-full">
+                    <Badge variant="secondary">{demoSnippet.language}</Badge>
+                    <Badge variant="outline">
+                      Difficulty: {demoSnippet.difficulty}/10
+                    </Badge>
+                  </div>
                 </div>
                 {!isDemo ? (
-                  <Button onClick={startDemo} className="gap-2">
+                  <Button
+                    onClick={startDemo}
+                    className="gap-2 w-full sm:w-auto"
+                  >
                     <Play className="h-4 w-4" />
                     Try Demo
                   </Button>
                 ) : (
-                  <Button variant="outline" onClick={resetDemo}>
+                  <Button
+                    variant="outline"
+                    onClick={resetDemo}
+                    className="w-full sm:w-auto"
+                  >
                     Reset
                   </Button>
                 )}
               </CardHeader>
               <CardContent>
-                <div className="rounded-lg border bg-background p-6">
-                  <pre className="text-sm font-mono leading-relaxed">
-                    <code>{renderCodeWithBlanks()}</code>
+                <div className="rounded-lg border bg-background p-6 overflow-x-auto">
+                  <pre className="text-sm font-mono leading-relaxed whitespace-pre-wrap break-words min-w-0">
+                    <code className="block">{renderCodeWithBlanks()}</code>
                   </pre>
                 </div>
 
@@ -153,14 +165,17 @@ export function DemoSection() {
                   >
                     <div className="flex items-center gap-2 text-green-600 mb-3">
                       <CheckCircle className="h-5 w-5" />
-                      <span className="font-semibold">Perfect! Challenge Complete</span>
+                      <span className="font-semibold">
+                        Perfect! Challenge Complete
+                      </span>
                     </div>
                     <div className="text-sm text-muted-foreground">
                       <div className="mb-2">
                         <strong>Output:</strong> [0, 4, 16, 36, 64, 100]
                       </div>
                       <div>
-                        <strong>Score:</strong> 100/100 • <strong>Time:</strong> 2.3s • <strong>Accuracy:</strong> 100%
+                        <strong>Score:</strong> 100/100 • <strong>Time:</strong>{" "}
+                        2.3s • <strong>Accuracy:</strong> 100%
                       </div>
                     </div>
                   </motion.div>
@@ -215,5 +230,6 @@ export function DemoSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
+
