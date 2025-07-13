@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 export default function SignInPage() {
   return (
     <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-      <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
+      <div className="relative hidden h-full flex-col bg-muted p-10 text-muted-foreground lg:flex dark:border-r">
         <AnimatedLoader />
-        <div className="relative z-20 flex items-center text-lg font-medium">
+        <div className="relative z-20 flex items-center text-lg font-medium hover:bg-background/80 hover:backdrop-blur-sm transition-all duration-300 rounded-lg px-3 py-2 -mx-3 -my-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -29,7 +29,7 @@ export default function SignInPage() {
           SyntaxMem
         </div>
         <div className="relative z-20 mt-auto">
-          <blockquote className="space-y-2">
+          <blockquote className="space-y-2 hover:bg-background/80 hover:backdrop-blur-sm transition-all duration-300 rounded-lg px-4 py-3 -mx-4 -my-3">
             <p className="text-lg">
               &quot;SyntaxMem has completely transformed how I practice coding.
               The interactive challenges keep me engaged and the progress
