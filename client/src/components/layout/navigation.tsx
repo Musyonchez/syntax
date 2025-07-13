@@ -309,7 +309,7 @@ export function Navigation() {
                   <Button
                     variant="ghost"
                     onClick={toggleTheme}
-                    className="w-full justify-start space-x-3 px-3 py-3 h-auto"
+                    className="w-full justify-start space-x-3 px-3 py-3 h-auto mb-2"
                   >
                     {theme === "dark" ? (
                       <Sun className="h-5 w-5" />
