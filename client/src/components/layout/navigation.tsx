@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
@@ -63,7 +64,7 @@ export function Navigation() {
       animate={{ y: 0 }}
       className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex justify-center"
     >
-      <div className="container flex h-16 items-center justify-between px-4">
+      <div className=" lg:container flex max-lg:w-full h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
           <motion.div
@@ -71,15 +72,18 @@ export function Navigation() {
             whileTap={{ scale: 0.95 }}
             className="flex items-center space-x-2"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Code className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold">SyntaxMem</span>
+            <Image
+              src="/logo.png"
+              alt="SyntaxMem Logo"
+              width={120}
+              height={40}
+              className="h-10"
+            />
           </motion.div>
         </Link>
 
         {/* Navigation Menu */}
-        <nav className="hidden md:flex items-center space-x-6">
+        <nav className="hidden md:flex items-center space-x-4 lg:space-x-6">
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             const Icon = item.icon;
@@ -258,12 +262,13 @@ export function Navigation() {
             >
               {/* Mobile Menu Header */}
               <div className="flex items-center justify-between border-b px-6 py-4">
-                <div className="flex items-center space-x-2">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary">
-                    <Code className="h-4 w-4 text-primary-foreground" />
-                  </div>
-                  <span className="text-lg font-semibold">SyntaxMem</span>
-                </div>
+                <Image
+                  src="/logo.png"
+                  alt="SyntaxMem Logo"
+                  width={100}
+                  height={32}
+                  className="h-8"
+                />
                 <Button
                   variant="ghost"
                   size="icon"
@@ -327,7 +332,9 @@ export function Navigation() {
                         ) : (
                           <Moon className="h-5 w-5" />
                         )}
-                        <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                        <span>
+                          {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                        </span>
                       </>
                     ) : (
                       <>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Code, Heart, Github, Twitter, Mail } from "lucide-react";
 
@@ -40,13 +41,16 @@ export function Footer() {
   return (
     <footer className="border-t bg-background w-full flex justify-center">
       <div className="container py-12 px-4">
-        {/* Brand Section - Full width on sm-lg, part of grid on lg+ */}
+        {/* Brand Section - Full width on sm-lg */}
         <div className="mb-8 text-center lg:hidden">
-          <Link href="/" className="inline-flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Code className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold">SyntaxMem</span>
+          <Link href="/" className="inline-flex items-center justify-center">
+            <Image
+              src="/logo2.png"
+              alt="SyntaxMem Logo"
+              width={180}
+              height={40}
+              className="h-10"
+            />
           </Link>
           <p className="mt-4 text-sm text-muted-foreground max-w-md mx-auto">
             Master programming through interactive code completion challenges.
@@ -76,11 +80,14 @@ export function Footer() {
         <div className="grid gap-8 grid-cols-2 lg:grid-cols-5">
           {/* Brand Column - Only visible on lg+ */}
           <div className="hidden lg:block lg:col-span-1">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <Code className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold">SyntaxMem</span>
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/logo2.png"
+                alt="SyntaxMem Logo"
+                width={120}
+                height={40}
+                className="h-10"
+              />
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
               Master programming through interactive code completion challenges.
