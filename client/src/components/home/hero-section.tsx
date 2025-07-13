@@ -49,7 +49,7 @@ export function HeroSection() {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <Badge variant="secondary" className="px-4 py-2 text-sm">
+            <Badge variant="secondary" className="px-4 py-2 text-sm max-w-full whitespace-normal text-center">
               🎉 Now with Python, JavaScript, and more languages!
             </Badge>
           </motion.div>

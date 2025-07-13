@@ -1,10 +1,11 @@
-import { Metadata } from "next"
-import { SignInForm } from "@/components/auth/signin-form"
+import { Metadata } from "next";
+import { SignInForm } from "@/components/auth/signin-form";
 
 export const metadata: Metadata = {
   title: "Sign In",
-  description: "Sign in to your SyntaxMem account to start practicing and track your progress.",
-}
+  description:
+    "Sign in to your SyntaxMem account to start practicing and track your progress.",
+};
 
 export default function SignInPage() {
   return (
@@ -29,11 +30,13 @@ export default function SignInPage() {
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-lg">
-              &quot;SyntaxMem has completely transformed how I practice coding. 
-              The interactive challenges keep me engaged and the progress tracking 
-              motivates me to code every day.&quot;
+              &quot;SyntaxMem has completely transformed how I practice coding.
+              The interactive challenges keep me engaged and the progress
+              tracking motivates me to code every day.&quot;
             </p>
-            <footer className="text-sm opacity-80">Sofia Davis - Software Engineer</footer>
+            <footer className="text-sm opacity-80">
+              Sofia Davis - Software Engineer
+            </footer>
           </blockquote>
         </div>
       </div>
@@ -68,5 +71,6 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
+
