@@ -2,12 +2,13 @@
 
 export function AnimatedLoader() {
   return (
-    <div className="absolute inset-0 flex items-center justify-center">
+    <div className="absolute inset-0 flex items-center justify-center p-8">
       <svg
         viewBox="0 0 64 64"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="loader w-48 h-48"
+        className="loader w-full h-full max-w-full max-h-full"
+        preserveAspectRatio="xMidYMid meet"
       >
         <path
           pathLength="360"
@@ -72,7 +73,7 @@ export function AnimatedLoader() {
       </svg>
       <style jsx>{`
         .loader path {
-          stroke: currentColor;
+          stroke: var(--foreground);
           stroke-width: 0.6px;
           animation:
             dashArray 4s ease-in-out infinite,
