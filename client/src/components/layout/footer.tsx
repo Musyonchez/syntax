@@ -39,10 +39,43 @@ const socialLinks = [
 export function Footer() {
   return (
     <footer className="border-t bg-background w-full flex justify-center">
-      <div className="container py-12">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-5">
-          {/* Brand Column */}
-          <div className="lg:col-span-1">
+      <div className="container py-12 px-4">
+        {/* Brand Section - Full width on sm-lg, part of grid on lg+ */}
+        <div className="mb-8 text-center lg:hidden">
+          <Link href="/" className="inline-flex items-center space-x-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+              <Code className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <span className="text-xl font-bold">SyntaxMem</span>
+          </Link>
+          <p className="mt-4 text-sm text-muted-foreground max-w-md mx-auto">
+            Master programming through interactive code completion challenges.
+            Practice, compete, and improve your coding skills.
+          </p>
+          <div className="mt-6 flex space-x-4 justify-center">
+            {socialLinks.map((social) => {
+              const Icon = social.icon;
+              return (
+                <motion.a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="flex h-9 w-9 items-center justify-center rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="sr-only">{social.label}</span>
+                </motion.a>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="grid gap-8 grid-cols-2 lg:grid-cols-5">
+          {/* Brand Column - Only visible on lg+ */}
+          <div className="hidden lg:block lg:col-span-1">
             <Link href="/" className="flex items-center space-x-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                 <Code className="h-5 w-5 text-primary-foreground" />
@@ -116,4 +149,3 @@ export function Footer() {
     </footer>
   );
 }
-
