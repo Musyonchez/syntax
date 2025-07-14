@@ -13,6 +13,9 @@ from typing import Optional, Dict, Any
 import sys
 import os
 from a2wsgi import ASGIMiddleware
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token
+import requests
 
 
 # Add shared modules to path
@@ -37,6 +40,55 @@ app.add_middleware(
 )
 
 security = HTTPBearer()
+
+
+async def verify_google_token(token: str) -> Optional[Dict[str, Any]]:
+    """
+    Verify Google OAuth token and return user info
+    Returns None if token is invalid
+    """
+    try:
+        print(f"DEBUG: Verifying Google token: {token[:20]}...")
+        
+        # Try to verify as ID token first
+        try:
+            # Verify the ID token against Google's servers
+            idinfo = id_token.verify_oauth2_token(
+                token, 
+                google_requests.Request(), 
+                config.GOOGLE_CLIENT_ID
+            )
+            
+            # Check if token is for our app
+            if idinfo['aud'] != config.GOOGLE_CLIENT_ID:
+                print("DEBUG: Token audience mismatch")
+                return None
+                
+            print(f"DEBUG: ID token verified successfully for user: {idinfo.get('email')}")
+            return idinfo
+            
+        except ValueError as e:
+            print(f"DEBUG: ID token verification failed: {e}")
+            # If ID token fails, try as access token
+            
+        # Verify access token by calling Google's userinfo endpoint
+        response = requests.get(
+            f'https://www.googleapis.com/oauth2/v1/userinfo',
+            headers={'Authorization': f'Bearer {token}'},
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            userinfo = response.json()
+            print(f"DEBUG: Access token verified successfully for user: {userinfo.get('email')}")
+            return userinfo
+        else:
+            print(f"DEBUG: Access token verification failed: {response.status_code}")
+            return None
+            
+    except Exception as e:
+        print(f"DEBUG: Token verification error: {e}")
+        return None
 
 
 # Add validation error handler
@@ -96,6 +148,35 @@ async def google_auth(auth_request: GoogleAuthRequest):
     try:
         print(f"DEBUG: Received auth request: {auth_request}")
         print(f"DEBUG: Request data - google_id: {auth_request.google_id}, email: {auth_request.email}")
+        
+        # Verify Google token with Google's servers
+        google_user_info = await verify_google_token(auth_request.google_token)
+        if not google_user_info:
+            print("DEBUG: Google token verification failed")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid Google token"
+            )
+        
+        # Verify that the token data matches the request data
+        google_email = google_user_info.get('email')
+        google_id = google_user_info.get('sub') or google_user_info.get('id')
+        
+        if google_email != auth_request.email:
+            print(f"DEBUG: Email mismatch - Token: {google_email}, Request: {auth_request.email}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email mismatch between token and request"
+            )
+            
+        if google_id != auth_request.google_id:
+            print(f"DEBUG: Google ID mismatch - Token: {google_id}, Request: {auth_request.google_id}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Google ID mismatch between token and request"
+            )
+        
+        print("DEBUG: Google token verification successful - data matches")
         
         # Create a fresh database connection for this request to avoid event loop issues
         from motor.motor_asyncio import AsyncIOMotorClient
