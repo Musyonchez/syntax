@@ -22,8 +22,8 @@ SyntaxMem is an interactive coding practice platform where users complete masked
 
 2. **Authentication System**
    - NextAuth.js v5 with Google OAuth
-   - MongoDB adapter for session storage
-   - JWT fallback when MongoDB unavailable
+   - JWT-based session management
+   - Backend user data sync via Python API
    - Protected routes and user management
 
 3. **State Management**
@@ -82,7 +82,7 @@ src/
 ```
 
 #### **Dependencies Installed:**
-- next-auth@beta, @auth/mongodb-adapter, mongodb
+- next-auth@beta (JWT-only, no database adapter)
 - framer-motion, @tanstack/react-query, zustand
 - @codemirror/* (for future code editor)
 - shadcn/ui components with Radix UI
@@ -269,10 +269,11 @@ src/
 
 ## 🚨 **Important Notes**
 - **Backend dependency**: This client connects to the Python serverless backend in `/server/`
-- **Environment setup**: Copy `.env.example` to `.env.local` and configure
-- **MongoDB requirement**: NextAuth needs MongoDB for session storage
+- **Environment setup**: Copy `.env.example` to `.env` and configure
+- **Authentication**: JWT-based sessions with Google OAuth (no database required)
 - **Google OAuth**: Requires Google Client ID/Secret for authentication
 - **API integration**: All endpoints point to localhost backend services
+- **Data storage**: User data stored in MongoDB via Python backend, not NextAuth
 
 ---
 
