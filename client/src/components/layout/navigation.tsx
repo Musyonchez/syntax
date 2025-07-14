@@ -201,7 +201,7 @@ export function Navigation() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={() => signOut()}
+                  onClick={() => signOut({ callbackUrl: "/auth/signin" })}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign Out
@@ -403,7 +403,7 @@ export function Navigation() {
                     <Button
                       variant="ghost"
                       onClick={() => {
-                        signOut();
+                        signOut({ callbackUrl: "/auth/signin" });
                         closeMobileMenu();
                       }}
                       className="w-full justify-start space-x-3 px-3 py-3 h-auto text-muted-foreground hover:text-foreground"

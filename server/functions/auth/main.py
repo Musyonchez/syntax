@@ -3,10 +3,12 @@ Authentication Cloud Function for SyntaxMem
 Handles user authentication, registration, and token verification
 """
 import functions_framework
-from fastapi import FastAPI, HTTPException, status, Depends
+from fastapi import FastAPI, HTTPException, status, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, EmailStr
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, EmailStr, ValidationError
 from typing import Optional, Dict, Any
 import sys
 import os
@@ -35,6 +37,18 @@ app.add_middleware(
 )
 
 security = HTTPBearer()
+
+
+# Add validation error handler
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    body = await request.body()
+    print(f"DEBUG: Validation error occurred: {exc}")
+    print(f"DEBUG: Request body: {body}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors(), "body": body.decode() if body else ""}
+    )
 
 
 # Request/Response models
@@ -78,8 +92,16 @@ async def google_auth(auth_request: GoogleAuthRequest):
     Authenticate user with Google OAuth
     Creates new user if doesn't exist, returns JWT token
     """
+    print(f"DEBUG: Starting google_auth endpoint")
     try:
-        users_collection = await get_users_collection()
+        print(f"DEBUG: Received auth request: {auth_request}")
+        print(f"DEBUG: Request data - google_id: {auth_request.google_id}, email: {auth_request.email}")
+        
+        # Create a fresh database connection for this request to avoid event loop issues
+        from motor.motor_asyncio import AsyncIOMotorClient
+        client = AsyncIOMotorClient(config.MONGODB_URI)
+        database = client[config.DATABASE_NAME]
+        users_collection = database.users
         
         # Check if user already exists
         existing_user = await users_collection.find_one({
@@ -152,6 +174,9 @@ async def google_auth(auth_request: GoogleAuthRequest):
             "stats": user["stats"]
         }
         
+        # Close the database connection
+        client.close()
+        
         return {
             "token": token,
             "user": user_data,
@@ -159,6 +184,14 @@ async def google_auth(auth_request: GoogleAuthRequest):
         }
         
     except Exception as e:
+        # Close the database connection if it was created
+        try:
+            client.close()
+        except:
+            pass
+        print(f"DEBUG: Exception in google_auth: {type(e).__name__}: {str(e)}")
+        import traceback
+        print(f"DEBUG: Traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Authentication failed: {str(e)}"
