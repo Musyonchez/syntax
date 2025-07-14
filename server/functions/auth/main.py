@@ -48,8 +48,6 @@ async def verify_google_token(token: str) -> Optional[Dict[str, Any]]:
     Returns None if token is invalid
     """
     try:
-        print(f"DEBUG: Verifying Google token: {token[:20]}...")
-        
         # Try to verify as ID token first
         try:
             # Verify the ID token against Google's servers
@@ -61,15 +59,13 @@ async def verify_google_token(token: str) -> Optional[Dict[str, Any]]:
             
             # Check if token is for our app
             if idinfo['aud'] != config.GOOGLE_CLIENT_ID:
-                print("DEBUG: Token audience mismatch")
                 return None
                 
-            print(f"DEBUG: ID token verified successfully for user: {idinfo.get('email')}")
             return idinfo
             
-        except ValueError as e:
-            print(f"DEBUG: ID token verification failed: {e}")
+        except ValueError:
             # If ID token fails, try as access token
+            pass
             
         # Verify access token by calling Google's userinfo endpoint
         response = requests.get(
@@ -80,26 +76,20 @@ async def verify_google_token(token: str) -> Optional[Dict[str, Any]]:
         
         if response.status_code == 200:
             userinfo = response.json()
-            print(f"DEBUG: Access token verified successfully for user: {userinfo.get('email')}")
             return userinfo
         else:
-            print(f"DEBUG: Access token verification failed: {response.status_code}")
             return None
             
-    except Exception as e:
-        print(f"DEBUG: Token verification error: {e}")
+    except Exception:
         return None
 
 
 # Add validation error handler
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    body = await request.body()
-    print(f"DEBUG: Validation error occurred: {exc}")
-    print(f"DEBUG: Request body: {body}")
     return JSONResponse(
         status_code=422,
-        content={"detail": exc.errors(), "body": body.decode() if body else ""}
+        content={"detail": exc.errors()}
     )
 
 
@@ -144,15 +134,10 @@ async def google_auth(auth_request: GoogleAuthRequest):
     Authenticate user with Google OAuth
     Creates new user if doesn't exist, returns JWT token
     """
-    print(f"DEBUG: Starting google_auth endpoint")
     try:
-        print(f"DEBUG: Received auth request: {auth_request}")
-        print(f"DEBUG: Request data - google_id: {auth_request.google_id}, email: {auth_request.email}")
-        
         # Verify Google token with Google's servers
         google_user_info = await verify_google_token(auth_request.google_token)
         if not google_user_info:
-            print("DEBUG: Google token verification failed")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid Google token"
@@ -163,20 +148,16 @@ async def google_auth(auth_request: GoogleAuthRequest):
         google_id = google_user_info.get('sub') or google_user_info.get('id')
         
         if google_email != auth_request.email:
-            print(f"DEBUG: Email mismatch - Token: {google_email}, Request: {auth_request.email}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email mismatch between token and request"
             )
             
         if google_id != auth_request.google_id:
-            print(f"DEBUG: Google ID mismatch - Token: {google_id}, Request: {auth_request.google_id}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Google ID mismatch between token and request"
             )
-        
-        print("DEBUG: Google token verification successful - data matches")
         
         # Create a fresh database connection for this request to avoid event loop issues
         from motor.motor_asyncio import AsyncIOMotorClient
@@ -270,12 +251,9 @@ async def google_auth(auth_request: GoogleAuthRequest):
             client.close()
         except:
             pass
-        print(f"DEBUG: Exception in google_auth: {type(e).__name__}: {str(e)}")
-        import traceback
-        print(f"DEBUG: Traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Authentication failed: {str(e)}"
+            detail="Authentication failed"
         )
 
 
