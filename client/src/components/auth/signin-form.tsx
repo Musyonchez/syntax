@@ -19,7 +19,6 @@ export function SignInForm() {
       setIsLoading(true)
       
       const result = await signIn("google", {
-        redirect: false,
         callbackUrl: "/dashboard",
       })
 

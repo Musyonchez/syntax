@@ -1,7 +1,7 @@
 import NextAuth, { type DefaultSession } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
-import { MongoDBAdapter } from "@auth/mongodb-adapter"
-import { MongoClient } from "mongodb"
+// import { MongoDBAdapter } from "@auth/mongodb-adapter"
+// import { MongoClient } from "mongodb"
 
 // Extend the default session type
 declare module "next-auth" {
@@ -18,14 +18,19 @@ declare module "next-auth" {
 }
 
 // MongoDB client for NextAuth adapter
-const client = process.env.MONGODB_URI ? new MongoClient(process.env.MONGODB_URI) : null
+// const client = process.env.MONGODB_URI ? new MongoClient(process.env.MONGODB_URI) : null
 
 const authConfig = NextAuth({
-  adapter: client ? MongoDBAdapter(client) : undefined,
+  // adapter: client ? MongoDBAdapter(client) : undefined,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: "openid email profile",
+        },
+      },
     }),
   ],
   callbacks: {
@@ -54,11 +59,11 @@ const authConfig = NextAuth({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              google_token: account.access_token,
-              google_id: account.providerAccountId,
+              google_token: account.access_token || "",
+              google_id: account.providerAccountId || profile.sub,
               email: profile.email,
-              name: profile.name,
-              avatar: profile.image,
+              name: profile.name || "",
+              avatar: profile.picture || profile.image || "",
             }),
           })
 
@@ -84,7 +89,7 @@ const authConfig = NextAuth({
     error: "/auth/error",
   },
   session: {
-    strategy: client ? "database" : "jwt",
+    strategy: "jwt",
   },
   debug: process.env.NODE_ENV === "development",
 })
