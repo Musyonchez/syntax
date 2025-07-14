@@ -67,11 +67,11 @@ const authConfig = NextAuth({
             user.role = data.user?.role || "user"
             return true
           } else {
-            console.error("Backend auth failed:", response.statusText)
+            // Backend auth failed
             return false
           }
         } catch (error) {
-          console.error("Sign-in error:", error)
+          // Sign-in error occurred
           return false
         }
       }

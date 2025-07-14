@@ -23,7 +23,6 @@ export function SignInForm() {
       })
 
       if (result?.error) {
-        console.error("Sign in error:", result.error)
         toast.error("Failed to sign in", {
           description: "Please try again or contact support if the problem persists.",
         })
@@ -41,7 +40,6 @@ export function SignInForm() {
         }
       }
     } catch (err) {
-      console.error("Sign in error:", err)
       toast.error("Sign in failed", {
         description: "An unexpected error occurred. Please try again.",
       })

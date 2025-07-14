@@ -34,7 +34,7 @@ export class ApiClient {
         }
       }
     } catch (error) {
-      console.error("Failed to get auth token:", error)
+      // Failed to get auth token
     }
     return null
   }

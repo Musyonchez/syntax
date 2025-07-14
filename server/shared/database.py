@@ -30,7 +30,6 @@ async def get_database():
         # Test connection
         try:
             await _client.admin.command('ping')
-            print("Successfully connected to MongoDB!")
         except Exception as e:
             print(f"Failed to connect to MongoDB: {e}")
             raise
@@ -112,7 +111,7 @@ async def init_database():
     
     await db.user_votes.create_index([("userId", 1), ("targetId", 1)], unique=True)
     
-    print("Database indexes created successfully!")
+    pass  # Indexes created successfully
 
 
 if __name__ == "__main__":
