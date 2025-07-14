@@ -19,7 +19,7 @@ class Config:
     # JWT Configuration
     JWT_SECRET: str = os.getenv("JWT_SECRET", "")
     JWT_ALGORITHM: str = os.getenv("JWT_ALGORITHM", "HS256")
-    JWT_EXPIRATION_HOURS: int = int(os.getenv("JWT_EXPIRATION_HOURS", "720"))
+    JWT_EXPIRATION_HOURS: int = int(os.getenv("JWT_EXPIRATION_HOURS", "24"))
     
     # Google OAuth Configuration
     GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
@@ -56,6 +56,11 @@ class Config:
         # Validate JWT secret length
         if len(cls.JWT_SECRET) < 32:
             raise ValueError("JWT_SECRET must be at least 32 characters long")
+        
+        # Validate Google OAuth config in production
+        if cls.is_production():
+            if not cls.GOOGLE_CLIENT_ID or not cls.GOOGLE_CLIENT_SECRET:
+                raise ValueError("Google OAuth credentials required in production")
     
     @classmethod
     def is_development(cls) -> bool:

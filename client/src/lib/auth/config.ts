@@ -8,10 +8,17 @@ declare module "next-auth" {
       id: string
       role: string
     } & DefaultSession["user"]
+    accessToken?: string
   }
 
   interface User {
     role: string
+    accessToken?: string
+  }
+  
+  interface JWT {
+    accessToken?: string
+    role?: string
   }
 }
 
@@ -28,17 +35,20 @@ const authConfig = NextAuth({
     }),
   ],
   callbacks: {
-    async session({ session, token, user }) {
+    async session({ session, token }) {
       // Send properties to the client
       if (session.user) {
-        session.user.id = user?.id || token?.sub || ""
-        session.user.role = (user as { role?: string })?.role || "user"
+        session.user.id = token?.sub || ""
+        session.user.role = token?.role as string || "user"
+        session.accessToken = token?.accessToken as string
       }
       return session
     },
-    async jwt({ token, user }) {
-      if (user) {
+    async jwt({ token, user, account }) {
+      // Store the JWT token from our backend in the NextAuth token
+      if (user && account) {
         token.role = (user as { role?: string })?.role || "user"
+        token.accessToken = (user as { accessToken?: string })?.accessToken
       }
       return token
     },
@@ -63,8 +73,9 @@ const authConfig = NextAuth({
 
           if (response.ok) {
             const data = await response.json()
-            // Store additional user data
+            // Store the JWT token and user data in the user object
             user.role = data.user?.role || "user"
+            user.accessToken = data.token // Store the JWT token
             return true
           } else {
             // Backend auth failed

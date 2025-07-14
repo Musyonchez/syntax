@@ -20,17 +20,12 @@ export class ApiClient {
 
   private async getAuthToken(): Promise<string | null> {
     try {
-      const session = await auth()
-      if (session?.user?.id) {
-        // Get JWT token from our backend
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/verify`, {
-          headers: {
-            Authorization: `Bearer ${session.user.id}`, // This would be handled differently in production
-          },
-        })
-        if (response.ok) {
-          const data = await response.json()
-          return data.token
+      // Get session from NextAuth API route (works in browser)
+      const response = await fetch('/api/auth/session')
+      if (response.ok) {
+        const session = await response.json()
+        if (session?.accessToken) {
+          return session.accessToken
         }
       }
     } catch (error) {
