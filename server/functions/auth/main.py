@@ -35,8 +35,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=config.ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
 )
 
 security = HTTPBearer()
@@ -165,11 +165,15 @@ async def google_auth(auth_request: GoogleAuthRequest):
         database = client[config.DATABASE_NAME]
         users_collection = database.users
         
+        # Sanitize inputs to prevent injection
+        clean_google_id = str(auth_request.google_id).strip()
+        clean_email = str(auth_request.email).strip().lower()
+        
         # Check if user already exists
         existing_user = await users_collection.find_one({
             "$or": [
-                {"googleId": auth_request.google_id},
-                {"email": auth_request.email}
+                {"googleId": clean_google_id},
+                {"email": clean_email}
             ]
         })
         
@@ -183,9 +187,9 @@ async def google_auth(auth_request: GoogleAuthRequest):
                 {"_id": existing_user["_id"]},
                 {
                     "$set": {
-                        "googleId": auth_request.google_id,
-                        "name": auth_request.name,
-                        "avatar": auth_request.avatar,
+                        "googleId": clean_google_id,
+                        "name": str(auth_request.name).strip(),
+                        "avatar": str(auth_request.avatar).strip(),
                         "lastActive": current_time
                     }
                 }
@@ -198,10 +202,10 @@ async def google_auth(auth_request: GoogleAuthRequest):
             user_id = generate_id()
             new_user = {
                 "_id": user_id,
-                "googleId": auth_request.google_id,
-                "email": auth_request.email,
-                "name": auth_request.name,
-                "avatar": auth_request.avatar,
+                "googleId": clean_google_id,
+                "email": clean_email,
+                "name": str(auth_request.name).strip(),
+                "avatar": str(auth_request.avatar).strip(),
                 "role": "user",
                 "preferences": {
                     "theme": "dark",
