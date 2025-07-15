@@ -1,4 +1,3 @@
-import { auth } from "@/lib/auth/config"
 
 export interface ApiResponse<T = unknown> {
   success: boolean
@@ -28,7 +27,7 @@ export class ApiClient {
           return session.accessToken
         }
       }
-    } catch (error) {
+    } catch {
       // Failed to get auth token
     }
     return null
