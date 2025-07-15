@@ -81,7 +81,7 @@ const authConfig = NextAuth({
             // Backend auth failed
             return false
           }
-        } catch (error) {
+        } catch {
           // Sign-in error occurred
           return false
         }

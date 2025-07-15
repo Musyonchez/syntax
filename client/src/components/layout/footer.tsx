@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Code, Heart, Github, Twitter, Mail } from "lucide-react";
+import { Heart, Github, Twitter, Mail } from "lucide-react";
 
 const footerLinks = {
   Product: [
