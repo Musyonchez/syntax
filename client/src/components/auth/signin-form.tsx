@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { signIn, getSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 import { motion } from "framer-motion"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -12,34 +11,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export function SignInForm() {
   const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
 
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true)
       
-      const result = await signIn("google", {
+      // NextAuth signIn with redirect doesn't return a result object
+      // It redirects or throws an error
+      await signIn("google", {
         callbackUrl: "/dashboard",
       })
-
-      if (result?.error) {
-        toast.error("Failed to sign in", {
-          description: "Please try again or contact support if the problem persists.",
-        })
-        return
-      }
-
-      if (result?.ok) {
-        // Wait for session to be available
-        const session = await getSession()
-        if (session) {
-          toast.success("Welcome back!", {
-            description: "You've been successfully signed in.",
-          })
-          router.push("/dashboard")
-        }
-      }
-    } catch (err) {
+    } catch {
       toast.error("Sign in failed", {
         description: "An unexpected error occurred. Please try again.",
       })
