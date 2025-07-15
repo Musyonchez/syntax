@@ -5,10 +5,14 @@ import os
 import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Optional
+from dotenv import load_dotenv
 
-# MongoDB connection string
-MONGODB_URI = "mongodb+srv://musyonchez:2qVvUWngpEiVajWV@cluster1.oa0hiaa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1"
-DATABASE_NAME = "syntaxmem"
+# Import configuration
+from .config import config
+
+# MongoDB configuration from config
+MONGODB_URI = config.MONGODB_URI
+DATABASE_NAME = config.DATABASE_NAME
 
 # Global client instance
 _client: Optional[AsyncIOMotorClient] = None
@@ -26,7 +30,6 @@ async def get_database():
         # Test connection
         try:
             await _client.admin.command('ping')
-            print("Successfully connected to MongoDB!")
         except Exception as e:
             print(f"Failed to connect to MongoDB: {e}")
             raise
@@ -108,7 +111,7 @@ async def init_database():
     
     await db.user_votes.create_index([("userId", 1), ("targetId", 1)], unique=True)
     
-    print("Database indexes created successfully!")
+    pass  # Indexes created successfully
 
 
 if __name__ == "__main__":

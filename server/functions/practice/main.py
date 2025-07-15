@@ -10,6 +10,8 @@ from typing import Optional, Dict, Any, List
 from bson import ObjectId
 import sys
 import os
+from a2wsgi import ASGIMiddleware
+
 
 # Add shared modules to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
@@ -29,10 +31,13 @@ from shared.utils import (
 
 app = FastAPI(title="SyntaxMem Practice Service")
 
+# Import configuration
+from shared.config import config
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://syntaxmem.dev", "http://localhost:3000"],
+    allow_origins=config.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -593,4 +598,4 @@ async def get_practice_stats(
 @functions_framework.http
 def main(request):
     """Cloud Function entry point"""
-    return app(request.environ, lambda status, headers: None)
+    return ASGIMiddleware(app)

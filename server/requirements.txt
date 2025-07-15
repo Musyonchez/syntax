@@ -14,7 +14,7 @@ python-multipart==0.*
 # Code processing
 pygments==2.*
 
-# Utilities
+# Configuration & Utilities
 python-dotenv==1.*
 pydantic==2.*
 

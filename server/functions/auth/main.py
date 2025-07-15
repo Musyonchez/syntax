@@ -3,13 +3,20 @@ Authentication Cloud Function for SyntaxMem
 Handles user authentication, registration, and token verification
 """
 import functions_framework
-from fastapi import FastAPI, HTTPException, status, Depends
+from fastapi import FastAPI, HTTPException, status, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, EmailStr
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, EmailStr, ValidationError
 from typing import Optional, Dict, Any
 import sys
 import os
+from a2wsgi import ASGIMiddleware
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token
+import requests
+
 
 # Add shared modules to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
@@ -20,16 +27,70 @@ from shared.utils import generate_id, current_timestamp, create_response, create
 
 app = FastAPI(title="SyntaxMem Auth Service")
 
+# Import configuration
+from shared.config import config
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://syntaxmem.dev", "http://localhost:3000"],
+    allow_origins=config.ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
 )
 
 security = HTTPBearer()
+
+
+async def verify_google_token(token: str) -> Optional[Dict[str, Any]]:
+    """
+    Verify Google OAuth token and return user info
+    Returns None if token is invalid
+    """
+    try:
+        # Try to verify as ID token first
+        try:
+            # Verify the ID token against Google's servers
+            idinfo = id_token.verify_oauth2_token(
+                token, 
+                google_requests.Request(), 
+                config.GOOGLE_CLIENT_ID
+            )
+            
+            # Check if token is for our app
+            if idinfo['aud'] != config.GOOGLE_CLIENT_ID:
+                return None
+                
+            return idinfo
+            
+        except ValueError:
+            # If ID token fails, try as access token
+            pass
+            
+        # Verify access token by calling Google's userinfo endpoint
+        response = requests.get(
+            f'https://www.googleapis.com/oauth2/v1/userinfo',
+            headers={'Authorization': f'Bearer {token}'},
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            userinfo = response.json()
+            return userinfo
+        else:
+            return None
+            
+    except Exception:
+        return None
+
+
+# Add validation error handler
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()}
+    )
 
 
 # Request/Response models
@@ -74,13 +135,45 @@ async def google_auth(auth_request: GoogleAuthRequest):
     Creates new user if doesn't exist, returns JWT token
     """
     try:
-        users_collection = await get_users_collection()
+        # Verify Google token with Google's servers
+        google_user_info = await verify_google_token(auth_request.google_token)
+        if not google_user_info:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid Google token"
+            )
+        
+        # Verify that the token data matches the request data
+        google_email = google_user_info.get('email')
+        google_id = google_user_info.get('sub') or google_user_info.get('id')
+        
+        if google_email != auth_request.email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email mismatch between token and request"
+            )
+            
+        if google_id != auth_request.google_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Google ID mismatch between token and request"
+            )
+        
+        # Create a fresh database connection for this request to avoid event loop issues
+        from motor.motor_asyncio import AsyncIOMotorClient
+        client = AsyncIOMotorClient(config.MONGODB_URI)
+        database = client[config.DATABASE_NAME]
+        users_collection = database.users
+        
+        # Sanitize inputs to prevent injection
+        clean_google_id = str(auth_request.google_id).strip()
+        clean_email = str(auth_request.email).strip().lower()
         
         # Check if user already exists
         existing_user = await users_collection.find_one({
             "$or": [
-                {"googleId": auth_request.google_id},
-                {"email": auth_request.email}
+                {"googleId": clean_google_id},
+                {"email": clean_email}
             ]
         })
         
@@ -94,9 +187,9 @@ async def google_auth(auth_request: GoogleAuthRequest):
                 {"_id": existing_user["_id"]},
                 {
                     "$set": {
-                        "googleId": auth_request.google_id,
-                        "name": auth_request.name,
-                        "avatar": auth_request.avatar,
+                        "googleId": clean_google_id,
+                        "name": str(auth_request.name).strip(),
+                        "avatar": str(auth_request.avatar).strip(),
                         "lastActive": current_time
                     }
                 }
@@ -109,10 +202,10 @@ async def google_auth(auth_request: GoogleAuthRequest):
             user_id = generate_id()
             new_user = {
                 "_id": user_id,
-                "googleId": auth_request.google_id,
-                "email": auth_request.email,
-                "name": auth_request.name,
-                "avatar": auth_request.avatar,
+                "googleId": clean_google_id,
+                "email": clean_email,
+                "name": str(auth_request.name).strip(),
+                "avatar": str(auth_request.avatar).strip(),
                 "role": "user",
                 "preferences": {
                     "theme": "dark",
@@ -147,6 +240,9 @@ async def google_auth(auth_request: GoogleAuthRequest):
             "stats": user["stats"]
         }
         
+        # Close the database connection
+        client.close()
+        
         return {
             "token": token,
             "user": user_data,
@@ -154,9 +250,14 @@ async def google_auth(auth_request: GoogleAuthRequest):
         }
         
     except Exception as e:
+        # Close the database connection if it was created
+        try:
+            client.close()
+        except:
+            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Authentication failed: {str(e)}"
+            detail="Authentication failed"
         )
 
 
@@ -273,4 +374,4 @@ async def delete_user_account(user_data: Dict[str, Any] = Depends(verify_token))
 @functions_framework.http
 def main(request):
     """Cloud Function entry point"""
-    return app(request.environ, lambda status, headers: None)
+    return ASGIMiddleware(app)
