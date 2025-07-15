@@ -1,5 +1,11 @@
 # SyntaxMem MVP Development Progress
 
+## Phases
+- **Phase 1: Core Functionality (Complete)** - Foundational features including authentication, practice mode, and the dual snippet system.
+- **Phase 2: Community and Content (In Progress)** - Focus on building the developer forum, content submission system, and expanding the official snippet library.
+
+
+
 ## Project Overview
 **SyntaxMem** - Interactive coding practice platform where users complete masked code snippets to improve programming skills.
 
