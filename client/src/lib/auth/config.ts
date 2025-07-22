@@ -57,7 +57,7 @@ const authConfig = NextAuth({
       if (account?.provider === "google" && profile) {
         try {
           // Call our backend auth service to sync user data
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/google-auth`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:8080'}/google-auth`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
