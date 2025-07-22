@@ -1,4 +1,4 @@
-import { apiClient } from './client'
+import { practiceApi as practiceApiClient } from './client'
 
 export interface PracticeSession {
   session_id: string
@@ -72,7 +72,7 @@ export interface SubmitPracticeRequest {
 export const practiceApi = {
   // Start a new practice session
   async startSession(request: StartPracticeRequest): Promise<PracticeSession> {
-    const response = await apiClient.post<PracticeSession>('/practice/start', request)
+    const response = await practiceApiClient.post<PracticeSession>('/practice/start', request)
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to start practice session')
     }
@@ -81,7 +81,7 @@ export const practiceApi = {
 
   // Submit practice attempt
   async submitSession(request: SubmitPracticeRequest): Promise<PracticeScore> {
-    const response = await apiClient.post<PracticeScore>('/practice/submit', request)
+    const response = await practiceApiClient.post<PracticeScore>('/practice/submit', request)
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to submit practice session')
     }
@@ -90,7 +90,7 @@ export const practiceApi = {
 
   // Get practice session details
   async getSession(sessionId: string): Promise<PracticeSession> {
-    const response = await apiClient.get<PracticeSession>(`/practice/session/${sessionId}`)
+    const response = await practiceApiClient.get<PracticeSession>(`/practice/session/${sessionId}`)
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get practice session')
     }
@@ -113,7 +113,7 @@ export const practiceApi = {
       searchParams.set('completed_only', params.completed_only.toString())
     }
 
-    const response = await apiClient.get<{
+    const response = await practiceApiClient.get<{
       sessions: PracticeHistoryItem[]
       pagination: {
         page: number
@@ -133,7 +133,7 @@ export const practiceApi = {
 
   // Get practice statistics
   async getStats(): Promise<PracticeStats> {
-    const response = await apiClient.get<PracticeStats>('/practice/stats')
+    const response = await practiceApiClient.get<PracticeStats>('/practice/stats')
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get practice statistics')
     }

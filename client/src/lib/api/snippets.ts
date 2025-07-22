@@ -1,4 +1,4 @@
-import { apiClient } from './client'
+import { snippetsApi as snippetsApiClient } from './client'
 
 export interface Snippet {
   id: string
@@ -66,7 +66,7 @@ export const snippetsApi = {
     if (params?.page) searchParams.set('page', params.page.toString())
     if (params?.per_page) searchParams.set('per_page', params.per_page.toString())
 
-    const response = await apiClient.get<{
+    const response = await snippetsApiClient.get<{
       snippets: Snippet[]
       pagination: {
         page: number
@@ -94,7 +94,7 @@ export const snippetsApi = {
     if (params?.page) searchParams.set('page', params.page.toString())
     if (params?.per_page) searchParams.set('per_page', params.per_page.toString())
 
-    const response = await apiClient.get<{
+    const response = await snippetsApiClient.get<{
       snippets: Snippet[]
       pagination: {
         page: number
@@ -114,7 +114,7 @@ export const snippetsApi = {
 
   // Get specific snippet by ID
   async getById(snippetId: string): Promise<Snippet> {
-    const response = await apiClient.get<Snippet>(`/snippets/${snippetId}`)
+    const response = await snippetsApiClient.get<Snippet>(`/snippets/${snippetId}`)
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get snippet')
     }
@@ -123,7 +123,7 @@ export const snippetsApi = {
 
   // Get masked version for practice
   async getMasked(snippetId: string, difficulty?: number): Promise<MaskedSnippet> {
-    const response = await apiClient.post<MaskedSnippet>(`/snippets/${snippetId}/mask`, {
+    const response = await snippetsApiClient.post<MaskedSnippet>(`/snippets/${snippetId}/mask`, {
       snippet_id: snippetId,
       difficulty
     })
@@ -135,7 +135,7 @@ export const snippetsApi = {
 
   // Create personal snippet
   async create(request: CreateSnippetRequest): Promise<Snippet> {
-    const response = await apiClient.post<Snippet>('/snippets/create', request)
+    const response = await snippetsApiClient.post<Snippet>('/snippets/create', request)
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to create snippet')
     }
@@ -144,7 +144,7 @@ export const snippetsApi = {
 
   // Submit snippet for review (to become official)
   async submit(request: SubmitSnippetRequest): Promise<SnippetSubmission> {
-    const response = await apiClient.post<SnippetSubmission>('/snippets/submit', request)
+    const response = await snippetsApiClient.post<SnippetSubmission>('/snippets/submit', request)
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to submit snippet')
     }
@@ -153,7 +153,7 @@ export const snippetsApi = {
 
   // Get user's submissions
   async getSubmissions(): Promise<SnippetSubmission[]> {
-    const response = await apiClient.get<{ submissions: SnippetSubmission[] }>('/snippets/submissions')
+    const response = await snippetsApiClient.get<{ submissions: SnippetSubmission[] }>('/snippets/submissions')
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get submissions')
     }

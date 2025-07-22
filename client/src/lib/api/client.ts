@@ -98,15 +98,28 @@ export class ApiClient {
   }
 }
 
-// Default API base URL for local development
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'
+// Service-specific API base URLs for local development
+const getServiceUrl = (service: string, defaultPort: number) => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+  if (baseUrl) {
+    return baseUrl
+  }
+  return `http://localhost:${defaultPort}`
+}
 
-// Main API client instance
-export const apiClient = new ApiClient(API_BASE_URL)
+// Service ports (matching server/dev-server.sh configuration)
+const AUTH_URL = getServiceUrl('auth', 8080)
+const SNIPPETS_URL = getServiceUrl('snippets', 8081)
+const PRACTICE_URL = getServiceUrl('practice', 8082)
+const LEADERBOARD_URL = getServiceUrl('leaderboard', 8083)
+const FORUM_URL = getServiceUrl('forum', 8084)
 
-// Legacy API client instances (for backward compatibility)
-export const authApi = new ApiClient(API_BASE_URL)
-export const snippetsApi = new ApiClient(API_BASE_URL)
-export const practiceApi = new ApiClient(API_BASE_URL)
-export const leaderboardApi = new ApiClient(API_BASE_URL)
-export const forumApi = new ApiClient(API_BASE_URL)
+// Main API client instance (defaults to auth service for general use)
+export const apiClient = new ApiClient(AUTH_URL)
+
+// Service-specific API client instances
+export const authApi = new ApiClient(AUTH_URL)
+export const snippetsApi = new ApiClient(SNIPPETS_URL)
+export const practiceApi = new ApiClient(PRACTICE_URL)
+export const leaderboardApi = new ApiClient(LEADERBOARD_URL)
+export const forumApi = new ApiClient(FORUM_URL)
