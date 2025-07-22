@@ -258,11 +258,22 @@ export default function PracticePage() {
                 <Code2 className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="text-lg font-medium mb-2">Unable to load snippets</h3>
                 <p className="text-muted-foreground mb-4">
-                  The backend server is not running. Please start the server to practice coding.
+                  {snippetType === 'personal' 
+                    ? 'Personal snippets require authentication. Please sign in to view your snippets.'
+                    : 'There was an issue loading official snippets. This might be due to database connectivity or missing sample data.'
+                  }
                 </p>
                 <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>To start the server, run:</p>
-                  <code className="bg-muted px-2 py-1 rounded">cd server && ./dev-server.sh</code>
+                  <p>To resolve this:</p>
+                  {snippetType === 'personal' ? (
+                    <p>• Sign in with your Google account</p>
+                  ) : (
+                    <>
+                      <p>• Ensure MongoDB is running and accessible</p>
+                      <p>• Check server logs for detailed error information</p>
+                      <p>• Consider adding sample snippets to the database</p>
+                    </>
+                  )}
                 </div>
                 <Button 
                   variant="outline" 
