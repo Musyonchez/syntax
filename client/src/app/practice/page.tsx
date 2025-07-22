@@ -22,8 +22,8 @@ export default function PracticePage() {
   
   // Filters
   const [snippetType, setSnippetType] = useState<'official' | 'personal'>('official')
-  const [languageFilter, setLanguageFilter] = useState<string>('')
-  const [difficultyFilter, setDifficultyFilter] = useState<string>('')
+  const [languageFilter, setLanguageFilter] = useState<string>('all')
+  const [difficultyFilter, setDifficultyFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   
   const { languages, difficulties } = useSnippetFilters()
@@ -31,8 +31,8 @@ export default function PracticePage() {
   
   // Fetch snippets based on type and filters
   const officialSnippets = useOfficialSnippets({
-    language: languageFilter || undefined,
-    difficulty: difficultyFilter ? parseInt(difficultyFilter) : undefined,
+    language: languageFilter === 'all' ? undefined : languageFilter,
+    difficulty: difficultyFilter === 'all' ? undefined : parseInt(difficultyFilter),
     per_page: 20
   })
   
@@ -42,6 +42,10 @@ export default function PracticePage() {
   
   const snippetsQuery = snippetType === 'official' ? officialSnippets : personalSnippets
   const snippets = snippetsQuery.data?.snippets || []
+  
+  // Handle loading and error states
+  const isLoading = snippetsQuery.isLoading
+  const isError = snippetsQuery.isError
   
   // Filter snippets by search query
   const filteredSnippets = snippets.filter(snippet => 
@@ -192,7 +196,7 @@ export default function PracticePage() {
                     <SelectValue placeholder="All languages" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All languages</SelectItem>
+                    <SelectItem value="all">All languages</SelectItem>
                     {languages.map(lang => (
                       <SelectItem key={lang} value={lang}>
                         {lang.charAt(0).toUpperCase() + lang.slice(1)}
@@ -210,7 +214,7 @@ export default function PracticePage() {
                     <SelectValue placeholder="All difficulties" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All difficulties</SelectItem>
+                    <SelectItem value="all">All difficulties</SelectItem>
                     {difficulties.map(diff => (
                       <SelectItem key={diff} value={diff.toString()}>
                         Level {diff}
@@ -248,7 +252,28 @@ export default function PracticePage() {
             </Badge>
           </div>
 
-          {snippetsQuery.isLoading ? (
+          {isError ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Code2 className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">Unable to load snippets</h3>
+                <p className="text-muted-foreground mb-4">
+                  The backend server is not running. Please start the server to practice coding.
+                </p>
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  <p>To start the server, run:</p>
+                  <code className="bg-muted px-2 py-1 rounded">cd server && ./dev-server.sh</code>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => snippetsQuery.refetch()}
+                  className="mt-4"
+                >
+                  Try Again
+                </Button>
+              </CardContent>
+            </Card>
+          ) : isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <Card key={i} className="animate-pulse">
