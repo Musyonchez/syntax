@@ -8,12 +8,34 @@ import asyncio
 import sys
 import os
 from datetime import datetime
+from motor.motor_asyncio import AsyncIOMotorClient
+from dotenv import load_dotenv
 
-# Add shared modules to path
-sys.path.append(os.path.join(os.path.dirname(__file__), '.'))
+# Load environment variables from parent directory
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
-from shared.database import get_snippets_collection
-from shared.utils import generate_id, current_timestamp
+# MongoDB connection
+MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017')
+DATABASE_NAME = os.getenv('DATABASE_NAME', 'syntaxmem')
+
+async def get_database():
+    """Get database connection"""
+    client = AsyncIOMotorClient(MONGODB_URI)
+    return client[DATABASE_NAME]
+
+async def get_snippets_collection():
+    """Get snippets collection"""
+    db = await get_database()
+    return db.snippets
+
+def generate_id():
+    """Generate a simple ID"""
+    import time
+    return str(int(time.time() * 1000))
+
+def current_timestamp():
+    """Get current timestamp"""
+    return datetime.utcnow()
 
 # Sample official snippets
 SAMPLE_SNIPPETS = [
@@ -124,6 +146,8 @@ async def seed_database():
     """Add sample official snippets to the database"""
     try:
         print("🌱 Starting database seeding...")
+        print(f"   📡 Connecting to MongoDB: {MONGODB_URI}")
+        print(f"   🗄️  Database: {DATABASE_NAME}")
         
         snippets_collection = await get_snippets_collection()
         
@@ -196,6 +220,7 @@ async def seed_database():
         
     except Exception as e:
         print(f"❌ Error seeding database: {e}")
+        print(f"   Make sure MongoDB is running and accessible at: {MONGODB_URI}")
         sys.exit(1)
 
 if __name__ == "__main__":
