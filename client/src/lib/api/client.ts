@@ -98,9 +98,15 @@ export class ApiClient {
   }
 }
 
-// API client instances
-export const authApi = new ApiClient(process.env.NEXT_PUBLIC_API_BASE_URL!)
-export const snippetsApi = new ApiClient(process.env.NEXT_PUBLIC_SNIPPETS_API_URL!)
-export const practiceApi = new ApiClient(process.env.NEXT_PUBLIC_PRACTICE_API_URL!)
-export const leaderboardApi = new ApiClient(process.env.NEXT_PUBLIC_LEADERBOARD_API_URL!)
-export const forumApi = new ApiClient(process.env.NEXT_PUBLIC_FORUM_API_URL!)
+// Default API base URL for local development
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'
+
+// Main API client instance
+export const apiClient = new ApiClient(API_BASE_URL)
+
+// Legacy API client instances (for backward compatibility)
+export const authApi = new ApiClient(API_BASE_URL)
+export const snippetsApi = new ApiClient(API_BASE_URL)
+export const practiceApi = new ApiClient(API_BASE_URL)
+export const leaderboardApi = new ApiClient(API_BASE_URL)
+export const forumApi = new ApiClient(API_BASE_URL)
