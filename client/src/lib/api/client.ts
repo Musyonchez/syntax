@@ -33,6 +33,27 @@ export class ApiClient {
     return null
   }
 
+  private async handleAuthenticationError(reason: 'expired' | 'invalid'): Promise<void> {
+    try {
+      // Import signOut dynamically to avoid circular dependencies
+      const { signOut } = await import('next-auth/react')
+      
+      console.warn(`🔐 Authentication error: ${reason} token. Logging out user.`)
+      
+      // Sign out the user and redirect to login
+      await signOut({ 
+        callbackUrl: '/auth/signin?error=SessionExpired',
+        redirect: true 
+      })
+    } catch (error) {
+      console.error('Failed to handle authentication error:', error)
+      // Fallback: redirect to login page manually
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth/signin?error=SessionExpired'
+      }
+    }
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
@@ -56,6 +77,27 @@ export class ApiClient {
       const data = await response.json()
 
       if (!response.ok) {
+        // Handle authentication errors (expired/invalid tokens)
+        if (response.status === 401) {
+          const errorDetail = data.detail || data.message || 'Authentication failed'
+          const authErrorHeader = response.headers.get('X-Auth-Error')
+          
+          // Check specific auth error type from header or error message
+          if (authErrorHeader === 'expired' || errorDetail.includes('expired') || errorDetail.includes('Token has expired')) {
+            // Trigger automatic logout for expired tokens
+            await this.handleAuthenticationError('expired')
+          } else if (authErrorHeader === 'invalid' || authErrorHeader === 'user_not_found' || 
+                     errorDetail.includes('Invalid token') || errorDetail.includes('User not found')) {
+            // Trigger automatic logout for invalid tokens
+            await this.handleAuthenticationError('invalid')
+          }
+          
+          return {
+            success: false,
+            error: errorDetail,
+          }
+        }
+        
         return {
           success: false,
           error: data.message || `HTTP ${response.status}: ${response.statusText}`,
