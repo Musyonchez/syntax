@@ -72,7 +72,7 @@ export interface SubmitPracticeRequest {
 export const practiceApi = {
   // Start a new practice session
   async startSession(request: StartPracticeRequest): Promise<PracticeSession> {
-    const response = await practiceApiClient.post<PracticeSession>('/practice/start', request)
+    const response = await practiceApiClient.post<PracticeSession>('/start', request)
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to start practice session')
     }
@@ -81,7 +81,7 @@ export const practiceApi = {
 
   // Submit practice attempt
   async submitSession(request: SubmitPracticeRequest): Promise<PracticeScore> {
-    const response = await practiceApiClient.post<PracticeScore>('/practice/submit', request)
+    const response = await practiceApiClient.post<PracticeScore>('/submit', request)
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to submit practice session')
     }
@@ -90,7 +90,7 @@ export const practiceApi = {
 
   // Get practice session details
   async getSession(sessionId: string): Promise<PracticeSession> {
-    const response = await practiceApiClient.get<PracticeSession>(`/practice/session/${sessionId}`)
+    const response = await practiceApiClient.get<PracticeSession>(`/session/${sessionId}`)
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get practice session')
     }
@@ -123,7 +123,7 @@ export const practiceApi = {
         has_next: boolean
         has_prev: boolean
       }
-    }>(`/practice/history?${searchParams}`)
+    }>(`/history?${searchParams}`)
     
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get practice history')
@@ -133,7 +133,7 @@ export const practiceApi = {
 
   // Get practice statistics
   async getStats(): Promise<PracticeStats> {
-    const response = await practiceApiClient.get<PracticeStats>('/practice/stats')
+    const response = await practiceApiClient.get<PracticeStats>('/stats')
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get practice statistics')
     }

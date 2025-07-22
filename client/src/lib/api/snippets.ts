@@ -76,7 +76,7 @@ export const snippetsApi = {
         has_next: boolean
         has_prev: boolean
       }
-    }>(`/snippets/official?${searchParams}`)
+    }>(`/official?${searchParams}`)
     
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get official snippets')
@@ -104,7 +104,7 @@ export const snippetsApi = {
         has_next: boolean
         has_prev: boolean
       }
-    }>(`/snippets/personal?${searchParams}`)
+    }>(`/personal?${searchParams}`)
     
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get personal snippets')
@@ -114,7 +114,7 @@ export const snippetsApi = {
 
   // Get specific snippet by ID
   async getById(snippetId: string): Promise<Snippet> {
-    const response = await snippetsApiClient.get<Snippet>(`/snippets/${snippetId}`)
+    const response = await snippetsApiClient.get<Snippet>(`/${snippetId}`)
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get snippet')
     }
@@ -123,7 +123,7 @@ export const snippetsApi = {
 
   // Get masked version for practice
   async getMasked(snippetId: string, difficulty?: number): Promise<MaskedSnippet> {
-    const response = await snippetsApiClient.post<MaskedSnippet>(`/snippets/${snippetId}/mask`, {
+    const response = await snippetsApiClient.post<MaskedSnippet>(`/${snippetId}/mask`, {
       snippet_id: snippetId,
       difficulty
     })
@@ -135,7 +135,7 @@ export const snippetsApi = {
 
   // Create personal snippet
   async create(request: CreateSnippetRequest): Promise<Snippet> {
-    const response = await snippetsApiClient.post<Snippet>('/snippets/create', request)
+    const response = await snippetsApiClient.post<Snippet>('/create', request)
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to create snippet')
     }
@@ -144,7 +144,7 @@ export const snippetsApi = {
 
   // Submit snippet for review (to become official)
   async submit(request: SubmitSnippetRequest): Promise<SnippetSubmission> {
-    const response = await snippetsApiClient.post<SnippetSubmission>('/snippets/submit', request)
+    const response = await snippetsApiClient.post<SnippetSubmission>('/submit', request)
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to submit snippet')
     }
@@ -153,7 +153,7 @@ export const snippetsApi = {
 
   // Get user's submissions
   async getSubmissions(): Promise<SnippetSubmission[]> {
-    const response = await snippetsApiClient.get<{ submissions: SnippetSubmission[] }>('/snippets/submissions')
+    const response = await snippetsApiClient.get<{ submissions: SnippetSubmission[] }>('/submissions')
     if (!response.success || !response.data) {
       throw new Error(response.error || 'Failed to get submissions')
     }
