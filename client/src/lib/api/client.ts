@@ -99,20 +99,11 @@ export class ApiClient {
 }
 
 // Service-specific API base URLs for local development
-const getServiceUrl = (service: string, defaultPort: number) => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
-  if (baseUrl) {
-    return baseUrl
-  }
-  return `http://localhost:${defaultPort}`
-}
-
-// Service ports (matching server/dev-server.sh configuration)
-const AUTH_URL = getServiceUrl('auth', 8080)
-const SNIPPETS_URL = getServiceUrl('snippets', 8081)
-const PRACTICE_URL = getServiceUrl('practice', 8082)
-const LEADERBOARD_URL = getServiceUrl('leaderboard', 8083)
-const FORUM_URL = getServiceUrl('forum', 8084)
+const AUTH_URL = process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:8080'
+const SNIPPETS_URL = process.env.NEXT_PUBLIC_SNIPPETS_API_URL || 'http://localhost:8081'
+const PRACTICE_URL = process.env.NEXT_PUBLIC_PRACTICE_API_URL || 'http://localhost:8082'
+const LEADERBOARD_URL = process.env.NEXT_PUBLIC_LEADERBOARD_API_URL || 'http://localhost:8083'
+const FORUM_URL = process.env.NEXT_PUBLIC_FORUM_API_URL || 'http://localhost:8084'
 
 // Main API client instance (defaults to auth service for general use)
 export const apiClient = new ApiClient(AUTH_URL)
