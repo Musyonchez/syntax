@@ -64,14 +64,39 @@ def handle_cors_request(app: Any, request: Any) -> Response:
         return handle_cors_preflight()
     
     try:
-        # Use ASGIMiddleware to handle the request
-        response = ASGIMiddleware(app)(request)
+        # Use ASGIMiddleware to handle the request properly
+        asgi_app = ASGIMiddleware(app)
         
-        # Add CORS headers to the response
-        if hasattr(response, 'headers'):
-            return add_cors_headers(response)
+        # Create a mock start_response to capture the response
+        response_data = {}
         
-        return response
+        def start_response(status, headers, exc_info=None):
+            response_data['status'] = status
+            response_data['headers'] = dict(headers)
+            return lambda x: None
+        
+        # Call the ASGI app with proper WSGI interface
+        result = asgi_app(request.environ, start_response)
+        
+        # Convert the result to a proper response
+        body = b''.join(result) if result else b''
+        status_code = int(response_data.get('status', '200 OK').split()[0])
+        headers = response_data.get('headers', {})
+        
+        # Create response with the body and headers
+        response = Response(
+            body.decode('utf-8') if body else '',
+            status=status_code,
+            content_type=headers.get('content-type', 'application/json')
+        )
+        
+        # Add existing headers from ASGI response
+        for key, value in headers.items():
+            if key.lower() not in ['content-type', 'content-length']:
+                response.headers[key] = value
+        
+        # Add CORS headers
+        return add_cors_headers(response)
         
     except Exception as e:
         # Return error response with CORS headers
