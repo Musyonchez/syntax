@@ -628,7 +628,81 @@ async def review_snippet_submission(
         )
 
 
-@functions_framework.http
+@functions_framework.http  
 def main(request):
     """Cloud Function entry point"""
-    return ASGIMiddleware(app)
+    import asyncio
+    import json
+    from werkzeug.wrappers import Response
+    
+    # Set up event loop
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    
+    # Handle CORS preflight
+    if request.method == 'OPTIONS':
+        response = Response('')
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'  
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+    
+    try:
+        # Manually route the request to FastAPI endpoints
+        path = request.path.strip('/')
+        method = request.method
+        
+        # Simple routing
+        if path == 'health' and method == 'GET':
+            result = loop.run_until_complete(health_check())
+        elif path == 'official' and method == 'GET':
+            # Get query parameters
+            language = request.args.get('language')
+            difficulty = request.args.get('difficulty', type=int)
+            page = request.args.get('page', 1, type=int)
+            per_page = request.args.get('per_page', 20, type=int)
+            
+            result = loop.run_until_complete(get_official_snippets(
+                language=language,
+                difficulty=difficulty, 
+                page=page,
+                per_page=per_page,
+                user_data=None  # No auth for official snippets
+            ))
+        elif path == 'personal' and method == 'GET':
+            # This requires authentication - return 401 for now
+            result = {"status": "error", "message": "Authentication required", "data": None}
+        else:
+            result = {"status": "error", "message": "Endpoint not found", "data": None}
+        
+        # Create response
+        response_data = json.dumps(result)
+        response = Response(response_data, content_type='application/json')
+        
+        # Add CORS headers
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        
+        return response
+        
+    except Exception as e:
+        # Error response with CORS headers
+        error_response = {
+            "status": "error", 
+            "message": f"Internal server error: {str(e)}", 
+            "data": None
+        }
+        response = Response(
+            json.dumps(error_response), 
+            status=500,
+            content_type='application/json'
+        )
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        
+        return response
