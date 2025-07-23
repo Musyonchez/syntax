@@ -101,8 +101,7 @@ async def get_official_snippets(
     language: Optional[str] = Query(None),
     difficulty: Optional[int] = Query(None, ge=1, le=10),
     page: int = Query(1, ge=1),
-    per_page: int = Query(20, ge=1, le=100),
-    user_data: Optional[Dict[str, Any]] = Depends(optional_auth)
+    per_page: int = Query(20, ge=1, le=100)
 ):
     """
     Get official snippets (curated, count towards leaderboard)
