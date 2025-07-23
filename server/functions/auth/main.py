@@ -23,6 +23,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 from shared.database import get_users_collection, init_database
 from shared.auth_middleware import create_jwt_token, verify_jwt_token, verify_token
+from shared.cors_handler import handle_cors_request
 from shared.utils import generate_id, current_timestamp, create_response, create_error_response
 
 app = FastAPI(title="SyntaxMem Auth Service")
@@ -374,41 +375,4 @@ async def delete_user_account(user_data: Dict[str, Any] = Depends(verify_token))
 @functions_framework.http
 def main(request):
     """Cloud Function entry point"""
-    import asyncio
-    import json
-    from werkzeug.wrappers import Response
-    
-    # Set up event loop
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    
-    # Handle CORS preflight
-    if request.method == 'OPTIONS':
-        response = Response('')
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-        return response
-    
-    try:
-        # Use ASGIMiddleware for auth endpoints (they handle auth logic)
-        return ASGIMiddleware(app)(request.environ, lambda *args: None)
-    except Exception as e:
-        # Error response with CORS headers
-        error_response = {
-            "status": "error",
-            "message": f"Internal server error: {str(e)}",
-            "data": None
-        }
-        response = Response(
-            json.dumps(error_response),
-            status=500,
-            content_type='application/json'
-        )
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-        return response
+    return handle_cors_request(app, request)
