@@ -52,13 +52,6 @@ def handle_cors_request(app: Any, request: Any) -> Response:
     Returns:
         Response with proper CORS headers
     """
-    # Set up event loop
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    
     # Handle CORS preflight
     if request.method == 'OPTIONS':
         return handle_cors_preflight()
