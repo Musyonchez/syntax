@@ -53,24 +53,53 @@ def verify_jwt_token(token: str) -> Dict[str, Any]:
 
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict[str, Any]:
     """Dependency to verify JWT token from Authorization header"""
-    token = credentials.credentials
-    payload = verify_jwt_token(token)
-    
-    # Verify user still exists in database
-    users_collection = await get_users_collection()
-    user = await users_collection.find_one({"_id": payload["user_id"]})
-    
-    if not user:
+    try:
+        token = credentials.credentials
+        payload = verify_jwt_token(token)
+        
+        # Verify user still exists in database
+        users_collection = await get_users_collection()
+        
+        # Handle different JWT payload structures and ObjectId conversion
+        user_id = payload.get("user_id") or payload.get("data", {}).get("userId")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token format"
+            )
+        
+        # Convert to ObjectId if it's a string
+        try:
+            from bson import ObjectId
+            if isinstance(user_id, str):
+                user_id = ObjectId(user_id)
+        except Exception:
+            # If ObjectId conversion fails, keep as string
+            pass
+        
+        user = await users_collection.find_one({"_id": user_id})
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found"
+            )
+        
+        return {
+            "user_id": str(user_id),
+            "email": payload.get("email") or payload.get("data", {}).get("email"),
+            "user": user
+        }
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        # Catch any other exceptions and return a proper HTTP error
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found"
+            detail=f"Token validation failed: {str(e)}"
         )
-    
-    return {
-        "user_id": payload["user_id"],
-        "email": payload["email"],
-        "user": user
-    }
 
 
 async def verify_admin(user_data: Dict[str, Any] = Depends(verify_token)) -> Dict[str, Any]:
@@ -94,7 +123,7 @@ async def optional_auth(credentials: Optional[HTTPAuthorizationCredentials] = De
     
     try:
         return await verify_token(credentials)
-    except HTTPException:
+    except (HTTPException, Exception):
         return None
 
 
