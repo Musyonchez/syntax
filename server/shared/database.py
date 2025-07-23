@@ -14,35 +14,27 @@ from .config import config
 MONGODB_URI = config.MONGODB_URI
 DATABASE_NAME = config.DATABASE_NAME
 
-# Global client instance
-_client: Optional[AsyncIOMotorClient] = None
-_database = None
+# No global client instance needed - create new connections per request
 
 
 async def get_database():
-    """Get MongoDB database instance"""
-    global _client, _database
-    
-    if _client is None:
-        _client = AsyncIOMotorClient(MONGODB_URI)
-        _database = _client[DATABASE_NAME]
+    """Get MongoDB database instance - create new connection for each request in serverless"""
+    try:
+        # Create a new client for each request to avoid event loop conflicts
+        client = AsyncIOMotorClient(MONGODB_URI)
+        database = client[DATABASE_NAME]
         
         # Test connection
-        try:
-            await _client.admin.command('ping')
-        except Exception as e:
-            print(f"Failed to connect to MongoDB: {e}")
-            raise
-    
-    return _database
+        await client.admin.command('ping')
+        return database
+    except Exception as e:
+        print(f"Failed to connect to MongoDB: {e}")
+        raise
 
 
 async def close_database():
-    """Close MongoDB connection"""
-    global _client
-    if _client:
-        _client.close()
-        _client = None
+    """Close MongoDB connection - no-op since we create new connections per request"""
+    pass
 
 
 # Collection getters
