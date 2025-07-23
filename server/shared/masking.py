@@ -229,22 +229,21 @@ class CodeMasker:
         }
 
 
-# Global instance
-code_masker = CodeMasker()
-
-
-# Convenience functions
+# Convenience functions - create new instance per request to avoid any potential issues
 def mask_code(code: str, language: str, difficulty: int = 5) -> Tuple[str, List[str]]:
     """Convenience function to mask code"""
-    return code_masker.mask_code(code, language, difficulty)
+    masker = CodeMasker()
+    return masker.mask_code(code, language, difficulty)
 
 
 def validate_answer(user_answer: str, correct_answer: str, strict: bool = False) -> float:
     """Convenience function to validate answer"""
-    return code_masker.validate_answer(user_answer, correct_answer, strict)
+    masker = CodeMasker()
+    return masker.validate_answer(user_answer, correct_answer, strict)
 
 
 def calculate_score(user_answers: List[str], correct_answers: List[str], 
                    time_taken: float, max_time: float = 300) -> Dict[str, float]:
     """Convenience function to calculate score"""
-    return code_masker.calculate_score(user_answers, correct_answers, time_taken, max_time)
+    masker = CodeMasker()
+    return masker.calculate_score(user_answers, correct_answers, time_taken, max_time)
