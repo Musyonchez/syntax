@@ -28,17 +28,16 @@ from shared.utils import (
     sanitize_code, sanitize_text, validate_language, normalize_language,
     paginate_results, clean_user_input
 )
-from shared.cors_handler import handle_cors_request
 
 app = FastAPI(title="SyntaxMem Snippets Service")
 
 # Import configuration
 from shared.config import config
 
-# CORS middleware
+# CORS middleware with explicit localhost support
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=config.ALLOWED_ORIGINS,
+    allow_origins=["*"],  # Allow all origins for development
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -632,4 +631,4 @@ async def review_snippet_submission(
 @functions_framework.http
 def main(request):
     """Cloud Function entry point"""
-    return handle_cors_request(app, request)
+    return ASGIMiddleware(app)
