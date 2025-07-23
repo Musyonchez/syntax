@@ -611,4 +611,41 @@ async def recalculate_ranks(
 @functions_framework.http
 def main(request):
     """Cloud Function entry point"""
-    return ASGIMiddleware(app)
+    import asyncio
+    import json
+    from werkzeug.wrappers import Response
+    
+    # Set up event loop
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    
+    # Handle CORS preflight
+    if request.method == 'OPTIONS':
+        response = Response('')
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+    
+    try:
+        # Use ASGIMiddleware for leaderboard endpoints
+        return ASGIMiddleware(app)(request.environ, lambda *args: None)
+    except Exception as e:
+        # Error response with CORS headers
+        error_response = {
+            "status": "error",
+            "message": f"Internal server error: {str(e)}",
+            "data": None
+        }
+        response = Response(
+            json.dumps(error_response),
+            status=500,
+            content_type='application/json'
+        )
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
