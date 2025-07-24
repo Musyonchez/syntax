@@ -46,41 +46,75 @@ security = HTTPBearer()
 async def verify_google_token(token: str) -> Optional[Dict[str, Any]]:
     """
     Verify Google OAuth token and return user info
+    Uses requests-based approach to avoid asyncio conflicts
     Returns None if token is invalid
     """
     try:
-        # Try to verify as ID token first
+        # First try to verify as ID token using requests (sync)
         try:
-            # Verify the ID token against Google's servers
-            idinfo = id_token.verify_oauth2_token(
-                token, 
-                google_requests.Request(), 
-                config.GOOGLE_CLIENT_ID
-            )
+            # Use requests to verify ID token synchronously
+            import concurrent.futures
+            import asyncio
             
-            # Check if token is for our app
-            if idinfo['aud'] != config.GOOGLE_CLIENT_ID:
-                return None
-                
-            return idinfo
+            def verify_id_token_sync():
+                return id_token.verify_oauth2_token(
+                    token,
+                    google_requests.Request(),
+                    config.GOOGLE_CLIENT_ID
+                )
             
-        except ValueError:
-            # If ID token fails, try as access token
+            # Run in thread pool with timeout
+            loop = asyncio.get_event_loop()
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(verify_id_token_sync)
+                try:
+                    idinfo = await asyncio.wait_for(
+                        loop.run_in_executor(None, future.result),
+                        timeout=8.0
+                    )
+                    
+                    if idinfo and idinfo.get('aud') == config.GOOGLE_CLIENT_ID:
+                        return idinfo
+                        
+                except (concurrent.futures.TimeoutError, asyncio.TimeoutError):
+                    future.cancel()
+                    pass
+                    
+        except (ValueError, Exception):
+            # If ID token verification fails, try access token approach
             pass
-            
-        # Verify access token by calling Google's userinfo endpoint
-        response = requests.get(
-            f'https://www.googleapis.com/oauth2/v1/userinfo',
-            headers={'Authorization': f'Bearer {token}'},
-            timeout=10
-        )
         
-        if response.status_code == 200:
-            userinfo = response.json()
-            return userinfo
-        else:
-            return None
+        # Fallback: verify as access token using Google's userinfo endpoint
+        try:
+            import asyncio
+            import aiohttp
             
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as session:
+                async with session.get(
+                    'https://www.googleapis.com/oauth2/v1/userinfo',
+                    headers={'Authorization': f'Bearer {token}'}
+                ) as response:
+                    if response.status == 200:
+                        userinfo = await response.json()
+                        return userinfo
+                        
+        except Exception:
+            # Final fallback: use requests synchronously
+            try:
+                response = requests.get(
+                    'https://www.googleapis.com/oauth2/v1/userinfo',
+                    headers={'Authorization': f'Bearer {token}'},
+                    timeout=5
+                )
+                
+                if response.status_code == 200:
+                    return response.json()
+                    
+            except Exception:
+                pass
+                
+        return None
+        
     except Exception:
         return None
 
@@ -138,6 +172,7 @@ async def google_auth(auth_request: GoogleAuthRequest):
     try:
         # Verify Google token with Google's servers
         google_user_info = await verify_google_token(auth_request.google_token)
+        
         if not google_user_info:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -147,6 +182,7 @@ async def google_auth(auth_request: GoogleAuthRequest):
         # Verify that the token data matches the request data
         google_email = google_user_info.get('email')
         google_id = google_user_info.get('sub') or google_user_info.get('id')
+        print(f"DEBUG: Email verification - Token: {google_email}, Request: {auth_request.email}")
         
         if google_email != auth_request.email:
             raise HTTPException(
@@ -160,29 +196,34 @@ async def google_auth(auth_request: GoogleAuthRequest):
                 detail="Google ID mismatch between token and request"
             )
         
-        # Create a fresh database connection for this request to avoid event loop issues
-        from motor.motor_asyncio import AsyncIOMotorClient
-        client = AsyncIOMotorClient(config.MONGODB_URI)
-        database = client[config.DATABASE_NAME]
-        users_collection = database.users
+        print("DEBUG: Getting database connection...")
+        # Use the shared database connection that handles proper per-request connections
+        users_collection = await get_users_collection()
+        print("DEBUG: Database connection established")
         
         # Sanitize inputs to prevent injection
         clean_google_id = str(auth_request.google_id).strip()
         clean_email = str(auth_request.email).strip().lower()
+        print(f"DEBUG: Sanitized data - ID: {clean_google_id}, Email: {clean_email}")
         
         # Check if user already exists
+        print("DEBUG: Querying database for existing user...")
         existing_user = await users_collection.find_one({
             "$or": [
                 {"googleId": clean_google_id},
                 {"email": clean_email}
             ]
         })
+        print(f"DEBUG: Database query completed - User exists: {existing_user is not None}")
         
         current_time = current_timestamp()
+        print(f"DEBUG: Current timestamp: {current_time}")
         
         if existing_user:
+            print("DEBUG: Updating existing user...")
             # Update existing user
             user_id = str(existing_user["_id"])
+            print(f"DEBUG: User ID: {user_id}")
             
             await users_collection.update_one(
                 {"_id": existing_user["_id"]},
@@ -195,9 +236,12 @@ async def google_auth(auth_request: GoogleAuthRequest):
                     }
                 }
             )
+            print("DEBUG: User update completed")
             
             # Get updated user data
+            print("DEBUG: Fetching updated user data...")
             user = await users_collection.find_one({"_id": existing_user["_id"]})
+            print("DEBUG: User data fetched")
         else:
             # Create new user
             user_id = generate_id()
@@ -228,9 +272,12 @@ async def google_auth(auth_request: GoogleAuthRequest):
             user = new_user
         
         # Create JWT token
+        print("DEBUG: Creating JWT token...")
         token = create_jwt_token(user_id, auth_request.email)
+        print("DEBUG: JWT token created")
         
         # Prepare user data for response (remove sensitive fields)
+        print("DEBUG: Preparing user data for response...")
         user_data = {
             "user_id": user_id,
             "email": user["email"],
@@ -240,25 +287,23 @@ async def google_auth(auth_request: GoogleAuthRequest):
             "preferences": user["preferences"],
             "stats": user["stats"]
         }
+        print("DEBUG: User data prepared")
         
-        # Close the database connection
-        client.close()
-        
-        return {
+        print("DEBUG: Returning response...")
+        response_data = {
             "token": token,
             "user": user_data,
             "message": "Authentication successful"
         }
+        print(f"DEBUG: Response data: {response_data}")
+        return create_response(data=response_data, message="Authentication successful")
         
+    except HTTPException:
+        raise
     except Exception as e:
-        # Close the database connection if it was created
-        try:
-            client.close()
-        except:
-            pass
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Authentication failed"
+            detail=f"Authentication failed: {str(e)}"
         )
 
 

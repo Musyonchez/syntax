@@ -19,6 +19,7 @@ declare module "next-auth" {
   interface JWT {
     accessToken?: string
     role?: string
+    backendSynced?: boolean
   }
 }
 
@@ -44,21 +45,60 @@ const authConfig = NextAuth({
       }
       return session
     },
-    async jwt({ token, user, account }) {
-      // Store the JWT token from our backend in the NextAuth token
-      if (user && account) {
-        token.role = (user as { role?: string })?.role || "user"
-        token.accessToken = (user as { accessToken?: string })?.accessToken
+    async jwt({ token, user, account, profile }) {
+      // Integrate with backend on first sign in (only if running client-side)
+      if (account?.provider === "google" && !token.backendSynced && typeof window !== "undefined") {
+        try {
+          console.log("DEBUG: Syncing with backend...")
+          
+          const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://127.0.0.1:8080'}/google-auth`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              google_token: account.id_token || account.access_token || "",
+              google_id: account.providerAccountId || profile?.sub,
+              email: profile?.email,
+              name: profile?.name || "",
+              avatar: profile?.picture || profile?.image || "",
+            }),
+          })
+
+          console.log("DEBUG: Backend response received, status:", response.status)
+          
+          if (response.ok) {
+            console.log("DEBUG: Parsing response JSON...")
+            const data = await response.json()
+            console.log("DEBUG: Response parsed successfully:", data)
+            
+            // Store backend data in token
+            token.role = data.user?.role || "user"
+            token.accessToken = data.token
+            token.backendSynced = true
+            console.log("DEBUG: Backend sync completed")
+          } else {
+            console.error("Backend auth failed with status:", response.status)
+            token.role = "user"
+            token.backendSynced = false
+          }
+        } catch (error) {
+          console.error("Backend sync error:", error)
+          token.role = "user"
+          token.backendSynced = false
+        }
       }
+      
+      // Store user data from previous sync
+      if (user && account) {
+        token.role = token.role || "user"
+      }
+      
       return token
     },
     async signIn({ user, account, profile }) {
-      // Custom sign-in logic - temporarily bypassing backend for testing
+      // Allow Google sign-in - backend sync happens in jwt callback
       if (account?.provider === "google" && profile) {
-        // TODO: Fix auth service and re-enable backend integration
-        // For now, just allow sign-in with Google data
-        user.role = "user"
-        user.accessToken = "temp-token" // Temporary token
         return true
       }
       return true
