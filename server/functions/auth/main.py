@@ -123,8 +123,12 @@ def google_auth():
 
 async def _google_auth_async(data: Dict):
     """Async logic for Google authentication"""
+    print(f"DEBUG: Starting auth for email: {data.get('email', 'unknown')}")
+    
     # Verify Google token
     google_user_info = await verify_google_token(data["google_token"])
+    print(f"DEBUG: Google token verification result: {google_user_info is not None}")
+    
     if not google_user_info:
         raise Exception("Invalid Google token")
     
@@ -146,6 +150,7 @@ async def _google_auth_async(data: Dict):
     clean_email = str(data["email"]).strip().lower()
     
     # Check if user already exists
+    print(f"DEBUG: Checking for existing user with Google ID: {clean_google_id}, Email: {clean_email}")
     existing_user = await users_collection.find_one({
         "$or": [
             {"googleId": clean_google_id},
@@ -153,6 +158,7 @@ async def _google_auth_async(data: Dict):
         ]
     })
     
+    print(f"DEBUG: Existing user found: {existing_user is not None}")
     current_time = current_timestamp()
     
     if existing_user:
@@ -175,6 +181,7 @@ async def _google_auth_async(data: Dict):
         user = await users_collection.find_one({"_id": existing_user["_id"]})
     else:
         # Create new user
+        print("DEBUG: Creating new user")
         user_id = generate_id()
         new_user = {
             "_id": user_id,
@@ -199,7 +206,9 @@ async def _google_auth_async(data: Dict):
             "lastActive": current_time
         }
         
+        print(f"DEBUG: Inserting new user with ID: {user_id}")
         await users_collection.insert_one(new_user)
+        print("DEBUG: User successfully inserted into database")
         user = new_user
     
     # Create JWT token

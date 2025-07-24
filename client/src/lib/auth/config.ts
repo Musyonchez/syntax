@@ -46,39 +46,58 @@ const authConfig = NextAuth({
       return session
     },
     async jwt({ token, user, account, profile }) {
-      // Integrate with backend on first sign in (only if running client-side)
-      if (account?.provider === "google" && !token.backendSynced && typeof window !== "undefined") {
+      console.log("JWT callback triggered", { hasAccount: !!account, provider: account?.provider, backendSynced: token.backendSynced, isClient: typeof window !== "undefined" })
+      
+      // Integrate with backend on first sign in
+      if (account?.provider === "google" && !token.backendSynced) {
+        console.log("Starting backend sync for Google auth")
         try {
           
-          const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://127.0.0.1:8080'}/google-auth`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              google_token: account.id_token || account.access_token || "",
-              google_id: account.providerAccountId || profile?.sub,
-              email: profile?.email,
-              name: profile?.name || "",
-              avatar: profile?.picture || profile?.image || "",
+          console.log("Making backend request to:", `${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://127.0.0.1:8080'}/google-auth`)
+          const response = await Promise.race([
+            fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://127.0.0.1:8080'}/google-auth`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                google_token: account.id_token || account.access_token || "",
+                google_id: account.providerAccountId || profile?.sub,
+                email: profile?.email,
+                name: profile?.name || "",
+                avatar: profile?.picture || profile?.image || "",
+              }),
             }),
-          })
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Backend sync timeout after 10 seconds')), 10000)
+            )
+          ])
+          console.log("Backend response status:", response.status)
 
           
           if (response.ok) {
+            console.log("Backend sync successful")
             const data = await response.json()
+            console.log("Backend response data:", data)
             
             // Store backend data in token
-            token.role = data.user?.role || "user"
-            token.accessToken = data.token
+            token.role = data.data?.user?.role || "user"
+            token.accessToken = data.data?.token
             token.backendSynced = true
+            console.log("Token updated successfully")
           } else {
+            console.error("Backend sync failed with status:", response.status)
+            const errorText = await response.text()
+            console.error("Error response:", errorText)
             token.role = "user"
             token.backendSynced = false
           }
         } catch (error) {
+          console.error("Backend sync error:", error)
+          // Continue with OAuth flow even if backend sync fails
           token.role = "user"
           token.backendSynced = false
+          console.log("Continuing OAuth flow despite backend sync failure")
         }
       }
       
@@ -87,6 +106,7 @@ const authConfig = NextAuth({
         token.role = token.role || "user"
       }
       
+      console.log("JWT callback completed, returning token")
       return token
     },
     async signIn({ user, account, profile }) {
