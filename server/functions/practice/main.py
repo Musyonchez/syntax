@@ -305,7 +305,7 @@ async def submit_practice_attempt(
         leaderboard_eligible = snippet and snippet["type"] == "official"
         
         if leaderboard_eligible:
-            await self._add_to_leaderboard(
+            await _add_to_leaderboard(
                 user_id=user_id,
                 snippet_id=session["snippetId"],
                 language=session["language"],
