@@ -182,7 +182,6 @@ async def google_auth(auth_request: GoogleAuthRequest):
         # Verify that the token data matches the request data
         google_email = google_user_info.get('email')
         google_id = google_user_info.get('sub') or google_user_info.get('id')
-        print(f"DEBUG: Email verification - Token: {google_email}, Request: {auth_request.email}")
         
         if google_email != auth_request.email:
             raise HTTPException(
@@ -196,34 +195,26 @@ async def google_auth(auth_request: GoogleAuthRequest):
                 detail="Google ID mismatch between token and request"
             )
         
-        print("DEBUG: Getting database connection...")
         # Use the shared database connection that handles proper per-request connections
         users_collection = await get_users_collection()
-        print("DEBUG: Database connection established")
         
         # Sanitize inputs to prevent injection
         clean_google_id = str(auth_request.google_id).strip()
         clean_email = str(auth_request.email).strip().lower()
-        print(f"DEBUG: Sanitized data - ID: {clean_google_id}, Email: {clean_email}")
         
         # Check if user already exists
-        print("DEBUG: Querying database for existing user...")
         existing_user = await users_collection.find_one({
             "$or": [
                 {"googleId": clean_google_id},
                 {"email": clean_email}
             ]
         })
-        print(f"DEBUG: Database query completed - User exists: {existing_user is not None}")
         
         current_time = current_timestamp()
-        print(f"DEBUG: Current timestamp: {current_time}")
         
         if existing_user:
-            print("DEBUG: Updating existing user...")
             # Update existing user
             user_id = str(existing_user["_id"])
-            print(f"DEBUG: User ID: {user_id}")
             
             await users_collection.update_one(
                 {"_id": existing_user["_id"]},
@@ -236,12 +227,9 @@ async def google_auth(auth_request: GoogleAuthRequest):
                     }
                 }
             )
-            print("DEBUG: User update completed")
             
             # Get updated user data
-            print("DEBUG: Fetching updated user data...")
             user = await users_collection.find_one({"_id": existing_user["_id"]})
-            print("DEBUG: User data fetched")
         else:
             # Create new user
             user_id = generate_id()
@@ -272,12 +260,9 @@ async def google_auth(auth_request: GoogleAuthRequest):
             user = new_user
         
         # Create JWT token
-        print("DEBUG: Creating JWT token...")
         token = create_jwt_token(user_id, auth_request.email)
-        print("DEBUG: JWT token created")
         
         # Prepare user data for response (remove sensitive fields)
-        print("DEBUG: Preparing user data for response...")
         user_data = {
             "user_id": user_id,
             "email": user["email"],
@@ -287,15 +272,12 @@ async def google_auth(auth_request: GoogleAuthRequest):
             "preferences": user["preferences"],
             "stats": user["stats"]
         }
-        print("DEBUG: User data prepared")
         
-        print("DEBUG: Returning response...")
         response_data = {
             "token": token,
             "user": user_data,
             "message": "Authentication successful"
         }
-        print(f"DEBUG: Response data: {response_data}")
         return create_response(data=response_data, message="Authentication successful")
         
     except HTTPException:
