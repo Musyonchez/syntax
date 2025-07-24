@@ -14,9 +14,14 @@ from flask_cors import CORS
 
 # Create Flask app
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000", "https://syntaxmem.com"])
+CORS(app, origins=["http://localhost:3000", "https://syntaxmem.com"], methods=["GET", "POST", "OPTIONS"], headers=["Content-Type", "Authorization"])
 
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from the root of the `server` directory
+dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
+load_dotenv(dotenv_path=dotenv_path)
 
 # Import utilities (we'll create these)
 import sys
