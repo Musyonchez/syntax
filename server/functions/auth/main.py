@@ -139,28 +139,30 @@ def google_auth():
             
         print("DEBUG: Data validation passed, starting async processing")
         
-        # Run async logic with timeout
+        # Run async logic without timeout
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            print("DEBUG: Starting async auth with 8-second timeout")
-            # Add 8-second timeout to entire auth process
-            result = loop.run_until_complete(
-                asyncio.wait_for(_google_auth_async(data), timeout=8.0)
-            )
+            print("DEBUG: Starting async auth without timeout")
+            result = loop.run_until_complete(_google_auth_async(data))
             print("DEBUG: Async auth completed successfully")
             print(f"DEBUG: Result type: {type(result)}")
             print(f"DEBUG: Result content: {result}")
+            
+            # Close loop before creating response
+            print("DEBUG: Closing event loop")
+            loop.close()
+            
             response_data = create_response(result, "Authentication successful")
             print(f"DEBUG: create_response output type: {type(response_data)}")
             print(f"DEBUG: create_response output: {response_data}")
-            return jsonify(response_data)
-        except asyncio.TimeoutError:
-            print("ERROR: Authentication process timed out after 8 seconds")
-            return jsonify(create_error_response("Authentication timeout")), 408
-        finally:
-            print("DEBUG: Closing event loop")
+            flask_response = jsonify(response_data)
+            print(f"DEBUG: About to return Flask response: {flask_response}")
+            return flask_response
+        except Exception as e:
+            print(f"DEBUG: Exception occurred, closing loop: {e}")
             loop.close()
+            raise
             
     except Exception as e:
         print(f"Error during Google auth: {e}")

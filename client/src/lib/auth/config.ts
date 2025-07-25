@@ -43,49 +43,44 @@ const authConfig = NextAuth({
       if (account?.provider === "google" && !token.backendSynced) {
         console.log("Starting backend sync - passing all Google data to server")
         try {
-          const response = await Promise.race([
-            fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://127.0.0.1:8080'}/google-auth`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
+          const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://127.0.0.1:8080'}/google-auth`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              // Pass ALL account data to server
+              account: {
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                type: account.type,
+                id_token: account.id_token,
+                access_token: account.access_token,
+                expires_at: account.expires_at,
+                refresh_token: account.refresh_token,
+                scope: account.scope,
+                token_type: account.token_type,
               },
-              body: JSON.stringify({
-                // Pass ALL account data to server
-                account: {
-                  provider: account.provider,
-                  providerAccountId: account.providerAccountId,
-                  type: account.type,
-                  id_token: account.id_token,
-                  access_token: account.access_token,
-                  expires_at: account.expires_at,
-                  refresh_token: account.refresh_token,
-                  scope: account.scope,
-                  token_type: account.token_type,
-                },
-                // Pass ALL profile data to server
-                profile: {
-                  sub: profile?.sub,
-                  name: profile?.name,
-                  given_name: profile?.given_name,
-                  family_name: profile?.family_name,
-                  picture: profile?.picture,
-                  email: profile?.email,
-                  email_verified: profile?.email_verified,
-                  locale: profile?.locale,
-                },
-                // Pass user data if available
-                user: user ? {
-                  id: user.id,
-                  name: user.name,
-                  email: user.email,
-                  image: user.image,
-                } : null
-              }),
+              // Pass ALL profile data to server
+              profile: {
+                sub: profile?.sub,
+                name: profile?.name,
+                given_name: profile?.given_name,
+                family_name: profile?.family_name,
+                picture: profile?.picture,
+                email: profile?.email,
+                email_verified: profile?.email_verified,
+                locale: profile?.locale,
+              },
+              // Pass user data if available
+              user: user ? {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                image: user.image,
+              } : null
             }),
-            new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Backend sync timeout after 10 seconds')), 10000)
-            )
-          ]) as Response
+          })
 
           if (response.ok) {
             const serverData = await response.json()
