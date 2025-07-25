@@ -31,6 +31,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 from shared.auth_middleware import verify_jwt_token_simple
 from shared.database import get_snippets_collection, get_users_collection
 from shared.utils import current_timestamp, generate_id
+from shared.masking import mask_code
 
 
 def create_response(data=None, message="Success", status=200):
@@ -279,6 +280,75 @@ async def _create_snippet_async(user_id: str, data: Dict):
         "language": snippet_data["language"],
         "difficulty": snippet_data["difficulty"],
         "created_at": snippet_data["createdAt"].isoformat()
+    }
+
+
+@app.route("/mask", methods=["POST"])
+def mask_snippet():
+    """Generate masked version of a snippet for practice"""
+    try:
+        # Verify JWT token
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return create_error_response("Authorization token required", 401)
+        
+        token = auth_header.split(" ")[1]
+        user_data = verify_jwt_token_simple(token)
+        if not user_data:
+            return create_error_response("Invalid or expired token", 401)
+        
+        user_id = user_data["user_id"]
+        
+        # Get request data
+        data = request.get_json()
+        if not data:
+            return create_error_response("Invalid JSON data", 400)
+        
+        snippet_id = data.get("snippet_id")
+        if not snippet_id:
+            return create_error_response("snippet_id is required", 400)
+        
+        # Run async logic
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            result = loop.run_until_complete(_mask_snippet_async(user_id, snippet_id))
+            return create_response(result, "Snippet masked successfully")
+        finally:
+            loop.close()
+            
+    except Exception as e:
+        print(f"Error masking snippet: {e}")
+        return create_error_response(f"Failed to mask snippet: {str(e)}", 500)
+
+
+async def _mask_snippet_async(user_id: str, snippet_id: str):
+    """Async logic for masking a snippet"""
+    snippets_collection = await get_snippets_collection()
+    
+    # Get snippet
+    snippet = await snippets_collection.find_one({"_id": snippet_id})
+    if not snippet:
+        raise Exception("Snippet not found")
+    
+    # Check if user has access to this snippet
+    if snippet.get("type") == "personal" and snippet.get("userId") != user_id:
+        raise Exception("Access denied to this snippet")
+    
+    # Generate masked code
+    masked_result = mask_code(snippet["code"], snippet["language"], snippet["difficulty"])
+    
+    return {
+        "snippet_id": snippet_id,
+        "original_code": snippet["code"],
+        "masked_code": masked_result["masked_code"],
+        "blanks": masked_result["blanks"],
+        "snippet_info": {
+            "title": snippet.get("title", "Untitled"),
+            "language": snippet["language"],
+            "difficulty": snippet["difficulty"],
+            "description": snippet.get("description", "")
+        }
     }
 
 

@@ -54,3 +54,9 @@ async def get_leaderboard_collection():
     """Get leaderboard collection"""
     db = await get_database()
     return db.leaderboard
+
+
+async def get_forum_posts_collection():
+    """Get forum posts collection"""
+    db = await get_database()
+    return db.forum_posts
