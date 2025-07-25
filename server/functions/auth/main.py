@@ -151,7 +151,8 @@ def google_auth():
             
             # Close loop before creating response
             print("DEBUG: Closing event loop")
-            loop.close()
+            if not loop.is_closed():
+                loop.close()
             
             response_data = create_response(result, "Authentication successful")
             print(f"DEBUG: create_response output type: {type(response_data)}")
@@ -161,7 +162,8 @@ def google_auth():
             return flask_response
         except Exception as e:
             print(f"DEBUG: Exception occurred, closing loop: {e}")
-            loop.close()
+            if not loop.is_closed():
+                loop.close()
             raise
             
     except Exception as e:
@@ -320,7 +322,8 @@ def verify_token():
             result = loop.run_until_complete(_get_user_data_async(user_data["user_id"]))
             return jsonify(create_response(result, "Token is valid"))
         finally:
-            loop.close()
+            if not loop.is_closed():
+                loop.close()
             
     except Exception as e:
         print(f"Error verifying token: {e}")
@@ -372,7 +375,8 @@ def get_user_profile():
             result = loop.run_until_complete(_get_user_data_async(user_id))
             return create_response(result["user"], "Profile retrieved")
         finally:
-            loop.close()
+            if not loop.is_closed():
+                loop.close()
             
     except Exception as e:
         print(f"Error getting profile: {e}")
@@ -407,7 +411,8 @@ def update_user_profile():
             result = loop.run_until_complete(_update_profile_async(user_id, profile_data))
             return create_response(result, "Profile updated successfully")
         finally:
-            loop.close()
+            if not loop.is_closed():
+                loop.close()
             
     except Exception as e:
         print(f"Error updating profile: {e}")
