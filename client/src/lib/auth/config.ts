@@ -46,14 +46,12 @@ const authConfig = NextAuth({
       return session
     },
     async jwt({ token, user, account, profile }) {
-      console.log("JWT callback triggered", { hasAccount: !!account, provider: account?.provider, backendSynced: token.backendSynced, isClient: typeof window !== "undefined" })
+      console.log("JWT callback triggered", { hasAccount: !!account, provider: account?.provider, backendSynced: token.backendSynced })
       
-      // Integrate with backend on first sign in
+      // Integrate with backend on first sign in - pass ALL Google data to server
       if (account?.provider === "google" && !token.backendSynced) {
-        console.log("Starting backend sync for Google auth")
+        console.log("Starting backend sync - passing all Google data to server")
         try {
-          
-          console.log("Making backend request to:", `${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://127.0.0.1:8080'}/google-auth`)
           const response = await Promise.race([
             fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://127.0.0.1:8080'}/google-auth`, {
               method: "POST",
@@ -61,52 +59,82 @@ const authConfig = NextAuth({
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                google_token: account.id_token || account.access_token || "",
-                google_id: account.providerAccountId || profile?.sub,
-                email: profile?.email,
-                name: profile?.name || "",
-                avatar: profile?.picture || profile?.image || "",
+                // Pass ALL account data to server
+                account: {
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  type: account.type,
+                  id_token: account.id_token,
+                  access_token: account.access_token,
+                  expires_at: account.expires_at,
+                  refresh_token: account.refresh_token,
+                  scope: account.scope,
+                  token_type: account.token_type,
+                },
+                // Pass ALL profile data to server
+                profile: {
+                  sub: profile?.sub,
+                  name: profile?.name,
+                  given_name: profile?.given_name,
+                  family_name: profile?.family_name,
+                  picture: profile?.picture,
+                  email: profile?.email,
+                  email_verified: profile?.email_verified,
+                  locale: profile?.locale,
+                },
+                // Pass user data if available
+                user: user ? {
+                  id: user.id,
+                  name: user.name,
+                  email: user.email,
+                  image: user.image,
+                } : null
               }),
             }),
             new Promise((_, reject) => 
               setTimeout(() => reject(new Error('Backend sync timeout after 10 seconds')), 10000)
             )
           ])
-          console.log("Backend response status:", response.status)
 
-          
           if (response.ok) {
-            console.log("Backend sync successful")
-            const data = await response.json()
-            console.log("Backend response data:", data)
+            const serverData = await response.json()
+            console.log("Backend sync successful - using server response")
             
-            // Store backend data in token
-            token.role = data.data?.user?.role || "user"
-            token.accessToken = data.data?.token
-            token.backendSynced = true
-            console.log("Token updated successfully")
+            // Use ONLY server response data - don't mix with client data
+            if (serverData.success && serverData.data) {
+              token.sub = serverData.data.user?.user_id
+              token.role = serverData.data.user?.role
+              token.accessToken = serverData.data.token
+              token.backendSynced = true
+              
+              // Store user data from server response
+              if (serverData.data.user) {
+                token.name = serverData.data.user.name
+                token.email = serverData.data.user.email
+                token.picture = serverData.data.user.avatar
+              }
+              
+              console.log("Token updated with server data")
+            } else {
+              throw new Error("Invalid server response format")
+            }
           } else {
-            console.error("Backend sync failed with status:", response.status)
-            const errorText = await response.text()
-            console.error("Error response:", errorText)
-            token.role = "user"
-            token.backendSynced = false
+            throw new Error(`Server responded with status ${response.status}`)
           }
         } catch (error) {
-          console.error("Backend sync error:", error)
-          // Continue with OAuth flow even if backend sync fails
+          console.error("Backend sync failed:", error)
+          // Use fallback data only if server sync fails
+          token.sub = profile?.sub || user?.id
           token.role = "user"
+          token.name = profile?.name || user?.name
+          token.email = profile?.email || user?.email
+          token.picture = profile?.picture || user?.image
           token.backendSynced = false
-          console.log("Continuing OAuth flow despite backend sync failure")
+          console.log("Using fallback client data due to backend sync failure")
         }
       }
       
-      // Store user data from previous sync
-      if (user && account) {
-        token.role = token.role || "user"
-      }
-      
-      console.log("JWT callback completed, returning token")
+      console.log("JWT callback completed")
       return token
     },
     async signIn({ user, account, profile }) {

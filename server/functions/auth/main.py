@@ -52,38 +52,55 @@ def create_error_response(message="Error", status=400):
 async def verify_google_token(token: str) -> Optional[Dict[str, Any]]:
     """Verify Google OAuth token and return user info"""
     try:
-        # Try to verify as ID token first
+        print(f"DEBUG: Verifying Google token (length: {len(token)})")
+        
+        # Try to verify as ID token first (this is what NextAuth sends)
         try:
+            print("DEBUG: Attempting ID token verification")
             idinfo = id_token.verify_oauth2_token(
                 token,
                 google_requests.Request(),
                 os.getenv('GOOGLE_CLIENT_ID')
             )
+            print(f"DEBUG: ID token verification successful: {idinfo is not None}")
             
             if idinfo and idinfo.get('aud') == os.getenv('GOOGLE_CLIENT_ID'):
+                print("DEBUG: ID token audience verified")
                 return idinfo
+            else:
+                print("DEBUG: ID token audience mismatch or invalid")
                 
-        except Exception:
+        except Exception as e:
+            print(f"DEBUG: ID token verification failed: {str(e)}")
             # If ID token fails, try as access token
             pass
         
         # Fallback: verify as access token using Google's userinfo endpoint
         try:
+            print("DEBUG: Attempting access token verification via userinfo endpoint")
             response = requests.get(
                 'https://www.googleapis.com/oauth2/v1/userinfo',
                 headers={'Authorization': f'Bearer {token}'},
-                timeout=5
+                timeout=3  # Reduced timeout
             )
+            print(f"DEBUG: Userinfo endpoint response status: {response.status_code}")
             
             if response.status_code == 200:
-                return response.json()
+                user_info = response.json()
+                print(f"DEBUG: Access token verification successful: {user_info.get('email', 'no_email')}")
+                return user_info
+            else:
+                print(f"DEBUG: Access token verification failed with status {response.status_code}")
                 
-        except Exception:
+        except Exception as e:
+            print(f"DEBUG: Access token verification failed: {str(e)}")
             pass
             
+        print("DEBUG: All token verification methods failed")
         return None
         
-    except Exception:
+    except Exception as e:
+        print(f"DEBUG: Token verification error: {str(e)}")
         return None
 
 
@@ -97,23 +114,56 @@ def health_check():
 def google_auth():
     """Authenticate user with Google OAuth"""
     try:
+        print("DEBUG: Received google-auth request")
+        
         # Get request data
         data = request.get_json()
         if not data:
+            print("DEBUG: No JSON data received")
             return create_error_response("Invalid JSON data", 400)
         
-        required_fields = ["google_token", "google_id", "email", "name", "avatar"]
-        for field in required_fields:
-            if not data.get(field):
-                return create_error_response(f"{field} is required", 400)
+        print(f"DEBUG: Request data keys: {list(data.keys())}")
         
-        # Run async logic
+        # Check that we have account and profile data
+        if not data.get("account") or not data.get("profile"):
+            print(f"DEBUG: Missing required data - account: {data.get('account') is not None}, profile: {data.get('profile') is not None}")
+            return create_error_response("Account and profile data required", 400)
+        
+        account = data["account"]
+        profile = data["profile"]
+        
+        print(f"DEBUG: Account keys: {list(account.keys()) if account else 'None'}")
+        print(f"DEBUG: Profile keys: {list(profile.keys()) if profile else 'None'}")
+        
+        # Validate required fields
+        if not account.get("id_token") and not account.get("access_token"):
+            print("DEBUG: No valid token found in account data")
+            return create_error_response("Google token (id_token or access_token) required", 400)
+        if not profile.get("email"):
+            print("DEBUG: No email found in profile data")
+            return create_error_response("Email is required", 400)
+        if not profile.get("sub"):
+            print("DEBUG: No sub (Google ID) found in profile data")
+            return create_error_response("Google ID (sub) is required", 400)
+            
+        print("DEBUG: Data validation passed, starting async processing")
+        
+        # Run async logic with timeout
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            result = loop.run_until_complete(_google_auth_async(data))
+            print("DEBUG: Starting async auth with 8-second timeout")
+            # Add 8-second timeout to entire auth process
+            result = loop.run_until_complete(
+                asyncio.wait_for(_google_auth_async(data), timeout=8.0)
+            )
+            print("DEBUG: Async auth completed successfully")
             return create_response(result, "Authentication successful")
+        except asyncio.TimeoutError:
+            print("ERROR: Authentication process timed out after 8 seconds")
+            return create_error_response("Authentication timeout", 408)
         finally:
+            print("DEBUG: Closing event loop")
             loop.close()
             
     except Exception as e:
@@ -123,31 +173,49 @@ def google_auth():
 
 async def _google_auth_async(data: Dict):
     """Async logic for Google authentication"""
-    print(f"DEBUG: Starting auth for email: {data.get('email', 'unknown')}")
+    print("DEBUG: _google_auth_async started")
+    
+    account = data["account"]
+    profile = data["profile"]
+    
+    print(f"DEBUG: Starting auth for email: {profile.get('email', 'unknown')}")
+    
+    # Use the token from account data (prefer id_token, fallback to access_token)
+    google_token = account.get("id_token") or account.get("access_token")
+    print(f"DEBUG: Using token type: {'id_token' if account.get('id_token') else 'access_token'}")
     
     # Verify Google token
-    google_user_info = await verify_google_token(data["google_token"])
+    print("DEBUG: About to verify Google token")
+    google_user_info = await verify_google_token(google_token)
     print(f"DEBUG: Google token verification result: {google_user_info is not None}")
     
     if not google_user_info:
         raise Exception("Invalid Google token")
     
-    # Verify that the token data matches request data
+    print("DEBUG: Token verification passed, checking data consistency")
+    
+    # Verify that the token data matches profile data
     google_email = google_user_info.get('email')
     google_id = google_user_info.get('sub') or google_user_info.get('id')
     
-    if google_email != data["email"]:
-        raise Exception("Email mismatch between token and request")
+    print(f"DEBUG: Token email: {google_email}, Profile email: {profile['email']}")
+    print(f"DEBUG: Token ID: {google_id}, Profile ID: {profile['sub']}")
+    
+    if google_email != profile["email"]:
+        raise Exception("Email mismatch between token and profile")
         
-    if google_id != data["google_id"]:
-        raise Exception("Google ID mismatch between token and request")
+    if google_id != profile["sub"]:
+        raise Exception("Google ID mismatch between token and profile")
+    
+    print("DEBUG: Data consistency check passed, connecting to database")
     
     # Get database connection
     users_collection = await get_users_collection()
+    print("DEBUG: Database connection established")
     
-    # Sanitize inputs
-    clean_google_id = str(data["google_id"]).strip()
-    clean_email = str(data["email"]).strip().lower()
+    # Sanitize inputs from profile
+    clean_google_id = str(profile["sub"]).strip()
+    clean_email = str(profile["email"]).strip().lower()
     
     # Check if user already exists
     print(f"DEBUG: Checking for existing user with Google ID: {clean_google_id}, Email: {clean_email}")
@@ -170,8 +238,8 @@ async def _google_auth_async(data: Dict):
             {
                 "$set": {
                     "googleId": clean_google_id,
-                    "name": str(data["name"]).strip(),
-                    "avatar": str(data["avatar"]).strip(),
+                    "name": str(profile["name"] or "").strip(),
+                    "avatar": str(profile["picture"] or "").strip(),
                     "lastActive": current_time
                 }
             }
@@ -187,8 +255,8 @@ async def _google_auth_async(data: Dict):
             "_id": user_id,
             "googleId": clean_google_id,
             "email": clean_email,
-            "name": str(data["name"]).strip(),
-            "avatar": str(data["avatar"]).strip(),
+            "name": str(profile["name"] or "").strip(),
+            "avatar": str(profile["picture"] or "").strip(),
             "role": "user",
             "preferences": {
                 "theme": "dark",
@@ -212,7 +280,7 @@ async def _google_auth_async(data: Dict):
         user = new_user
     
     # Create JWT token
-    token = create_jwt_token(user_id, data["email"])
+    token = create_jwt_token(user_id, clean_email)
     
     # Prepare user data for response
     user_data = {
