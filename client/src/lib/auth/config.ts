@@ -36,15 +36,6 @@ const authConfig = NextAuth({
     }),
   ],
   callbacks: {
-    async session({ session, token }) {
-      // Send properties to the client
-      if (session.user) {
-        session.user.id = token?.sub || ""
-        session.user.role = token?.role as string || "user"
-        session.accessToken = token?.accessToken as string
-      }
-      return session
-    },
     async jwt({ token, user, account, profile }) {
       console.log("JWT callback triggered", { hasAccount: !!account, provider: account?.provider, backendSynced: token.backendSynced })
       
@@ -94,7 +85,7 @@ const authConfig = NextAuth({
             new Promise((_, reject) => 
               setTimeout(() => reject(new Error('Backend sync timeout after 10 seconds')), 10000)
             )
-          ])
+          ]) as Response
 
           if (response.ok) {
             const serverData = await response.json()
@@ -123,21 +114,24 @@ const authConfig = NextAuth({
           }
         } catch (error) {
           console.error("Backend sync failed:", error)
-          // Use fallback data only if server sync fails
-          token.sub = profile?.sub || user?.id
-          token.role = "user"
-          token.name = profile?.name || user?.name
-          token.email = profile?.email || user?.email
-          token.picture = profile?.picture || user?.image
-          token.backendSynced = false
-          console.log("Using fallback client data due to backend sync failure")
+          // Don't fallback - authentication should fail if backend sync fails
+          throw error
         }
       }
       
       console.log("JWT callback completed")
       return token
     },
-    async signIn({ user, account, profile }) {
+    async session({ session: sessionData, token }) {
+      // Pass JWT data to session
+      if (token) {
+        sessionData.user.id = token.sub as string
+        sessionData.user.role = token.role as string
+        sessionData.accessToken = token.accessToken as string
+      }
+      return sessionData
+    },
+    async signIn({ account, profile }) {
       // Allow Google sign-in - backend sync happens in jwt callback
       if (account?.provider === "google" && profile) {
         return true
