@@ -3,7 +3,7 @@ JWT authentication middleware for SyntaxMem Flask functions
 """
 import jwt
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 
 # JWT configuration
@@ -20,14 +20,8 @@ def verify_jwt_token_simple(token: str) -> Optional[Dict[str, Any]]:
     Simplified version for Flask functions
     """
     try:
-        # Decode the token
+        # Decode and verify the token (includes expiration check)
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        
-        # Check if token is expired
-        if 'exp' in payload:
-            exp_timestamp = payload['exp']
-            if datetime.utcnow().timestamp() > exp_timestamp:
-                return None
         
         # Return user data
         return {
@@ -47,11 +41,12 @@ def create_jwt_token(user_id: str, email: str) -> str:
     """
     Create JWT token for user
     """
+    now = datetime.now(timezone.utc)
     payload = {
         'user_id': user_id,
         'email': email,
-        'iat': datetime.utcnow().timestamp(),
-        'exp': datetime.utcnow().timestamp() + (7 * 24 * 60 * 60)  # 7 days
+        'iat': now.timestamp(),
+        'exp': (now.timestamp() + (7 * 24 * 60 * 60))  # 7 days
     }
     
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)

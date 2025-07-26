@@ -140,19 +140,24 @@ export class ApiClient {
   }
 }
 
-// Service-specific API base URLs for local development
-const AUTH_URL = process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:8080'
-const SNIPPETS_URL = process.env.NEXT_PUBLIC_SNIPPETS_API_URL || 'http://localhost:8081'
-const PRACTICE_URL = process.env.NEXT_PUBLIC_PRACTICE_API_URL || 'http://localhost:8082'
-const LEADERBOARD_URL = process.env.NEXT_PUBLIC_LEADERBOARD_API_URL || 'http://localhost:8083'
-const FORUM_URL = process.env.NEXT_PUBLIC_FORUM_API_URL || 'http://localhost:8084'
+// Consolidated API configuration
+const BASE_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+
+// Service-specific URLs (use consolidated base URL with clean port range)
+const API_URLS = {
+  auth: process.env.NEXT_PUBLIC_AUTH_API_URL || `${BASE_API_URL || 'http://localhost:8081'}`,
+  snippets: process.env.NEXT_PUBLIC_SNIPPETS_API_URL || `${BASE_API_URL || 'http://localhost:8082'}`,
+  practice: process.env.NEXT_PUBLIC_PRACTICE_API_URL || `${BASE_API_URL || 'http://localhost:8083'}`,
+  leaderboard: process.env.NEXT_PUBLIC_LEADERBOARD_API_URL || `${BASE_API_URL || 'http://localhost:8084'}`,
+  forum: process.env.NEXT_PUBLIC_FORUM_API_URL || `${BASE_API_URL || 'http://localhost:8085'}`,
+}
 
 // Main API client instance (defaults to auth service for general use)
-export const apiClient = new ApiClient(AUTH_URL)
+export const apiClient = new ApiClient(API_URLS.auth)
 
 // Service-specific API client instances
-export const authApi = new ApiClient(AUTH_URL)
-export const snippetsApi = new ApiClient(SNIPPETS_URL)
-export const practiceApi = new ApiClient(PRACTICE_URL)
-export const leaderboardApi = new ApiClient(LEADERBOARD_URL)
-export const forumApi = new ApiClient(FORUM_URL)
+export const authApi = new ApiClient(API_URLS.auth)
+export const snippetsApi = new ApiClient(API_URLS.snippets)
+export const practiceApi = new ApiClient(API_URLS.practice)
+export const leaderboardApi = new ApiClient(API_URLS.leaderboard)
+export const forumApi = new ApiClient(API_URLS.forum)

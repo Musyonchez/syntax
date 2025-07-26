@@ -31,6 +31,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 from shared.auth_middleware import verify_jwt_token_simple, create_jwt_token
 from shared.database import get_users_collection
 from shared.utils import current_timestamp, generate_id, create_response, create_error_response
+from shared.config import config
 
 # Google OAuth imports
 import requests
@@ -111,14 +112,14 @@ def google_auth():
         data = request.get_json()
         if not data:
             print("DEBUG: No JSON data received")
-            return jsonify(create_error_response("Invalid JSON data")), 400
+            return create_error_response("Invalid JSON data", 400)
         
         print(f"DEBUG: Request data keys: {list(data.keys())}")
         
         # Check that we have account and profile data
         if not data.get("account") or not data.get("profile"):
             print(f"DEBUG: Missing required data - account: {data.get('account') is not None}, profile: {data.get('profile') is not None}")
-            return jsonify(create_error_response("Account and profile data required")), 400
+            return create_error_response("Account and profile data required", 400)
         
         account = data["account"]
         profile = data["profile"]
@@ -129,13 +130,13 @@ def google_auth():
         # Validate required fields
         if not account.get("id_token") and not account.get("access_token"):
             print("DEBUG: No valid token found in account data")
-            return jsonify(create_error_response("Google token (id_token or access_token) required")), 400
+            return create_error_response("Google token (id_token or access_token) required", 400)
         if not profile.get("email"):
             print("DEBUG: No email found in profile data")
-            return jsonify(create_error_response("Email is required")), 400
+            return create_error_response("Email is required", 400)
         if not profile.get("sub"):
             print("DEBUG: No sub (Google ID) found in profile data")
-            return jsonify(create_error_response("Google ID (sub) is required")), 400
+            return create_error_response("Google ID (sub) is required", 400)
             
         print("DEBUG: Data validation passed, starting async processing")
         
@@ -168,7 +169,7 @@ def google_auth():
             
     except Exception as e:
         print(f"Error during Google auth: {e}")
-        return jsonify(create_error_response(f"Authentication failed: {str(e)}")), 500
+        return create_error_response(f"Authentication failed: {str(e)}", 500)
 
 
 async def _google_auth_async(data: Dict):
@@ -307,13 +308,13 @@ def verify_token():
         # Get Authorization header
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
-            return jsonify(create_error_response("Authorization token required")), 401
+            return create_error_response("Authorization token required", 401)
         
         token = auth_header.split(" ")[1]
         user_data = verify_jwt_token_simple(token)
         
         if not user_data:
-            return jsonify(create_error_response("Invalid or expired token")), 401
+            return create_error_response("Invalid or expired token", 401)
         
         # Run async logic to get full user data
         loop = asyncio.new_event_loop()
@@ -327,7 +328,7 @@ def verify_token():
             
     except Exception as e:
         print(f"Error verifying token: {e}")
-        return jsonify(create_error_response(f"Token verification failed: {str(e)}")), 500
+        return create_error_response(f"Token verification failed: {str(e)}", 500)
 
 
 async def _get_user_data_async(user_id: str):

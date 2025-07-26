@@ -5,7 +5,7 @@ Handles leaderboard and user rankings using Flask
 
 import asyncio
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import functions_framework
@@ -30,18 +30,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from shared.auth_middleware import verify_jwt_token_simple
 from shared.database import get_users_collection, get_practice_sessions_collection
-from shared.utils import current_timestamp
-
-
-def create_response(data=None, message="Success", status=200):
-    """Create standardized response"""
-    response = {"success": status < 400, "message": message, "data": data or {}}
-    return jsonify(response), status
-
-
-def create_error_response(message="Error", status=400):
-    """Create standardized error response"""
-    return create_response(data=None, message=message, status=status)
+from shared.utils import current_timestamp, create_response, create_error_response
 
 
 @app.route("/health", methods=["GET"])
@@ -286,7 +275,7 @@ async def _get_weekly_leaderboard_async(page: int, per_page: int, language: Opti
     skip = (page - 1) * per_page
     
     # Get start of current week (Monday)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     days_since_monday = now.weekday()
     week_start = now - timedelta(days=days_since_monday, hours=now.hour, 
                                 minutes=now.minute, seconds=now.second, 
@@ -479,7 +468,7 @@ async def _get_user_rank_async(user_id: str, language: Optional[str] = None, tim
     # Build time filter for weekly
     time_filter = {}
     if timeframe == 'weekly':
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         days_since_monday = now.weekday()
         week_start = now - timedelta(days=days_since_monday, hours=now.hour, 
                                     minutes=now.minute, seconds=now.second, 

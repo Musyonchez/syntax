@@ -115,22 +115,26 @@ def paginate_results(results: List[Dict], page: int = 1, per_page: int = 20) -> 
     }
 
 
-def create_response(data: Any = None, message: str = "Success") -> Dict[str, Any]:
-    """Create standardized API response"""
-    return {
-        "success": True,
+def create_response(data: Any = None, message: str = "Success", status: int = 200) -> tuple:
+    """Create standardized API response with Flask jsonify and status"""
+    from flask import jsonify
+    response_data = {
+        "success": status < 400,
         "message": message,
         "data": data or {}
     }
+    return jsonify(response_data), status
 
 
-def create_error_response(message: str = "Error") -> Dict[str, Any]:
-    """Create standardized error response"""
-    return {
+def create_error_response(message: str = "Error", status: int = 400) -> tuple:
+    """Create standardized error response with Flask jsonify and status"""
+    from flask import jsonify
+    response_data = {
         "success": False,
         "message": message,
         "data": {}
     }
+    return jsonify(response_data), status
 
 
 def hash_string(text: str) -> str:
