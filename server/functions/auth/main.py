@@ -99,7 +99,7 @@ async def verify_google_token(token: str) -> Optional[Dict[str, Any]]:
 @app.route("/health", methods=["GET"])
 def health_check():
     """Health check endpoint"""
-    return jsonify(create_response({"status": "healthy", "service": "auth"}))
+    return create_response({"status": "healthy", "service": "auth"})
 
 
 @app.route("/google-auth", methods=["POST"])
@@ -155,12 +155,8 @@ def google_auth():
             if not loop.is_closed():
                 loop.close()
             
-            response_data = create_response(result, "Authentication successful")
-            print(f"DEBUG: create_response output type: {type(response_data)}")
-            print(f"DEBUG: create_response output: {response_data}")
-            flask_response = jsonify(response_data)
-            print(f"DEBUG: About to return Flask response: {flask_response}")
-            return flask_response
+            print(f"DEBUG: Returning successful auth response")
+            return create_response(result, "Authentication successful")
         except Exception as e:
             print(f"DEBUG: Exception occurred, closing loop: {e}")
             if not loop.is_closed():
@@ -321,7 +317,7 @@ def verify_token():
         asyncio.set_event_loop(loop)
         try:
             result = loop.run_until_complete(_get_user_data_async(user_data["user_id"]))
-            return jsonify(create_response(result, "Token is valid"))
+            return create_response(result, "Token is valid")
         finally:
             if not loop.is_closed():
                 loop.close()
