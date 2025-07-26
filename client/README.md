@@ -1,24 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SyntaxMem Client
 
-## Getting Started
+SyntaxMem client application built with Next.js 15, React 19, and TypeScript. An interactive coding practice platform where users complete masked code snippets to improve programming skills.
 
-First, run the development server:
+## 🚀 Getting Started
 
+### Prerequisites
+- Node.js 18+ 
+- npm/yarn/pnpm/bun
+- Backend APIs running (see server setup)
+
+### Development Setup
+
+1. **Install dependencies:**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Environment configuration:**
+```bash
+cp .env.example .env.local
+# Configure API URLs and auth credentials
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Start development server:**
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. **Open application:**
+Open [http://localhost:3000](http://localhost:3000) with your browser.
+
+## 🔗 Backend APIs
+
+The client connects to these backend services:
+
+- **Auth API**: `http://localhost:8081` - Authentication & user management
+- **Snippets API**: `http://localhost:8082` - Code snippet management  
+- **Practice API**: `http://localhost:8083` - Practice sessions & progress
+- **Leaderboard API**: `http://localhost:8084` - Rankings & statistics
+- **Forum API**: `http://localhost:8085` - Community discussions
+
+## 🎯 Key Features
+
+- **Google OAuth Authentication** with NextAuth.js v5
+- **Code Masking Practice** with CodeMirror 6
+- **Real-time Progress Tracking** 
+- **Community Leaderboards**
+- **Dark/Light Theme Support**
+- **Responsive Design** with Tailwind CSS
 
 ## Learn More
 

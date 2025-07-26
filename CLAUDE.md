@@ -1,7 +1,7 @@
 # SyntaxMem - AI Assistant Context
 
-**Last Updated**: 2025-07-22  
-**Current Status**: Phase 1 Complete ✅ | Phase 2 Ready to Begin  
+**Last Updated**: 2025-07-26  
+**Current Status**: Phase 1 Complete ✅ | Auth Security Enhanced ✅ | Phase 2 Ready to Begin  
 **Branch**: development  
 
 ## 🎯 Project Overview
@@ -35,9 +35,17 @@ npm run lint         # ESLint check
 
 ### Server Development  
 ```bash
-cd server
-./dev-server.sh      # Start all local functions
-./test-api.sh        # Test API endpoints
+# Run each service in separate tmux windows (recommended for debugging)
+cd server/functions/auth && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8081 --debug
+cd server/functions/snippets && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8082 --debug
+cd server/functions/practice && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8083 --debug
+cd server/functions/leaderboard && python -m flask --app main run --host=0.0.0.0 --port=8084 --debug
+cd server/functions/forum && python -m flask --app main run --host=0.0.0.0 --port=8085 --debug
+
+# Quick tmux setup (all services at once)
+tmux new-session -d -s apis -n auth 'cd server/functions/auth && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8081 --debug'
+# ... (add other services)
+
 ./deploy.sh          # Deploy to Google Cloud
 ```
 
@@ -197,6 +205,26 @@ server/
 - `client/DEVELOPMENT.md` - Comprehensive client development plan
 - `server/CONFIG.md` - Server configuration guide
 - `server/SETUP.md` - Google Cloud Functions setup
+
+## 🔒 Recent Authentication Improvements (July 26, 2025)
+
+### Security Enhancements
+- **JWT Security**: Removed manual expiration checks, using PyJWT built-in validation
+- **Timezone Updates**: Replaced deprecated `datetime.utcnow()` with timezone-aware calls
+- **Response Standardization**: Unified error response format across all endpoints
+- **Environment Validation**: Added centralized config validation at server startup
+- **OAuth Simplification**: Reduced Google OAuth payload from 70+ fields to 4 essential fields
+
+### API Port Changes
+Services now run on ports **8081-8085** (shifted up from 8080-8084):
+- **Auth API**: Port 8081
+- **Snippets API**: Port 8082  
+- **Practice API**: Port 8083
+- **Leaderboard API**: Port 8084
+- **Forum API**: Port 8085
+
+### Development Workflow
+Each service runs in separate tmux windows for better debugging visibility instead of a single dev-server script.
 
 ## 💡 Environment Setup
 ```bash

@@ -107,6 +107,36 @@ Comprehensive development guide for building the SyntaxMem Next.js frontend appl
 
 ---
 
+## 🔗 **API Configuration**
+
+### **Backend Services** (Updated July 26, 2025)
+The client communicates with 5 microservices running on separate ports:
+
+- **Auth API**: `http://localhost:8081` - Authentication and user management
+- **Snippets API**: `http://localhost:8082` - Code snippet management and masking
+- **Practice API**: `http://localhost:8083` - Practice sessions and progress tracking
+- **Leaderboard API**: `http://localhost:8084` - User rankings and statistics
+- **Forum API**: `http://localhost:8085` - Community discussions and posts
+
+### **Environment Configuration**
+```bash
+# Client .env file
+NEXT_PUBLIC_AUTH_API_URL=http://localhost:8081
+NEXT_PUBLIC_SNIPPETS_API_URL=http://localhost:8082
+NEXT_PUBLIC_PRACTICE_API_URL=http://localhost:8083
+NEXT_PUBLIC_LEADERBOARD_API_URL=http://localhost:8084
+NEXT_PUBLIC_FORUM_API_URL=http://localhost:8085
+
+# Optional: Single base URL for production
+NEXT_PUBLIC_API_URL=https://api.syntaxmem.com
+```
+
+### **API Client Architecture**
+- **Consolidated configuration** with service-specific URL mapping
+- **Automatic JWT token injection** for authenticated requests
+- **Standardized error handling** across all services
+- **Type-safe request/response** handling with Zod validation
+
 ## 🎯 **Component Architecture**
 
 ### **Folder Structure**
