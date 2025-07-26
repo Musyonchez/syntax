@@ -39,7 +39,7 @@ CORS(app, origins=[origin.strip() for origin in cors_origins],
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
-from shared.auth_middleware import verify_jwt_token_simple, create_jwt_token
+from shared.auth_middleware import verify_jwt_token_simple, create_jwt_token, create_refresh_token, verify_refresh_token
 from shared.database import get_users_collection
 from shared.utils import current_timestamp, generate_id, create_response, create_error_response
 from shared.config import config
@@ -95,6 +95,34 @@ def is_rate_limited(client_ip: str, max_requests: int = 10, window_minutes: int 
     # Add current request
     request_counts[client_ip].append(now)
     return False
+
+
+async def log_auth_event(event_type: str, client_ip: str, user_email: str = None, user_id: str = None, 
+                        success: bool = True, error_message: str = None, metadata: dict = None):
+    """Log authentication events for security monitoring"""
+    try:
+        from shared.database import get_database
+        db = await get_database()
+        audit_collection = db.audit_logs
+        
+        audit_entry = {
+            "event_type": event_type,  # "login_attempt", "login_success", "login_failure", "token_refresh"
+            "timestamp": current_timestamp(),
+            "client_ip": client_ip,
+            "user_email": user_email,
+            "user_id": user_id,
+            "success": success,
+            "error_message": error_message,
+            "metadata": metadata or {},
+            "service": "auth"
+        }
+        
+        await audit_collection.insert_one(audit_entry)
+        logger.info(f"Audit log recorded: {event_type} for {user_email or 'unknown'}")
+    except Exception as e:
+        # Don't fail auth if audit logging fails
+        logger.error(f"Failed to write audit log: {str(e)}")
+        pass
 
 
 
@@ -164,6 +192,16 @@ def google_auth():
         client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'unknown'))
         if is_rate_limited(client_ip):
             logger.warning(f"Rate limit exceeded for IP: {client_ip}")
+            # Log rate limit exceeded event (async)
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                loop.run_until_complete(log_auth_event(
+                    "rate_limit_exceeded", client_ip, success=False, 
+                    error_message="Too many authentication attempts"
+                ))
+            finally:
+                loop.close()
             return create_error_response("Too many authentication attempts. Please try again later.", 429)
         
         logger.info("Received Google OAuth authentication request")
@@ -209,7 +247,7 @@ def google_auth():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            result = loop.run_until_complete(_google_auth_async(data))
+            result = loop.run_until_complete(_google_auth_async(data, client_ip))
             logger.info("Authentication process completed successfully")
             
             # Close loop before creating response
@@ -228,7 +266,7 @@ def google_auth():
         return create_error_response(f"Authentication failed: {str(e)}", 500)
 
 
-async def _google_auth_async(data: Dict):
+async def _google_auth_async(data: Dict, client_ip: str):
     """Async logic for Google authentication"""
     account = data["account"]
     profile = data["profile"]
@@ -237,9 +275,14 @@ async def _google_auth_async(data: Dict):
     google_token = account.get("id_token") or account.get("access_token")
     
     # Verify Google token
+    user_email = profile["email"]
+    await log_auth_event("login_attempt", client_ip, user_email)
+    
     google_user_info = await verify_google_token(google_token)
     
     if not google_user_info:
+        await log_auth_event("login_failure", client_ip, user_email, 
+                           success=False, error_message="Invalid Google token")
         raise Exception("Invalid Google token")
     
     # Verify that the token data matches profile data
@@ -247,9 +290,13 @@ async def _google_auth_async(data: Dict):
     google_id = google_user_info.get('sub') or google_user_info.get('id')
     
     if google_email != profile["email"]:
+        await log_auth_event("login_failure", client_ip, user_email, 
+                           success=False, error_message="Email mismatch between token and profile")
         raise Exception("Email mismatch between token and profile")
         
     if google_id != profile["sub"]:
+        await log_auth_event("login_failure", client_ip, user_email, 
+                           success=False, error_message="Google ID mismatch between token and profile")
         raise Exception("Google ID mismatch between token and profile")
     
     # Get database connection
@@ -319,8 +366,13 @@ async def _google_auth_async(data: Dict):
         logger.info(f"Created new user account")
         user = new_user
     
-    # Create JWT token
-    token = create_jwt_token(user_id, clean_email)
+    # Create access and refresh tokens
+    access_token = create_jwt_token(user_id, clean_email)
+    refresh_token = create_refresh_token(user_id, clean_email)
+    
+    # Log successful authentication
+    await log_auth_event("login_success", client_ip, clean_email, user_id, 
+                       metadata={"new_user": existing_user is None})
     
     # Prepare user data for response
     user_data = {
@@ -334,7 +386,9 @@ async def _google_auth_async(data: Dict):
     }
     
     return {
-        "token": token,
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token": access_token,  # Keep for backward compatibility
         "user": user_data,
         "message": "Authentication successful"
     }
@@ -483,6 +537,59 @@ async def _update_profile_async(user_id: str, profile_data: Dict):
     )
     
     return {"updated": True}
+
+
+@app.route("/refresh", methods=["POST"])
+def refresh_token():
+    """Refresh access token using refresh token"""
+    try:
+        # Rate limiting check
+        client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'unknown'))
+        if is_rate_limited(client_ip, max_requests=20, window_minutes=15):  # More lenient for refresh
+            logger.warning(f"Rate limit exceeded for refresh endpoint IP: {client_ip}")
+            return create_error_response("Too many refresh attempts. Please try again later.", 429)
+        
+        # Get request data
+        data = request.get_json()
+        if not data or not data.get("refresh_token"):
+            return create_error_response("Refresh token required", 400)
+        
+        refresh_token = data["refresh_token"]
+        
+        # Verify refresh token
+        user_data = verify_refresh_token(refresh_token)
+        if not user_data:
+            logger.warning("Invalid or expired refresh token used")
+            return create_error_response("Invalid or expired refresh token", 401)
+        
+        user_id = user_data["user_id"]
+        email = user_data["email"]
+        
+        # Create new access token
+        new_access_token = create_jwt_token(user_id, email)
+        
+        # Log token refresh event
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(log_auth_event(
+                "token_refresh", client_ip, email, user_id, 
+                metadata={"refresh_token_used": True}
+            ))
+        finally:
+            loop.close()
+        
+        logger.info(f"Token refreshed successfully for user: {user_id}")
+        
+        return create_response({
+            "access_token": new_access_token,
+            "token": new_access_token,  # Backward compatibility
+            "expires_in": 3600  # 1 hour in seconds
+        }, "Token refreshed successfully")
+        
+    except Exception as e:
+        logger.error(f"Token refresh error: {str(e)}")
+        return create_error_response(f"Token refresh failed: {str(e)}", 500)
 
 
 @functions_framework.http

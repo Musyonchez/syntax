@@ -39,14 +39,55 @@ def verify_jwt_token_simple(token: str) -> Optional[Dict[str, Any]]:
 
 def create_jwt_token(user_id: str, email: str) -> str:
     """
-    Create JWT token for user
+    Create short-lived access token for user (1 hour)
     """
     now = datetime.now(timezone.utc)
     payload = {
         'user_id': user_id,
         'email': email,
+        'token_type': 'access',
         'iat': now.timestamp(),
-        'exp': (now.timestamp() + (7 * 24 * 60 * 60))  # 7 days
+        'exp': (now.timestamp() + (60 * 60))  # 1 hour
     }
     
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+
+def create_refresh_token(user_id: str, email: str) -> str:
+    """
+    Create long-lived refresh token for user (30 days)
+    """
+    now = datetime.now(timezone.utc)
+    payload = {
+        'user_id': user_id,
+        'email': email,
+        'token_type': 'refresh',
+        'iat': now.timestamp(),
+        'exp': (now.timestamp() + (30 * 24 * 60 * 60))  # 30 days
+    }
+    
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+
+def verify_refresh_token(token: str) -> Optional[Dict[str, Any]]:
+    """
+    Verify refresh token and return user data
+    """
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        
+        # Check if it's a refresh token
+        if payload.get('token_type') != 'refresh':
+            return None
+        
+        return {
+            'user_id': payload.get('user_id'),
+            'email': payload.get('email')
+        }
+        
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+    except Exception:
+        return None
