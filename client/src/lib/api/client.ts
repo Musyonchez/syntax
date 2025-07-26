@@ -33,6 +33,26 @@ export class ApiClient {
     return null
   }
 
+  private async refreshToken(): Promise<string | null> {
+    try {
+      // Try to refresh the token by getting a fresh session
+      const response = await fetch('/api/auth/session')
+      if (response.ok) {
+        const session = await response.json()
+        if (session?.accessToken) {
+          // Check if this is a different token than what we had before
+          const currentToken = await this.getAuthToken()
+          if (session.accessToken !== currentToken) {
+            return session.accessToken
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Token refresh failed:', error)
+    }
+    return null
+  }
+
   private async handleAuthenticationError(reason: 'expired' | 'invalid'): Promise<void> {
     try {
       // Import signOut dynamically to avoid circular dependencies
@@ -82,13 +102,46 @@ export class ApiClient {
           const errorDetail = data.detail || data.message || 'Authentication failed'
           const authErrorHeader = response.headers.get('X-Auth-Error')
           
-          // Check specific auth error type from header or error message
+          // Check if token is expired - try refresh first
           if (authErrorHeader === 'expired' || errorDetail.includes('expired') || errorDetail.includes('Token has expired')) {
-            // Trigger automatic logout for expired tokens
+            console.log('Token expired, attempting refresh...')
+            
+            // Try to refresh the token
+            const newToken = await this.refreshToken()
+            if (newToken) {
+              console.log('Token refreshed successfully, retrying request...')
+              
+              // Retry the original request with new token
+              const retryHeaders = {
+                ...this.defaultHeaders,
+                ...(options.headers as Record<string, string> || {}),
+                Authorization: `Bearer ${newToken}`
+              }
+              
+              const retryResponse = await fetch(`${this.baseUrl}${endpoint}`, {
+                ...options,
+                headers: retryHeaders,
+              })
+              
+              const retryData = await retryResponse.json()
+              
+              if (retryResponse.ok) {
+                return {
+                  success: true,
+                  data: retryData.data || retryData,
+                  message: retryData.message,
+                }
+              }
+              
+              // If retry also fails, fall through to logout
+              console.warn('Request failed even after token refresh')
+            }
+            
+            // Token refresh failed or retry failed - logout user
             await this.handleAuthenticationError('expired')
           } else if (authErrorHeader === 'invalid' || authErrorHeader === 'user_not_found' || 
                      errorDetail.includes('Invalid token') || errorDetail.includes('User not found')) {
-            // Trigger automatic logout for invalid tokens
+            // Invalid tokens can't be refreshed - immediate logout
             await this.handleAuthenticationError('invalid')
           }
           

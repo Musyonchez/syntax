@@ -36,8 +36,48 @@ const authConfig = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account, profile }) {
-      console.log("JWT callback triggered", { hasAccount: !!account, provider: account?.provider, backendSynced: token.backendSynced })
+    async jwt({ token, account, profile, trigger }) {
+      console.log("JWT callback triggered", { 
+        hasAccount: !!account, 
+        provider: account?.provider, 
+        backendSynced: token.backendSynced,
+        trigger 
+      })
+      
+      // Handle token refresh requests
+      if (trigger === "update") {
+        console.log("Token refresh requested")
+        
+        // Try to refresh the backend token if we have refresh token capability
+        if (token.accessToken && token.email) {
+          try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:8081'}/refresh`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                refresh_token: token.refreshToken || token.accessToken
+              }),
+            })
+
+            if (response.ok) {
+              const refreshData = await response.json()
+              if (refreshData.success && refreshData.data?.access_token) {
+                console.log("Backend token refreshed successfully")
+                token.accessToken = refreshData.data.access_token
+                return token
+              }
+            }
+            
+            console.warn("Backend token refresh failed")
+          } catch (error) {
+            console.error("Token refresh error:", error)
+          }
+        }
+        
+        return token
+      }
       
       // Integrate with backend on first sign in - pass ALL Google data to server
       if (account?.provider === "google" && !token.backendSynced) {
@@ -71,7 +111,8 @@ const authConfig = NextAuth({
             if (serverData.success && serverData.data) {
               token.sub = serverData.data.user?.user_id
               token.role = serverData.data.user?.role
-              token.accessToken = serverData.data.token
+              token.accessToken = serverData.data.access_token || serverData.data.token
+              token.refreshToken = serverData.data.refresh_token
               token.backendSynced = true
               
               // Store user data from server response

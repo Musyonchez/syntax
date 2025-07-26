@@ -18,10 +18,44 @@ export function SignInForm() {
       
       // NextAuth signIn with redirect doesn't return a result object
       // It redirects or throws an error
-      await signIn("google", {
+      const result = await signIn("google", {
         callbackUrl: "/dashboard",
+        redirect: false, // Don't redirect automatically to handle errors
       })
-    } catch {
+      
+      // Handle different error cases
+      if (result?.error) {
+        let errorMessage = "An unexpected error occurred. Please try again."
+        let errorTitle = "Sign in failed"
+        
+        switch (result.error) {
+          case "AccessDenied":
+            errorTitle = "Access denied"
+            errorMessage = "You denied access to your Google account. Please grant the necessary permissions to continue."
+            break
+          case "Configuration":
+            errorTitle = "Configuration error"
+            errorMessage = "There's an issue with our authentication setup. Please contact support."
+            break
+          case "Verification":
+            errorTitle = "Verification failed"
+            errorMessage = "We couldn't verify your Google account. Please try again."
+            break
+          case "Default":
+          default:
+            // Keep default messages
+            break
+        }
+        
+        toast.error(errorTitle, {
+          description: errorMessage,
+        })
+      } else if (result?.ok) {
+        // Success - NextAuth will handle the redirect
+        window.location.href = result.url || "/dashboard"
+      }
+    } catch (error) {
+      console.error('Sign in error:', error)
       toast.error("Sign in failed", {
         description: "An unexpected error occurred. Please try again.",
       })
