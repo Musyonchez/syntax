@@ -140,16 +140,13 @@ export class ApiClient {
   }
 }
 
-// Consolidated API configuration
-const BASE_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
-
-// Service-specific URLs (use consolidated base URL with clean port range)
+// Service-specific URLs with correct fallbacks
 const API_URLS = {
-  auth: process.env.NEXT_PUBLIC_AUTH_API_URL || `${BASE_API_URL || 'http://localhost:8081'}`,
-  snippets: process.env.NEXT_PUBLIC_SNIPPETS_API_URL || `${BASE_API_URL || 'http://localhost:8082'}`,
-  practice: process.env.NEXT_PUBLIC_PRACTICE_API_URL || `${BASE_API_URL || 'http://localhost:8083'}`,
-  leaderboard: process.env.NEXT_PUBLIC_LEADERBOARD_API_URL || `${BASE_API_URL || 'http://localhost:8084'}`,
-  forum: process.env.NEXT_PUBLIC_FORUM_API_URL || `${BASE_API_URL || 'http://localhost:8085'}`,
+  auth: process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:8081',
+  snippets: process.env.NEXT_PUBLIC_SNIPPETS_API_URL || 'http://localhost:8082',
+  practice: process.env.NEXT_PUBLIC_PRACTICE_API_URL || 'http://localhost:8083',
+  leaderboard: process.env.NEXT_PUBLIC_LEADERBOARD_API_URL || 'http://localhost:8084',
+  forum: process.env.NEXT_PUBLIC_FORUM_API_URL || 'http://localhost:8085',
 }
 
 // Main API client instance (defaults to auth service for general use)
