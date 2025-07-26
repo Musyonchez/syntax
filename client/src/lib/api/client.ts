@@ -1,4 +1,3 @@
-
 export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
@@ -8,70 +7,22 @@ export interface ApiResponse<T = unknown> {
 
 export class ApiClient {
   private baseUrl: string
-  private defaultHeaders: Record<string, string>
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl
-    this.defaultHeaders = {
-      "Content-Type": "application/json",
-    }
   }
 
   private async getAuthToken(): Promise<string | null> {
     try {
-      // Get session from NextAuth API route (works in browser)
       const response = await fetch('/api/auth/session')
       if (response.ok) {
         const session = await response.json()
-        if (session?.accessToken) {
-          return session.accessToken
-        }
+        return session?.accessToken || null
       }
     } catch {
-      // Failed to get auth token
+      // Silently fail - auth is optional for some endpoints
     }
     return null
-  }
-
-  private async refreshToken(): Promise<string | null> {
-    try {
-      // Try to refresh the token by getting a fresh session
-      const response = await fetch('/api/auth/session')
-      if (response.ok) {
-        const session = await response.json()
-        if (session?.accessToken) {
-          // Check if this is a different token than what we had before
-          const currentToken = await this.getAuthToken()
-          if (session.accessToken !== currentToken) {
-            return session.accessToken
-          }
-        }
-      }
-    } catch (error) {
-      console.warn('Token refresh failed:', error)
-    }
-    return null
-  }
-
-  private async handleAuthenticationError(reason: 'expired' | 'invalid'): Promise<void> {
-    try {
-      // Import signOut dynamically to avoid circular dependencies
-      const { signOut } = await import('next-auth/react')
-      
-      console.warn(`🔐 Authentication error: ${reason} token. Logging out user.`)
-      
-      // Sign out the user and redirect to login
-      await signOut({ 
-        callbackUrl: '/auth/signin?error=SessionExpired',
-        redirect: true 
-      })
-    } catch (error) {
-      console.error('Failed to handle authentication error:', error)
-      // Fallback: redirect to login page manually
-      if (typeof window !== 'undefined') {
-        window.location.href = '/auth/signin?error=SessionExpired'
-      }
-    }
   }
 
   private async request<T>(
@@ -81,7 +32,7 @@ export class ApiClient {
     try {
       const token = await this.getAuthToken()
       const headers: Record<string, string> = {
-        ...this.defaultHeaders,
+        "Content-Type": "application/json",
         ...(options.headers as Record<string, string> || {}),
       }
 
@@ -97,60 +48,7 @@ export class ApiClient {
       const data = await response.json()
 
       if (!response.ok) {
-        // Handle authentication errors (expired/invalid tokens)
-        if (response.status === 401) {
-          const errorDetail = data.detail || data.message || 'Authentication failed'
-          const authErrorHeader = response.headers.get('X-Auth-Error')
-          
-          // Check if token is expired - try refresh first
-          if (authErrorHeader === 'expired' || errorDetail.includes('expired') || errorDetail.includes('Token has expired')) {
-            console.log('Token expired, attempting refresh...')
-            
-            // Try to refresh the token
-            const newToken = await this.refreshToken()
-            if (newToken) {
-              console.log('Token refreshed successfully, retrying request...')
-              
-              // Retry the original request with new token
-              const retryHeaders = {
-                ...this.defaultHeaders,
-                ...(options.headers as Record<string, string> || {}),
-                Authorization: `Bearer ${newToken}`
-              }
-              
-              const retryResponse = await fetch(`${this.baseUrl}${endpoint}`, {
-                ...options,
-                headers: retryHeaders,
-              })
-              
-              const retryData = await retryResponse.json()
-              
-              if (retryResponse.ok) {
-                return {
-                  success: true,
-                  data: retryData.data || retryData,
-                  message: retryData.message,
-                }
-              }
-              
-              // If retry also fails, fall through to logout
-              console.warn('Request failed even after token refresh')
-            }
-            
-            // Token refresh failed or retry failed - logout user
-            await this.handleAuthenticationError('expired')
-          } else if (authErrorHeader === 'invalid' || authErrorHeader === 'user_not_found' || 
-                     errorDetail.includes('Invalid token') || errorDetail.includes('User not found')) {
-            // Invalid tokens can't be refreshed - immediate logout
-            await this.handleAuthenticationError('invalid')
-          }
-          
-          return {
-            success: false,
-            error: errorDetail,
-          }
-        }
-        
+        // Let NextAuth handle auth errors - just return the error
         return {
           success: false,
           error: data.message || `HTTP ${response.status}: ${response.statusText}`,
@@ -165,7 +63,7 @@ export class ApiClient {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error occurred",
+        error: error instanceof Error ? error.message : "Network error",
       }
     }
   }
@@ -193,7 +91,7 @@ export class ApiClient {
   }
 }
 
-// Service-specific URLs with correct fallbacks
+// Service-specific URLs
 const API_URLS = {
   auth: process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:8081',
   snippets: process.env.NEXT_PUBLIC_SNIPPETS_API_URL || 'http://localhost:8082',
@@ -201,9 +99,6 @@ const API_URLS = {
   leaderboard: process.env.NEXT_PUBLIC_LEADERBOARD_API_URL || 'http://localhost:8084',
   forum: process.env.NEXT_PUBLIC_FORUM_API_URL || 'http://localhost:8085',
 }
-
-// Main API client instance (defaults to auth service for general use)
-export const apiClient = new ApiClient(API_URLS.auth)
 
 // Service-specific API client instances
 export const authApi = new ApiClient(API_URLS.auth)
