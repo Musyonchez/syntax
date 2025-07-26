@@ -4,25 +4,26 @@ Handles leaderboard and user rankings using Flask
 """
 
 import asyncio
-import json
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 import functions_framework
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-
-# Create Flask app
-app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000", "http://localhost:3001", "https://syntaxmem.com"], 
-     methods=["GET", "POST", "OPTIONS"], headers=["Content-Type", "Authorization"])
-
-import os
 from dotenv import load_dotenv
 
 # Load environment variables
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
 load_dotenv(dotenv_path=dotenv_path)
+
+# Create Flask app
+app = Flask(__name__)
+
+# Configure CORS with environment-based origins
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,https://syntaxmem.com").split(",")
+CORS(app, origins=[origin.strip() for origin in cors_origins], 
+     methods=["GET", "POST", "OPTIONS"], headers=["Content-Type", "Authorization"])
 
 # Import utilities
 import sys
@@ -31,6 +32,28 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 from shared.auth_middleware import verify_jwt_token_simple
 from shared.database import get_users_collection, get_practice_sessions_collection
 from shared.utils import current_timestamp, create_response, create_error_response
+
+# Configure logging
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+def validate_pagination_params(page: str, per_page: str) -> tuple[int, int]:
+    """Validate and sanitize pagination parameters"""
+    try:
+        page_num = max(1, int(page or 1))
+        per_page_num = max(1, min(100, int(per_page or 50)))  # Limit per_page to 100
+        return page_num, per_page_num
+    except ValueError:
+        return 1, 50
+
+def validate_language(language: str) -> bool:
+    """Validate programming language"""
+    allowed_languages = ["python", "javascript"]
+    return language.lower() in allowed_languages
 
 
 @app.route("/health", methods=["GET"])
@@ -43,10 +66,16 @@ def health_check():
 def get_global_leaderboard():
     """Get global leaderboard rankings"""
     try:
-        # Get query parameters
-        page = int(request.args.get('page', 1))
-        per_page = min(int(request.args.get('per_page', 50)), 100)
+        # Get and validate query parameters
+        page, per_page = validate_pagination_params(
+            request.args.get('page'), 
+            request.args.get('per_page')
+        )
         language = request.args.get('language')  # Optional filter
+        
+        # Validate language if provided
+        if language and not validate_language(language):
+            return create_error_response("Invalid language. Supported: python, javascript", 400)
         
         # Run async logic
         loop = asyncio.new_event_loop()
@@ -58,8 +87,8 @@ def get_global_leaderboard():
             loop.close()
             
     except Exception as e:
-        print(f"Error getting global leaderboard: {e}")
-        return create_error_response(f"Failed to get global leaderboard: {str(e)}", 500)
+        logger.error(f"Error getting global leaderboard: {e}")
+        return create_error_response("Failed to get global leaderboard", 500)
 
 
 async def _get_global_leaderboard_async(page: int, per_page: int, language: Optional[str] = None):
@@ -237,8 +266,10 @@ async def _get_global_leaderboard_async(page: int, per_page: int, language: Opti
         "pagination": {
             "page": page,
             "per_page": per_page,
-            "total": total,
-            "pages": (total + per_page - 1) // per_page
+            "total_count": total,
+            "total_pages": (total + per_page - 1) // per_page,
+            "has_next": page * per_page < total,
+            "has_prev": page > 1
         }
     }
 
@@ -247,10 +278,16 @@ async def _get_global_leaderboard_async(page: int, per_page: int, language: Opti
 def get_weekly_leaderboard():
     """Get weekly leaderboard rankings"""
     try:
-        # Get query parameters
-        page = int(request.args.get('page', 1))
-        per_page = min(int(request.args.get('per_page', 50)), 100)
+        # Get and validate query parameters
+        page, per_page = validate_pagination_params(
+            request.args.get('page'), 
+            request.args.get('per_page')
+        )
         language = request.args.get('language')  # Optional filter
+        
+        # Validate language if provided
+        if language and not validate_language(language):
+            return create_error_response("Invalid language. Supported: python, javascript", 400)
         
         # Run async logic
         loop = asyncio.new_event_loop()
@@ -262,8 +299,8 @@ def get_weekly_leaderboard():
             loop.close()
             
     except Exception as e:
-        print(f"Error getting weekly leaderboard: {e}")
-        return create_error_response(f"Failed to get weekly leaderboard: {str(e)}", 500)
+        logger.error(f"Error getting weekly leaderboard: {e}")
+        return create_error_response("Failed to get weekly leaderboard", 500)
 
 
 async def _get_weekly_leaderboard_async(page: int, per_page: int, language: Optional[str] = None):
@@ -427,8 +464,10 @@ async def _get_weekly_leaderboard_async(page: int, per_page: int, language: Opti
         "pagination": {
             "page": page,
             "per_page": per_page,
-            "total": len(ranked_users),  # Simplified for weekly
-            "pages": 1  # Simplified for weekly
+            "total_count": len(ranked_users),  # Simplified for weekly
+            "total_pages": 1,  # Simplified for weekly
+            "has_next": False,
+            "has_prev": False
         }
     }
 
@@ -437,9 +476,17 @@ async def _get_weekly_leaderboard_async(page: int, per_page: int, language: Opti
 def get_user_rank(user_id):
     """Get specific user's rank and stats"""
     try:
-        # Get query parameters
+        # Get and validate query parameters
         language = request.args.get('language')  # Optional filter
         timeframe = request.args.get('timeframe', 'all')  # 'all', 'weekly'
+        
+        # Validate language if provided
+        if language and not validate_language(language):
+            return create_error_response("Invalid language. Supported: python, javascript", 400)
+        
+        # Validate timeframe
+        if timeframe not in ['all', 'weekly']:
+            return create_error_response("Invalid timeframe. Supported: all, weekly", 400)
         
         # Run async logic
         loop = asyncio.new_event_loop()
@@ -451,8 +498,8 @@ def get_user_rank(user_id):
             loop.close()
             
     except Exception as e:
-        print(f"Error getting user rank: {e}")
-        return create_error_response(f"Failed to get user rank: {str(e)}", 500)
+        logger.error(f"Error getting user rank: {e}")
+        return create_error_response("Failed to get user rank", 500)
 
 
 async def _get_user_rank_async(user_id: str, language: Optional[str] = None, timeframe: str = 'all'):
