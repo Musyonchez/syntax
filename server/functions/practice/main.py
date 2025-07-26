@@ -4,25 +4,26 @@ Handles practice sessions and scoring using Flask
 """
 
 import asyncio
-import json
+import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import functions_framework
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-
-# Create Flask app
-app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000", "http://localhost:3001", "https://syntaxmem.com"], 
-     methods=["GET", "POST", "PUT", "OPTIONS"], headers=["Content-Type", "Authorization"])
-
-import os
 from dotenv import load_dotenv
 
 # Load environment variables
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
 load_dotenv(dotenv_path=dotenv_path)
+
+# Create Flask app
+app = Flask(__name__)
+
+# Configure CORS with environment-based origins
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,https://syntaxmem.com").split(",")
+CORS(app, origins=[origin.strip() for origin in cors_origins], 
+     methods=["GET", "POST", "PUT", "OPTIONS"], headers=["Content-Type", "Authorization"])
 
 # Import utilities
 import sys
@@ -30,19 +31,18 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from shared.auth_middleware import verify_jwt_token_simple
 from shared.database import get_practice_sessions_collection, get_snippets_collection, get_users_collection
-from shared.utils import current_timestamp, generate_id
+from shared.utils import current_timestamp, generate_id, create_response, create_error_response
 from shared.masking import mask_code
 
+# Configure logging
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-def create_response(data=None, message="Success", status=200):
-    """Create standardized response"""
-    response = {"success": status < 400, "message": message, "data": data or {}}
-    return jsonify(response), status
-
-
-def create_error_response(message="Error", status=400):
-    """Create standardized error response"""
-    return create_response(data=None, message=message, status=status)
+# Response functions now imported from shared.utils
 
 
 @app.route("/health", methods=["GET"])
@@ -73,6 +73,8 @@ def start_practice_session():
             return create_error_response("Invalid JSON data", 400)
         
         snippet_id = data.get("snippet_id")
+        custom_difficulty = data.get("difficulty")
+        
         if not snippet_id:
             return create_error_response("snippet_id is required", 400)
         
@@ -80,17 +82,17 @@ def start_practice_session():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            result = loop.run_until_complete(_start_practice_async(user_id, snippet_id))
+            result = loop.run_until_complete(_start_practice_async(user_id, snippet_id, custom_difficulty))
             return create_response(result, "Practice session started")
         finally:
             loop.close()
             
     except Exception as e:
-        print(f"Error starting practice session: {e}")
-        return create_error_response(f"Failed to start practice session: {str(e)}", 500)
+        logger.error(f"Error starting practice session: {str(e)}")
+        return create_error_response("Failed to start practice session", 500)
 
 
-async def _start_practice_async(user_id: str, snippet_id: str):
+async def _start_practice_async(user_id: str, snippet_id: str, custom_difficulty: int = None):
     """Async logic for starting practice session"""
     # Get collections
     snippets_collection = await get_snippets_collection()
@@ -102,11 +104,14 @@ async def _start_practice_async(user_id: str, snippet_id: str):
         raise Exception("Snippet not found")
     
     # Check if user has access to this snippet
-    if snippet.get("status") != "published" and snippet.get("createdBy") != user_id:
+    if snippet.get("type") == "personal" and snippet.get("userId") != user_id:
         raise Exception("Access denied to this snippet")
     
+    # Use custom difficulty if provided, otherwise use snippet's difficulty
+    difficulty = custom_difficulty if custom_difficulty is not None else snippet["difficulty"]
+    
     # Generate masked code
-    masked_result = mask_code(snippet["code"], snippet["language"], snippet["difficulty"])
+    masked_result = mask_code(snippet["code"], snippet["language"], difficulty)
     
     # Create practice session
     session_id = generate_id()
@@ -114,11 +119,15 @@ async def _start_practice_async(user_id: str, snippet_id: str):
         "_id": session_id,
         "userId": user_id,
         "snippetId": snippet_id,
+        "snippetTitle": snippet.get("title", "Untitled"),
+        "snippetType": snippet.get("type", "official"),
+        "language": snippet["language"],
+        "difficulty": difficulty,
         "originalCode": snippet["code"],
         "maskedCode": masked_result["masked_code"],
         "blanks": masked_result["blanks"],
-        "userAnswers": {},
-        "score": 0,
+        "userAnswers": [],
+        "totalScore": 0,
         "timeSpent": 0,
         "status": "active",
         "startedAt": current_timestamp(),
@@ -127,24 +136,23 @@ async def _start_practice_async(user_id: str, snippet_id: str):
     
     await practice_collection.insert_one(practice_session)
     
+    # Return data in format expected by client
     return {
         "session_id": session_id,
-        "snippet": {
-            "id": snippet["_id"],
-            "title": snippet["title"],
-            "language": snippet["language"],
-            "difficulty": snippet["difficulty"],
-            "description": snippet.get("description", "")
-        },
+        "snippet_id": snippet_id,
+        "snippet_title": snippet.get("title", "Untitled"),
+        "language": snippet["language"],
+        "difficulty": difficulty,
         "masked_code": masked_result["masked_code"],
-        "blanks": masked_result["blanks"],
-        "total_blanks": len(masked_result["blanks"])
+        "answer_count": len(masked_result["blanks"]),
+        "max_time": 300,  # 5 minutes default
+        "created_at": practice_session["startedAt"].isoformat()
     }
 
 
 @app.route("/submit", methods=["POST"])
-def submit_answer():
-    """Submit answer for a practice session"""
+def submit_practice_session():
+    """Submit complete practice session for scoring"""
     try:
         # Verify JWT token
         auth_header = request.headers.get("Authorization")
@@ -164,95 +172,8 @@ def submit_answer():
             return create_error_response("Invalid JSON data", 400)
         
         session_id = data.get("session_id")
-        blank_id = data.get("blank_id")
-        answer = data.get("answer")
-        
-        if not all([session_id, blank_id, answer is not None]):
-            return create_error_response("session_id, blank_id, and answer are required", 400)
-        
-        # Run async logic
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            result = loop.run_until_complete(_submit_answer_async(user_id, session_id, blank_id, answer))
-            return create_response(result, "Answer submitted")
-        finally:
-            loop.close()
-            
-    except Exception as e:
-        print(f"Error submitting answer: {e}")
-        return create_error_response(f"Failed to submit answer: {str(e)}", 500)
-
-
-async def _submit_answer_async(user_id: str, session_id: str, blank_id: str, answer: str):
-    """Async logic for submitting answer"""
-    practice_collection = await get_practice_sessions_collection()
-    
-    # Get practice session
-    session = await practice_collection.find_one({"_id": session_id, "userId": user_id})
-    if not session:
-        raise Exception("Practice session not found")
-    
-    if session["status"] != "active":
-        raise Exception("Practice session is not active")
-    
-    # Find the blank
-    blank_info = None
-    for blank in session["blanks"]:
-        if blank["id"] == blank_id:
-            blank_info = blank
-            break
-    
-    if not blank_info:
-        raise Exception("Blank not found")
-    
-    # Check answer
-    is_correct = answer.strip() == blank_info["correct_answer"].strip()
-    
-    # Update session with answer
-    await practice_collection.update_one(
-        {"_id": session_id},
-        {
-            "$set": {
-                f"userAnswers.{blank_id}": {
-                    "answer": answer,
-                    "is_correct": is_correct,
-                    "submitted_at": current_timestamp()
-                }
-            }
-        }
-    )
-    
-    return {
-        "blank_id": blank_id,
-        "is_correct": is_correct,
-        "correct_answer": blank_info["correct_answer"] if not is_correct else None
-    }
-
-
-@app.route("/complete", methods=["POST"])
-def complete_practice_session():
-    """Complete a practice session and calculate final score"""
-    try:
-        # Verify JWT token
-        auth_header = request.headers.get("Authorization")
-        if not auth_header or not auth_header.startswith("Bearer "):
-            return create_error_response("Authorization token required", 401)
-        
-        token = auth_header.split(" ")[1]
-        user_data = verify_jwt_token_simple(token)
-        if not user_data:
-            return create_error_response("Invalid or expired token", 401)
-        
-        user_id = user_data["user_id"]
-        
-        # Get request data
-        data = request.get_json()
-        if not data:
-            return create_error_response("Invalid JSON data", 400)
-        
-        session_id = data.get("session_id")
-        time_spent = data.get("time_spent", 0)
+        user_answers = data.get("user_answers", [])
+        time_taken = data.get("time_taken", 0)
         
         if not session_id:
             return create_error_response("session_id is required", 400)
@@ -261,18 +182,18 @@ def complete_practice_session():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            result = loop.run_until_complete(_complete_session_async(user_id, session_id, time_spent))
-            return create_response(result, "Practice session completed")
+            result = loop.run_until_complete(_submit_session_async(user_id, session_id, user_answers, time_taken))
+            return create_response(result, "Practice session submitted")
         finally:
             loop.close()
             
     except Exception as e:
-        print(f"Error completing practice session: {e}")
-        return create_error_response(f"Failed to complete practice session: {str(e)}", 500)
+        logger.error(f"Error submitting practice session: {str(e)}")
+        return create_error_response("Failed to submit practice session", 500)
 
 
-async def _complete_session_async(user_id: str, session_id: str, time_spent: int):
-    """Async logic for completing practice session"""
+async def _submit_session_async(user_id: str, session_id: str, user_answers: List[str], time_taken: int):
+    """Async logic for submitting complete practice session"""
     practice_collection = await get_practice_sessions_collection()
     users_collection = await get_users_collection()
     
@@ -284,17 +205,47 @@ async def _complete_session_async(user_id: str, session_id: str, time_spent: int
     if session["status"] != "active":
         raise Exception("Practice session is not active")
     
-    # Calculate score
+    # Calculate detailed results
+    detailed_results = []
+    correct_count = 0
     total_blanks = len(session["blanks"])
-    correct_answers = 0
     
-    for blank in session["blanks"]:
-        user_answer = session["userAnswers"].get(blank["id"])
-        if user_answer and user_answer["is_correct"]:
-            correct_answers += 1
+    for i, blank in enumerate(session["blanks"]):
+        user_answer = user_answers[i] if i < len(user_answers) else ""
+        correct_answer = blank.get("correct_answer", "")
+        
+        # Calculate similarity (simple string comparison for now)
+        is_correct = user_answer.strip().lower() == correct_answer.strip().lower()
+        similarity = 1.0 if is_correct else 0.0
+        
+        if is_correct:
+            correct_count += 1
+        
+        detailed_results.append({
+            "position": i,
+            "user_answer": user_answer,
+            "correct_answer": correct_answer,
+            "similarity": similarity,
+            "is_correct": is_correct
+        })
     
-    # Calculate score (0-100)
-    score = int((correct_answers / total_blanks) * 100) if total_blanks > 0 else 0
+    # Calculate scores
+    accuracy = (correct_count / total_blanks * 100) if total_blanks > 0 else 0
+    base_score = accuracy
+    
+    # Time bonus: faster completion gives bonus points
+    max_time = 300  # 5 minutes
+    time_bonus = max(0, (max_time - time_taken) / max_time * 20) if time_taken < max_time else 0
+    
+    total_score = min(100, base_score + time_bonus)
+    mistakes = total_blanks - correct_count
+    
+    # Check if eligible for leaderboard (official snippets only, >80% accuracy)
+    leaderboard_eligible = (
+        session.get("snippetType") == "official" and 
+        accuracy >= 80 and 
+        mistakes <= 2
+    )
     
     # Update practice session
     await practice_collection.update_one(
@@ -302,8 +253,11 @@ async def _complete_session_async(user_id: str, session_id: str, time_spent: int
         {
             "$set": {
                 "status": "completed",
-                "score": score,
-                "timeSpent": time_spent,
+                "userAnswers": user_answers,
+                "totalScore": total_score,
+                "accuracy": accuracy,
+                "timeSpent": time_taken,
+                "mistakes": mistakes,
                 "completedAt": current_timestamp()
             }
         }
@@ -314,8 +268,8 @@ async def _complete_session_async(user_id: str, session_id: str, time_spent: int
         {"_id": user_id},
         {
             "$inc": {
-                "stats.totalScore": score,
-                "stats.practiceTime": time_spent
+                "stats.totalScore": total_score,
+                "stats.practiceTime": time_taken
             },
             "$set": {
                 "lastActive": current_timestamp()
@@ -323,14 +277,112 @@ async def _complete_session_async(user_id: str, session_id: str, time_spent: int
         }
     )
     
+    # Return score data in expected format
     return {
         "session_id": session_id,
-        "score": score,
-        "correct_answers": correct_answers,
-        "total_blanks": total_blanks,
-        "time_spent": time_spent,
-        "accuracy": round((correct_answers / total_blanks) * 100, 1) if total_blanks > 0 else 0
+        "total_score": round(total_score, 1),
+        "accuracy": round(accuracy, 1),
+        "time_bonus": round(time_bonus, 1),
+        "mistakes": mistakes,
+        "time_taken": time_taken,
+        "detailed_results": detailed_results,
+        "leaderboard_eligible": leaderboard_eligible
     }
+
+
+@app.route("/stats", methods=["GET"])
+def get_practice_stats():
+    """Get user's practice statistics"""
+    try:
+        # Verify JWT token
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return create_error_response("Authorization token required", 401)
+        
+        token = auth_header.split(" ")[1]
+        user_data = verify_jwt_token_simple(token)
+        if not user_data:
+            return create_error_response("Invalid or expired token", 401)
+        
+        user_id = user_data["user_id"]
+        
+        # Run async logic
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            result = loop.run_until_complete(_get_stats_async(user_id))
+            return create_response(result, "Practice statistics retrieved")
+        finally:
+            loop.close()
+            
+    except Exception as e:
+        logger.error(f"Error getting practice stats: {str(e)}")
+        return create_error_response("Failed to get practice statistics", 500)
+
+
+async def _get_stats_async(user_id: str):
+    """Async logic for getting practice statistics"""
+    practice_collection = await get_practice_sessions_collection()
+    
+    # Get all completed sessions
+    cursor = practice_collection.find({
+        "userId": user_id,
+        "status": "completed"
+    })
+    sessions = await cursor.to_list(length=None)
+    
+    if not sessions:
+        return {
+            "total_sessions": 0,
+            "average_score": 0,
+            "average_accuracy": 0,
+            "total_practice_time": 0,
+            "total_mistakes": 0,
+            "languages": {}
+        }
+    
+    # Calculate overall stats
+    total_sessions = len(sessions)
+    total_score = sum(s.get("totalScore", 0) for s in sessions)
+    total_accuracy = sum(s.get("accuracy", 0) for s in sessions)
+    total_practice_time = sum(s.get("timeSpent", 0) for s in sessions)
+    total_mistakes = sum(s.get("mistakes", 0) for s in sessions)
+    
+    # Calculate language-specific stats
+    language_stats = {}
+    for session in sessions:
+        lang = session.get("language", "unknown")
+        if lang not in language_stats:
+            language_stats[lang] = {
+                "sessions": 0,
+                "total_score": 0,
+                "total_accuracy": 0
+            }
+        
+        language_stats[lang]["sessions"] += 1
+        language_stats[lang]["total_score"] += session.get("totalScore", 0)
+        language_stats[lang]["total_accuracy"] += session.get("accuracy", 0)
+    
+    # Calculate averages for each language
+    languages = {}
+    for lang, stats in language_stats.items():
+        languages[lang] = {
+            "sessions": stats["sessions"],
+            "avg_score": round(stats["total_score"] / stats["sessions"], 1),
+            "avg_accuracy": round(stats["total_accuracy"] / stats["sessions"], 1)
+        }
+    
+    return {
+        "total_sessions": total_sessions,
+        "average_score": round(total_score / total_sessions, 1),
+        "average_accuracy": round(total_accuracy / total_sessions, 1),
+        "total_practice_time": total_practice_time,
+        "total_mistakes": total_mistakes,
+        "languages": languages
+    }
+
+
+# Complete endpoint removed - functionality moved to submit endpoint
 
 
 @app.route("/session/<session_id>", methods=["GET"])
@@ -359,8 +411,8 @@ def get_practice_session(session_id):
             loop.close()
             
     except Exception as e:
-        print(f"Error getting practice session: {e}")
-        return create_error_response(f"Failed to get practice session: {str(e)}", 500)
+        logger.error(f"Error getting practice session: {str(e)}")
+        return create_error_response("Failed to get practice session", 500)
 
 
 async def _get_session_async(user_id: str, session_id: str):
@@ -402,52 +454,68 @@ def get_practice_history():
         
         user_id = user_data["user_id"]
         
-        # Get query parameters
-        page = int(request.args.get('page', 1))
-        per_page = min(int(request.args.get('per_page', 20)), 50)
+        # Get query parameters with validation
+        try:
+            page = max(1, int(request.args.get('page', 1)))
+            per_page = max(1, min(50, int(request.args.get('per_page', 20))))
+        except ValueError:
+            page, per_page = 1, 20
+        
+        language = request.args.get('language')
+        completed_only = request.args.get('completed_only', '').lower() in ('true', '1')
         
         # Run async logic
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            result = loop.run_until_complete(_get_history_async(user_id, page, per_page))
+            result = loop.run_until_complete(_get_history_async(user_id, page, per_page, language, completed_only))
             return create_response(result, "Practice history retrieved")
         finally:
             loop.close()
             
     except Exception as e:
-        print(f"Error getting practice history: {e}")
-        return create_error_response(f"Failed to get practice history: {str(e)}", 500)
+        logger.error(f"Error getting practice history: {str(e)}")
+        return create_error_response("Failed to get practice history", 500)
 
 
-async def _get_history_async(user_id: str, page: int, per_page: int):
+async def _get_history_async(user_id: str, page: int, per_page: int, language: str = None, completed_only: bool = False):
     """Async logic for getting practice history"""
     practice_collection = await get_practice_sessions_collection()
+    
+    # Build query with filters
+    query = {"userId": user_id}
+    if language:
+        query["language"] = language
+    if completed_only:
+        query["status"] = "completed"
     
     # Calculate skip
     skip = (page - 1) * per_page
     
     # Get sessions
-    cursor = practice_collection.find(
-        {"userId": user_id}
-    ).sort("startedAt", -1).skip(skip).limit(per_page)
-    
+    cursor = practice_collection.find(query).sort("startedAt", -1).skip(skip).limit(per_page)
     sessions = await cursor.to_list(length=per_page)
     
     # Get total count
-    total = await practice_collection.count_documents({"userId": user_id})
+    total = await practice_collection.count_documents(query)
     
-    # Format sessions
+    # Format sessions to match client expectations
     formatted_sessions = []
     for session in sessions:
         formatted_sessions.append({
             "session_id": session["_id"],
             "snippet_id": session["snippetId"],
-            "score": session["score"],
-            "time_spent": session["timeSpent"],
-            "status": session["status"],
-            "started_at": session["startedAt"],
-            "completed_at": session.get("completedAt")
+            "snippet_title": session.get("snippetTitle", "Untitled"),
+            "snippet_type": session.get("snippetType", "official"),
+            "language": session.get("language", "unknown"),
+            "difficulty": session.get("difficulty", 1),
+            "completed": session.get("status") == "completed",
+            "created_at": session["startedAt"].isoformat() if isinstance(session.get("startedAt"), datetime) else session.get("startedAt", ""),
+            "total_score": session.get("totalScore"),
+            "accuracy": session.get("accuracy"),
+            "time_taken": session.get("timeSpent"),
+            "mistakes": session.get("mistakes"),
+            "completed_at": session.get("completedAt").isoformat() if isinstance(session.get("completedAt"), datetime) else session.get("completedAt")
         })
     
     return {
@@ -455,8 +523,10 @@ async def _get_history_async(user_id: str, page: int, per_page: int):
         "pagination": {
             "page": page,
             "per_page": per_page,
-            "total": total,
-            "pages": (total + per_page - 1) // per_page
+            "total_count": total,
+            "total_pages": (total + per_page - 1) // per_page,
+            "has_next": page * per_page < total,
+            "has_prev": page > 1
         }
     }
 
