@@ -4,13 +4,18 @@ Handles code snippet management using Flask
 """
 
 import asyncio
-import json
+import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import functions_framework
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from dotenv import load_dotenv
+
+# Load environment variables from the root of the `server` directory
+dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
+load_dotenv(dotenv_path=dotenv_path)
 
 # Create Flask app
 app = Flask(__name__)
@@ -19,13 +24,6 @@ app = Flask(__name__)
 cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,https://syntaxmem.com").split(",")
 CORS(app, origins=[origin.strip() for origin in cors_origins], 
      methods=["GET", "POST", "OPTIONS"], headers=["Content-Type", "Authorization"])
-
-import os
-from dotenv import load_dotenv
-
-# Load environment variables from the root of the `server` directory
-dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
-load_dotenv(dotenv_path=dotenv_path)
 
 # Import utilities
 import sys
