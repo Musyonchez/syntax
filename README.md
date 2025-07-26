@@ -25,12 +25,14 @@ SyntaxMem provides a "fill-in-the-blanks" approach to learning programming. User
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 18+
 - Python 3.9+
 - MongoDB connection string
 - Google OAuth credentials
 
 ### Client Setup
+
 ```bash
 cd client
 npm install
@@ -40,6 +42,7 @@ npm run dev
 ```
 
 ### Server Setup
+
 ```bash
 cd server/functions/auth
 python -m venv venv
@@ -51,6 +54,7 @@ python -m flask --app main run --host=0.0.0.0 --port=8081 --debug
 ## Environment Variables
 
 ### Client (.env.local)
+
 ```
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your-secret-key
@@ -64,6 +68,7 @@ NEXT_PUBLIC_FORUM_API_URL=http://localhost:8085
 ```
 
 ### Server (.env)
+
 ```
 MONGODB_URI=your-mongodb-connection-string
 JWT_SECRET=your-jwt-secret
@@ -75,6 +80,7 @@ CORS_ORIGINS=http://localhost:3000,http://localhost:3001,https://syntaxmem.com
 ## Development
 
 ### Running All Services
+
 ```bash
 # Terminal 1 - Client
 cd client && npm run dev
@@ -125,3 +131,6 @@ syntax/
 ## License
 
 MIT License - see LICENSE file for details.
+
+Enjoy =)
+
