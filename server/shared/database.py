@@ -4,9 +4,13 @@ MongoDB database connection utilities for SyntaxMem Flask functions
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
+import logging
 
 # Load environment variables
 load_dotenv()
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # MongoDB configuration
 MONGODB_URI = os.getenv('MONGODB_URI')
@@ -27,7 +31,7 @@ async def get_database():
         await client.admin.command('ping')
         return database
     except Exception as e:
-        print(f"Failed to connect to MongoDB: {e}")
+        logger.error(f"Failed to connect to MongoDB: {e}")
         raise
 
 

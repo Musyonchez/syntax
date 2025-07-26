@@ -110,7 +110,7 @@ class CodeMasker:
             "masked_length": len(masked_code),
             "total_blanks": len(blanks),
             "difficulty": difficulty,
-            "language": language
+            "language": lexer.name.lower() if hasattr(lexer, 'name') else language
         }
     
     def _should_mask_token(self, token_type, token_value: str, difficulty: int) -> bool:

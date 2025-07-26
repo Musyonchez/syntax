@@ -5,9 +5,13 @@ Centralizes environment variable loading and validation
 import os
 from typing import List
 from dotenv import load_dotenv
+import logging
 
 # Load environment variables
 load_dotenv()
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 class Config:
     """Configuration class for SyntaxMem"""
@@ -26,7 +30,8 @@ class Config:
     GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
     
     # CORS Configuration
-    ALLOWED_ORIGINS: List[str] = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+    CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,https://syntaxmem.com")
+    ALLOWED_ORIGINS: List[str] = CORS_ORIGINS.split(",")
     
     # Function Configuration
     FUNCTION_REGION: str = os.getenv("FUNCTION_REGION", "us-central1")
@@ -81,6 +86,6 @@ try:
     config.validate()
 except ValueError as e:
     if config.is_development():
-        print(f"⚠️  Configuration warning: {e}")
+        logger.warning(f"Configuration warning: {e}")
     else:
         raise e
