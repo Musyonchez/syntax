@@ -1,5 +1,0 @@
-# Database seeding dependencies
-motor==3.*
-pymongo==4.*
-python-dotenv==1.*
-pydantic==2.*
