@@ -4,25 +4,27 @@ Handles forum posts and discussions using Flask
 """
 
 import asyncio
-import json
+import os
+import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import functions_framework
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-
-# Create Flask app
-app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000", "http://localhost:3001", "https://syntaxmem.com"], 
-     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], headers=["Content-Type", "Authorization"])
-
-import os
 from dotenv import load_dotenv
 
 # Load environment variables
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
 load_dotenv(dotenv_path=dotenv_path)
+
+# Create Flask app
+app = Flask(__name__)
+
+# Configure CORS with environment-based origins
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,https://syntaxmem.com").split(",")
+CORS(app, origins=[origin.strip() for origin in cors_origins], 
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], headers=["Content-Type", "Authorization"])
 
 # Import utilities
 import sys
@@ -30,18 +32,44 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from shared.auth_middleware import verify_jwt_token_simple
 from shared.database import get_forum_posts_collection, get_users_collection
-from shared.utils import current_timestamp, generate_id
+from shared.utils import current_timestamp, generate_id, create_response, create_error_response
 
+# Configure logging
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-def create_response(data=None, message="Success", status=200):
-    """Create standardized response"""
-    response = {"success": status < 400, "message": message, "data": data or {}}
-    return jsonify(response), status
+def validate_pagination_params(page: str, per_page: str) -> tuple[int, int]:
+    """Validate and sanitize pagination parameters"""
+    try:
+        page_num = max(1, int(page or 1))
+        per_page_num = max(1, min(50, int(per_page or 20)))  # Limit per_page to 50
+        return page_num, per_page_num
+    except ValueError:
+        return 1, 20
 
+def sanitize_string(text: str, max_length: int = 255) -> str:
+    """Sanitize string input"""
+    if not text:
+        return ""
+    
+    # Remove HTML tags and extra whitespace
+    text = re.sub(r'<[^>]+>', '', str(text))
+    text = ' '.join(text.split())
+    
+    # Limit length
+    if len(text) > max_length:
+        text = text[:max_length]
+    
+    return text.strip()
 
-def create_error_response(message="Error", status=400):
-    """Create standardized error response"""
-    return create_response(data=None, message=message, status=status)
+def validate_category(category: str) -> bool:
+    """Validate forum category"""
+    allowed_categories = ["general", "help", "showcase", "discussion", "feedback", "announcements"]
+    return category.lower() in allowed_categories
 
 
 @app.route("/health", methods=["GET"])
@@ -70,8 +98,8 @@ def get_posts():
             loop.close()
             
     except Exception as e:
-        print(f"Error getting forum posts: {e}")
-        return create_error_response(f"Failed to get forum posts: {str(e)}", 500)
+        logger.error(f"Error getting forum posts: {e}")
+        return create_error_response("Failed to get forum posts", 500)
 
 
 async def _get_posts_async(page: int, per_page: int, category: Optional[str] = None, sort_by: str = 'recent'):
@@ -217,8 +245,8 @@ def create_post():
             loop.close()
             
     except Exception as e:
-        print(f"Error creating forum post: {e}")
-        return create_error_response(f"Failed to create forum post: {str(e)}", 500)
+        logger.error(f"Error creating forum post: {e}")
+        return create_error_response("Failed to create forum post", 500)
 
 
 async def _create_post_async(user_id: str, title: str, content: str, category: str, tags: List[str]):
@@ -265,8 +293,8 @@ def get_post(post_id):
             loop.close()
             
     except Exception as e:
-        print(f"Error getting forum post: {e}")
-        return create_error_response(f"Failed to get forum post: {str(e)}", 500)
+        logger.error(f"Error getting forum post: {e}")
+        return create_error_response("Failed to get forum post", 500)
 
 
 async def _get_post_async(post_id: str):
@@ -402,7 +430,7 @@ def create_reply(post_id):
         if not data:
             return create_error_response("Invalid JSON data", 400)
         
-        content = data.get("content", "").strip()
+        content = sanitize_string(data.get("content", ""), 5000)
         
         if not content:
             return create_error_response("Content is required", 400)
@@ -420,8 +448,8 @@ def create_reply(post_id):
             loop.close()
             
     except Exception as e:
-        print(f"Error creating reply: {e}")
-        return create_error_response(f"Failed to create reply: {str(e)}", 500)
+        logger.error(f"Error creating reply: {e}")
+        return create_error_response("Failed to create reply", 500)
 
 
 async def _create_reply_async(user_id: str, post_id: str, content: str):
@@ -495,8 +523,8 @@ def vote_post(post_id):
             loop.close()
             
     except Exception as e:
-        print(f"Error voting on post: {e}")
-        return create_error_response(f"Failed to vote on post: {str(e)}", 500)
+        logger.error(f"Error voting on post: {e}")
+        return create_error_response("Failed to vote on post", 500)
 
 
 async def _vote_post_async(user_id: str, post_id: str, vote_type: str):
@@ -543,8 +571,8 @@ def get_categories():
             loop.close()
             
     except Exception as e:
-        print(f"Error getting categories: {e}")
-        return create_error_response(f"Failed to get categories: {str(e)}", 500)
+        logger.error(f"Error getting categories: {e}")
+        return create_error_response("Failed to get categories", 500)
 
 
 async def _get_categories_async():
