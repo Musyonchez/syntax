@@ -259,20 +259,15 @@ export default function PracticePage() {
                 <h3 className="text-lg font-medium mb-2">Unable to load snippets</h3>
                 <p className="text-muted-foreground mb-4">
                   {snippetType === 'personal' 
-                    ? 'Personal snippets require authentication. Please sign in to view your snippets.'
-                    : 'There was an issue loading official snippets. This might be due to database connectivity or missing sample data.'
+                    ? 'Sign in to access your personal code snippets and track your progress.'
+                    : 'We\'re having trouble loading the practice snippets right now.'
                   }
                 </p>
                 <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>To resolve this:</p>
                   {snippetType === 'personal' ? (
-                    <p>• Sign in with your Google account</p>
+                    <p>Sign in with your Google account to view and create your own snippets</p>
                   ) : (
-                    <>
-                      <p>• Ensure MongoDB is running and accessible</p>
-                      <p>• Check server logs for detailed error information</p>
-                      <p>• Consider adding sample snippets to the database</p>
-                    </>
+                    <p>Please try again in a moment. If the problem persists, our team has been notified.</p>
                   )}
                 </div>
                 <Button 
