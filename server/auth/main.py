@@ -147,8 +147,29 @@ async def _handle_google_auth(email: str, name: str, avatar: str):
         access_token = auth_utils.create_access_token(user)
         refresh_token = auth_utils.create_refresh_token(user["_id"])
         
-        # Store refresh token
+        # Store refresh token (limit to 2 tokens per user)
         refresh_tokens_collection = await db.get_refresh_tokens_collection()
+        
+        # Check current token count for user
+        current_token_count = await refresh_tokens_collection.count_documents({"userId": user["_id"]})
+        
+        # If user already has 2 or more tokens, remove excess tokens (keep only 1, so we can add 1 more)
+        if current_token_count >= 2:
+            # Find all tokens for user, sorted by creation date (oldest first)
+            existing_tokens = await refresh_tokens_collection.find(
+                {"userId": user["_id"]},
+                sort=[("createdAt", 1)]
+            ).to_list(length=None)
+            
+            # Remove all but the newest token (keep only 1, so total will be 2 after insert)
+            tokens_to_remove = existing_tokens[:-1]  # All except the last (newest) one
+            
+            if tokens_to_remove:
+                token_ids_to_remove = [token["_id"] for token in tokens_to_remove]
+                result = await refresh_tokens_collection.delete_many({"_id": {"$in": token_ids_to_remove}})
+                print(f"DEBUG: Removed {result.deleted_count} old refresh tokens for user {user['_id']}")
+        
+        # Insert new refresh token
         await refresh_tokens_collection.insert_one({
             "userId": user["_id"],
             "token": refresh_token,
