@@ -7,6 +7,7 @@ import asyncio
 import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from bson import ObjectId
 
 import functions_framework
 from flask import Flask, jsonify, request
@@ -30,9 +31,10 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 
 from shared.auth_middleware import verify_jwt_token_simple
-from shared.database import get_snippets_collection, get_users_collection
+from shared.database import get_official_snippets_collection, get_personal_snippets_collection, get_users_collection
 from shared.utils import current_timestamp, generate_id, create_response, create_error_response
 from shared.masking import mask_code
+from shared.schemas import format_snippet_response, format_pagination_response
 
 # Configure logging
 import logging
@@ -129,10 +131,10 @@ def get_official_snippets():
 
 async def _get_official_snippets_async(page: int, per_page: int, language: str = None, difficulty: str = None):
     """Async logic for getting official snippets"""
-    snippets_collection = await get_snippets_collection()
+    snippets_collection = await get_official_snippets_collection()
     
-    # Build query
-    query = {"type": "official"}
+    # Build query (no type filter needed - collection determines it's official)
+    query = {"status": "active"}  # Only show active snippets
     
     if language:
         query["language"] = language
@@ -153,35 +155,13 @@ async def _get_official_snippets_async(page: int, per_page: int, language: str =
     # Get total count
     total = await snippets_collection.count_documents(query)
     
-    # Format snippets for response (match client interface)
-    formatted_snippets = []
-    for snippet in snippets:
-        formatted_snippet = {
-            "id": str(snippet["_id"]),
-            "title": snippet.get("title", "Untitled"),
-            "content": None,  # Don't include content in list view for security
-            "language": snippet["language"],
-            "difficulty": snippet["difficulty"],
-            "type": snippet.get("type", "official"),
-            "status": snippet.get("status", "active"),
-            "author_name": snippet.get("authorName", "Official"),
-            "solve_count": snippet.get("solveCount", 0),
-            "avg_score": snippet.get("avgScore", 0.0),
-            "created_at": snippet.get("createdAt", "").isoformat() if isinstance(snippet.get("createdAt"), datetime) else snippet.get("createdAt", "")
-        }
-        formatted_snippets.append(formatted_snippet)
+    # Format snippets using shared schema
+    formatted_snippets = [
+        format_snippet_response(snippet, snippet_type="official", include_content=False)
+        for snippet in snippets
+    ]
     
-    return {
-        "snippets": formatted_snippets,
-        "pagination": {
-            "page": page,
-            "per_page": per_page,
-            "total_count": total,
-            "total_pages": (total + per_page - 1) // per_page,
-            "has_next": page * per_page < total,
-            "has_prev": page > 1
-        }
-    }
+    return format_pagination_response(formatted_snippets, page, per_page, total)
 
 
 @app.route("/personal", methods=["GET"])
@@ -224,10 +204,10 @@ def get_personal_snippets():
 
 async def _get_personal_snippets_async(user_id: str, page: int, per_page: int):
     """Async logic for getting personal snippets"""
-    snippets_collection = await get_snippets_collection()
+    snippets_collection = await get_personal_snippets_collection()
     
-    # Build query for user's personal snippets
-    query = {"type": "personal", "userId": user_id}
+    # Build query for user's personal snippets (no type filter needed)
+    query = {"userId": ObjectId(user_id)}
     
     # Calculate pagination
     skip = (page - 1) * per_page
@@ -239,35 +219,13 @@ async def _get_personal_snippets_async(user_id: str, page: int, per_page: int):
     # Get total count
     total = await snippets_collection.count_documents(query)
     
-    # Format snippets for response (match client interface)
-    formatted_snippets = []
-    for snippet in snippets:
-        formatted_snippet = {
-            "id": str(snippet["_id"]),
-            "title": snippet.get("title", "Untitled"),
-            "content": snippet.get("code", ""),  # Include code for personal snippets
-            "language": snippet["language"],
-            "difficulty": snippet["difficulty"],
-            "type": snippet.get("type", "personal"),
-            "status": snippet.get("status", "active"),
-            "author_name": snippet.get("authorName", "You"),
-            "solve_count": snippet.get("solveCount", 0),
-            "avg_score": snippet.get("avgScore", 0.0),
-            "created_at": snippet.get("createdAt", "").isoformat() if isinstance(snippet.get("createdAt"), datetime) else snippet.get("createdAt", "")
-        }
-        formatted_snippets.append(formatted_snippet)
+    # Format snippets using shared schema
+    formatted_snippets = [
+        format_snippet_response(snippet, snippet_type="personal", include_content=True)
+        for snippet in snippets
+    ]
     
-    return {
-        "snippets": formatted_snippets,
-        "pagination": {
-            "page": page,
-            "per_page": per_page,
-            "total_count": total,
-            "total_pages": (total + per_page - 1) // per_page,
-            "has_next": page * per_page < total,
-            "has_prev": page > 1
-        }
-    }
+    return format_pagination_response(formatted_snippets, page, per_page, total)
 
 
 @app.route("/create", methods=["POST"])

@@ -42,8 +42,19 @@ async def get_users_collection():
     return db.users
 
 
+async def get_official_snippets_collection():
+    """Get official snippets collection"""
+    db = await get_database()
+    return db.official_snippets
+
+async def get_personal_snippets_collection():
+    """Get personal snippets collection"""
+    db = await get_database()
+    return db.personal_snippets
+
+# Keep old function for backward compatibility during transition
 async def get_snippets_collection():
-    """Get snippets collection"""
+    """Get snippets collection (deprecated - use specific collections)"""
     db = await get_database()
     return db.snippets
 
