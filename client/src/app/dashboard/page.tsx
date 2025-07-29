@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
+import { LogoutAllButton } from "@/components/logout-all-button"
 
 export default async function Dashboard() {
   const session = await auth()
@@ -27,6 +28,11 @@ export default async function Dashboard() {
             <p><strong>Email:</strong> {session.user.email}</p>
             <p><strong>Role:</strong> {session.user.role}</p>
             <p><strong>User ID:</strong> {session.user.id}</p>
+          </div>
+          
+          <div className="pt-4 border-t border-border">
+            <h3 className="text-sm font-medium mb-2 text-muted-foreground">Security</h3>
+            <LogoutAllButton accessToken={session.user.backendToken} />
           </div>
         </div>
         
