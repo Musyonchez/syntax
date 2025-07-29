@@ -24,7 +24,7 @@ app = Flask(__name__)
 # Configure CORS with environment-based origins
 cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,https://syntaxmem.com").split(",")
 CORS(app, origins=[origin.strip() for origin in cors_origins], 
-     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], headers=["Content-Type", "Authorization"])
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"], allow_headers=["Content-Type", "Authorization"])
 
 # Import utilities
 import sys
