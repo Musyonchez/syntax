@@ -22,13 +22,13 @@ class Database:
     
     async def get_users_collection(self):
         """Get users collection"""
-        if not self.db:
+        if self.db is None:
             await self.connect()
         return self.db.users
     
     async def get_refresh_tokens_collection(self):
         """Get refresh tokens collection"""
-        if not self.db:
+        if self.db is None:
             await self.connect()
         return self.db.refresh_tokens
     

@@ -35,8 +35,12 @@ def health():
 def google_auth():
     """Handle Google OAuth authentication"""
     try:
+        print("=== DEBUG: /google-auth endpoint called ===")
         data = request.get_json()
+        print(f"DEBUG: Received data: {data}")
+        
         if not data:
+            print("DEBUG: No JSON data received")
             return create_error_response("Invalid JSON data", 400)
         
         # Validate required fields
@@ -45,28 +49,46 @@ def google_auth():
         name = auth_utils.sanitize_string(data.get('name', ''))
         avatar = auth_utils.sanitize_string(data.get('avatar', ''))
         
+        print(f"DEBUG: Sanitized data - google_id: {google_id}, email: {email}, name: {name}")
+        
         if not all([google_id, email, name]):
+            print("DEBUG: Missing required fields")
             return create_error_response("Missing required fields", 400)
+        
+        print("DEBUG: Starting async operations")
+        # Reset database connection for new event loop
+        db.client = None
+        db.db = None
         
         # Run async operations
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
             result = loop.run_until_complete(_handle_google_auth(google_id, email, name, avatar))
+            print("DEBUG: Async operation completed successfully")
+            print(f"DEBUG: Result type: {type(result)}")
+            print(f"DEBUG: Result content: {result}")
             return result
-        finally:
-            loop.close()
+        except Exception as async_error:
+            print(f"DEBUG: Async operation failed: {async_error}")
+            raise async_error
             
     except Exception as e:
+        print(f"DEBUG: Main exception caught: {e}")
+        import traceback
+        traceback.print_exc()
         return create_error_response(f"Authentication failed: {str(e)}", 500)
 
 async def _handle_google_auth(google_id: str, email: str, name: str, avatar: str):
     """Async handler for Google authentication"""
     try:
+        print("DEBUG: Getting users collection")
         users_collection = await db.get_users_collection()
+        print("DEBUG: Users collection obtained")
         
-        # Find or create user
-        user = await users_collection.find_one({"googleId": google_id})
+        # Find or create user (use email as primary lookup since googleId changes)
+        user = await users_collection.find_one({"email": email})
+        print(f"DEBUG: User lookup by email: {user}")
         
         if not user:
             # Create new user
@@ -84,11 +106,12 @@ async def _handle_google_auth(google_id: str, email: str, name: str, avatar: str
             user_data["_id"] = str(result.inserted_id)
             user = user_data
         else:
-            # Update existing user
+            # Update existing user with latest googleId and profile data
             await users_collection.update_one(
                 {"_id": user["_id"]},
                 {
                     "$set": {
+                        "googleId": google_id,  # Update to latest googleId
                         "name": name,
                         "avatar": avatar,
                         "updatedAt": datetime.now(timezone.utc),
@@ -97,6 +120,7 @@ async def _handle_google_auth(google_id: str, email: str, name: str, avatar: str
                 }
             )
             user["_id"] = str(user["_id"])
+            print("DEBUG: Updated existing user")
         
         # Create tokens
         access_token = auth_utils.create_access_token(user)
@@ -125,9 +149,17 @@ async def _handle_google_auth(google_id: str, email: str, name: str, avatar: str
             }
         }
         
-        return create_response(response_data, "Authentication successful")
+        print(f"DEBUG: Response data structure: {response_data}")
+        
+        response = create_response(response_data, "Authentication successful")
+        print(f"DEBUG: Final response type: {type(response)}")
+        print(f"DEBUG: Final response content: {response}")
+        return response
         
     except Exception as e:
+        print(f"DEBUG: Database error: {e}")
+        import traceback
+        traceback.print_exc()
         return create_error_response(f"Database error: {str(e)}", 500)
 
 @app.route('/refresh', methods=['POST'])

@@ -36,15 +36,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
         
         const backendData = await response.json()
+        console.log("DEBUG: Backend response:", backendData)
+        
+        // Check if response has success structure
+        const userData = backendData.success ? backendData.data : backendData
+        console.log("DEBUG: User data:", userData)
         
         // Replace user data with backend response
-        user.id = backendData.user.id
-        user.name = backendData.user.name
-        user.email = backendData.user.email
-        user.image = backendData.user.avatar
-        user.backendToken = backendData.token
-        user.role = backendData.user.role
-        user.googleId = backendData.user.googleId
+        user.id = userData.user.id
+        user.name = userData.user.name
+        user.email = userData.user.email
+        user.image = userData.user.avatar
+        user.backendToken = userData.token
+        user.role = userData.user.role
+        user.googleId = userData.user.googleId
         
         return true // Allow NextAuth to create session with backend data
         
