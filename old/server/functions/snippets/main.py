@@ -170,13 +170,19 @@ def get_personal_snippets():
     try:
         # Verify JWT token
         auth_header = request.headers.get("Authorization")
+        print(f"[DEBUG] Auth header: {auth_header}")
         if not auth_header or not auth_header.startswith("Bearer "):
+            print("[DEBUG] No valid auth header found")
             return create_error_response("Authorization token required", 401)
         
         token = auth_header.split(" ")[1]
+        print(f"[DEBUG] Extracted token: {token[:20]}...")
         user_data = verify_jwt_token_simple(token)
         if not user_data:
+            print("[DEBUG] Token verification failed")
             return create_error_response("Invalid or expired token", 401)
+        
+        print(f"[DEBUG] User authenticated: {user_data}")
         
         user_id = user_data["user_id"]
         

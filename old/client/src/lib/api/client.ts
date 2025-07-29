@@ -17,9 +17,13 @@ export class ApiClient {
       const response = await fetch('/api/auth/session')
       if (response.ok) {
         const session = await response.json()
+        console.log('[DEBUG] Session from /api/auth/session:', session)
+        console.log('[DEBUG] AccessToken:', session?.accessToken ? 'present' : 'missing')
         return session?.accessToken || null
       }
-    } catch {
+      console.log('[DEBUG] Session request failed:', response.status)
+    } catch (error) {
+      console.log('[DEBUG] Session request error:', error)
       // Silently fail - auth is optional for some endpoints
     }
     return null
@@ -31,6 +35,7 @@ export class ApiClient {
   ): Promise<ApiResponse<T>> {
     try {
       const token = await this.getAuthToken()
+      console.log('[DEBUG] Token for request:', token ? 'present' : 'missing')
       const headers: Record<string, string> = {
         "Content-Type": "application/json",
         ...(options.headers as Record<string, string> || {}),
@@ -38,6 +43,9 @@ export class ApiClient {
 
       if (token) {
         headers.Authorization = `Bearer ${token}`
+        console.log('[DEBUG] Authorization header set')
+      } else {
+        console.log('[DEBUG] No token available, Authorization header not set')
       }
 
       const response = await fetch(`${this.baseUrl}${endpoint}`, {

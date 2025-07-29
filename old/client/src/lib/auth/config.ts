@@ -32,8 +32,12 @@ const authConfig = NextAuth({
   ],
   callbacks: {
     async jwt({ token, account, profile }) {
+      console.log('[DEBUG] JWT callback - account:', account ? 'present' : 'missing')
+      console.log('[DEBUG] JWT callback - current token:', token)
+      
       // Sync with backend on first sign in
       if (account?.provider === "google" && profile) {
+        console.log('[DEBUG] First sign-in - syncing with backend')
         try {
           const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:8081'}/google-auth`, {
             method: "POST",
@@ -51,11 +55,18 @@ const authConfig = NextAuth({
 
           if (response.ok) {
             const data = await response.json()
+            console.log('[DEBUG] Backend auth response:', data)
             if (data.success && data.data) {
               token.sub = data.data.user?.user_id
               token.role = data.data.user?.role || "user"
               token.accessToken = data.data.access_token
               token.refreshToken = data.data.refresh_token
+              console.log('[DEBUG] Token updated with:', { 
+                sub: token.sub, 
+                role: token.role, 
+                hasAccessToken: !!token.accessToken,
+                hasRefreshToken: !!token.refreshToken 
+              })
               
               // Update user data from server
               if (data.data.user) {
@@ -108,11 +119,14 @@ const authConfig = NextAuth({
     },
     
     async session({ session, token }) {
+      console.log('[DEBUG] NextAuth session callback - token:', token)
       if (token) {
         session.user.id = token.sub as string
         session.user.role = token.role as string
         session.accessToken = token.accessToken as string
+        console.log('[DEBUG] Session accessToken set:', session.accessToken ? 'present' : 'missing')
       }
+      console.log('[DEBUG] Final session object:', session)
       return session
     },
   },

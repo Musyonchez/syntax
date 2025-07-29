@@ -20,8 +20,10 @@ def verify_jwt_token_simple(token: str) -> Optional[Dict[str, Any]]:
     Simplified version for Flask functions
     """
     try:
+        print(f"[DEBUG] Verifying token: {token[:20]}...")
         # Decode and verify the token (includes expiration check)
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        print(f"[DEBUG] Token valid, user_id: {payload.get('user_id')}")
         
         # Return user data
         return {
@@ -29,11 +31,14 @@ def verify_jwt_token_simple(token: str) -> Optional[Dict[str, Any]]:
             'email': payload.get('email')
         }
         
-    except jwt.ExpiredSignatureError:
+    except jwt.ExpiredSignatureError as e:
+        print(f"[DEBUG] Token expired: {e}")
         return None
-    except jwt.InvalidTokenError:
+    except jwt.InvalidTokenError as e:
+        print(f"[DEBUG] Invalid token: {e}")
         return None
-    except Exception:
+    except Exception as e:
+        print(f"[DEBUG] Token verification error: {e}")
         return None
 
 
