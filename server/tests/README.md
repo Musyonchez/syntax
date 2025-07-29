@@ -54,11 +54,25 @@ cd tests
 
 ## 📋 Current Tests
 
-### **Auth Module** (`auth/`)
+### **Auth Module** (`auth/`) - **10 Comprehensive Tests**
+
+**Core Auth Flow Tests:**
+- `test_login_register.py` - Complete login/register flow validation
+- `test_token_refresh.py` - Token refresh endpoint with edge cases  
+- `test_schema_validation.py` - Input validation and data sanitization
+
+**Session Management Tests:**
 - `test_token_cleanup.py` - Automatic expired token cleanup
 - `test_logout.py` - Single device logout with token cleanup
 - `test_logout_all.py` - Logout all devices functionality
-- `test_session_limits.py` - 2-token session limits
+- `test_session_limits.py` - 2-token session limits enforcement
+
+**Edge Case Tests:**
+- `test_invalid_tokens.py` - Malformed/expired JWT token handling
+- `test_concurrent_logins.py` - Race conditions and concurrent requests
+
+**Security Tests:**
+- `test_security.py` - Injection attacks, XSS, token manipulation
 
 ### **Future Modules**
 - `users/` - User profile management, role changes
