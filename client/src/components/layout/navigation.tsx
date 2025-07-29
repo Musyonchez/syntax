@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { Moon, Sun, Code, Trophy, MessageCircle, BookOpen, User, LogOut, Menu, X } from "lucide-react"
@@ -36,9 +37,14 @@ export function Navigation() {
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-14 items-center px-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center space-x-2">
-          <Code className="h-6 w-6" />
-          <span className="font-bold">SyntaxMem</span>
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/logo.png"
+            alt="SyntaxMem Logo"
+            width={120}
+            height={32}
+            className="h-8"
+          />
         </Link>
 
         {/* Desktop Navigation */}
