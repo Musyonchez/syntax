@@ -44,14 +44,13 @@ def google_auth():
             return create_error_response("Invalid JSON data", 400)
         
         # Validate required fields
-        google_id = auth_utils.sanitize_string(data.get('googleId', ''))
         email = auth_utils.sanitize_string(data.get('email', ''))
         name = auth_utils.sanitize_string(data.get('name', ''))
         avatar = auth_utils.sanitize_string(data.get('avatar', ''))
         
-        print(f"DEBUG: Sanitized data - google_id: {google_id}, email: {email}, name: {name}")
+        print(f"DEBUG: Sanitized data - email: {email}, name: {name}")
         
-        if not all([google_id, email, name]):
+        if not all([email, name]):
             print("DEBUG: Missing required fields")
             return create_error_response("Missing required fields", 400)
         
@@ -64,7 +63,7 @@ def google_auth():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            result = loop.run_until_complete(_handle_google_auth(google_id, email, name, avatar))
+            result = loop.run_until_complete(_handle_google_auth(email, name, avatar))
             print("DEBUG: Async operation completed successfully")
             print(f"DEBUG: Result type: {type(result)}")
             print(f"DEBUG: Result content: {result}")
@@ -79,7 +78,7 @@ def google_auth():
         traceback.print_exc()
         return create_error_response(f"Authentication failed: {str(e)}", 500)
 
-async def _handle_google_auth(google_id: str, email: str, name: str, avatar: str):
+async def _handle_google_auth(email: str, name: str, avatar: str):
     """Async handler for Google authentication"""
     try:
         print("DEBUG: Getting users collection")
@@ -93,7 +92,6 @@ async def _handle_google_auth(google_id: str, email: str, name: str, avatar: str
         if not user:
             # Create new user
             user_data = {
-                "googleId": google_id,
                 "email": email,
                 "name": name,
                 "avatar": avatar,
@@ -105,13 +103,13 @@ async def _handle_google_auth(google_id: str, email: str, name: str, avatar: str
             result = await users_collection.insert_one(user_data)
             user_data["_id"] = str(result.inserted_id)
             user = user_data
+            print("DEBUG: Created new user")
         else:
-            # Update existing user with latest googleId and profile data
+            # Update existing user with latest profile data
             await users_collection.update_one(
                 {"_id": user["_id"]},
                 {
                     "$set": {
-                        "googleId": google_id,  # Update to latest googleId
                         "name": name,
                         "avatar": avatar,
                         "updatedAt": datetime.now(timezone.utc),
@@ -141,7 +139,6 @@ async def _handle_google_auth(google_id: str, email: str, name: str, avatar: str
             "refreshToken": refresh_token,
             "user": {
                 "id": user["_id"],
-                "googleId": user["googleId"],
                 "email": user["email"],
                 "name": user["name"],
                 "avatar": user["avatar"],

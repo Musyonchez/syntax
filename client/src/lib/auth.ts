@@ -21,7 +21,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            googleId: user.id,
             email: user.email,
             name: user.name,
             avatar: user.image,
@@ -49,7 +48,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         user.image = userData.user.avatar
         user.backendToken = userData.token
         user.role = userData.user.role
-        user.googleId = userData.user.googleId
         
         return true // Allow NextAuth to create session with backend data
         
@@ -63,7 +61,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.backendToken = user.backendToken
         token.role = user.role
-        token.googleId = user.googleId
         token.sub = user.id
       }
       return token
@@ -74,7 +71,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.sub as string
         session.user.backendToken = token.backendToken as string
         session.user.role = token.role as string
-        session.user.googleId = token.googleId as string
       }
       return session
     },
