@@ -62,8 +62,13 @@ def google_auth():
         print("DEBUG: Starting async operations")
         
         # Run async operations
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         try:
-            result = asyncio.run(_handle_google_auth(user_data))
+            # Reset database connection for new event loop
+            db.client = None
+            db.db = None
+            result = loop.run_until_complete(_handle_google_auth(user_data))
             print("DEBUG: Async operation completed successfully")
             print(f"DEBUG: Result type: {type(result)}")
             print(f"DEBUG: Result content: {result}")
@@ -71,6 +76,8 @@ def google_auth():
         except Exception as async_error:
             print(f"DEBUG: Async operation failed: {async_error}")
             raise async_error
+        finally:
+            loop.close()
             
     except Exception as e:
         print(f"DEBUG: Main exception caught: {e}")
@@ -220,11 +227,18 @@ def refresh_token():
         refresh_token = data.get('refreshToken')
         
         # Run async operations
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         try:
-            result = asyncio.run(_handle_refresh_token(refresh_token))
+            # Reset database connection for new event loop
+            db.client = None
+            db.db = None
+            result = loop.run_until_complete(_handle_refresh_token(refresh_token))
             return result
         except Exception as async_error:
             raise async_error
+        finally:
+            loop.close()
             
     except Exception as e:
         return create_error_response(f"Token refresh failed: {str(e)}", 500)
@@ -259,7 +273,8 @@ async def _handle_refresh_token(refresh_token: str):
         
         # Get user data
         users_collection = await db.get_users_collection()
-        user = await users_collection.find_one({"_id": user_id})
+        from bson import ObjectId
+        user = await users_collection.find_one({"_id": ObjectId(user_id)})
         
         if not user:
             return create_error_response("User not found", 401)
@@ -305,12 +320,19 @@ def logout_all():
         
         
         # Run async operations
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         try:
-            result = asyncio.run(_handle_logout_all(user_id))
+            # Reset database connection for new event loop
+            db.client = None
+            db.db = None
+            result = loop.run_until_complete(_handle_logout_all(user_id))
             return result
         except Exception as async_error:
             print(f"DEBUG: Logout all async operation failed: {async_error}")
             raise async_error
+        finally:
+            loop.close()
             
     except Exception as e:
         print(f"DEBUG: Logout all exception: {e}")
@@ -349,12 +371,19 @@ def logout():
         
         
         # Run async operations
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         try:
-            result = asyncio.run(_handle_logout(refresh_token))
+            # Reset database connection for new event loop
+            db.client = None
+            db.db = None
+            result = loop.run_until_complete(_handle_logout(refresh_token))
             return result
         except Exception as async_error:
             print(f"DEBUG: Logout async operation failed: {async_error}")
             raise async_error
+        finally:
+            loop.close()
             
     except Exception as e:
         print(f"DEBUG: Logout exception: {e}")
