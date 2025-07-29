@@ -285,5 +285,64 @@ async def _handle_refresh_token(refresh_token: str):
     except Exception as e:
         return create_error_response(f"Database error: {str(e)}", 500)
 
+@app.route('/logout-all', methods=['POST'])
+def logout_all():
+    """Revoke all refresh tokens for a user (sign out all devices)"""
+    try:
+        # Get authorization header
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return create_error_response("Authorization token required", 401)
+        
+        access_token = auth_header.split(' ')[1]
+        
+        # Verify access token
+        payload = auth_utils.verify_token(access_token, "access")
+        if not payload:
+            return create_error_response("Invalid access token", 401)
+        
+        user_id = payload.get("user_id")
+        if not user_id:
+            return create_error_response("Invalid token payload", 401)
+        
+        # Reset database connection for new event loop
+        db.client = None
+        db.db = None
+        
+        # Run async operations
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            result = loop.run_until_complete(_handle_logout_all(user_id))
+            return result
+        except Exception as async_error:
+            print(f"DEBUG: Logout all async operation failed: {async_error}")
+            raise async_error
+            
+    except Exception as e:
+        print(f"DEBUG: Logout all exception: {e}")
+        return create_error_response(f"Logout all failed: {str(e)}", 500)
+
+async def _handle_logout_all(user_id: str):
+    """Async handler for logging out all devices"""
+    try:
+        print(f"DEBUG: Logging out all devices for user {user_id}")
+        
+        # Get refresh tokens collection
+        refresh_tokens_collection = await db.get_refresh_tokens_collection()
+        
+        # Delete all refresh tokens for this user
+        result = await refresh_tokens_collection.delete_many({"userId": user_id})
+        
+        print(f"DEBUG: Revoked {result.deleted_count} refresh tokens for user {user_id}")
+        
+        return create_response({
+            "revokedTokens": result.deleted_count
+        }, "Successfully signed out of all devices")
+        
+    except Exception as e:
+        print(f"DEBUG: Logout all database error: {e}")
+        return create_error_response(f"Database error: {str(e)}", 500)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8081, debug=True)
