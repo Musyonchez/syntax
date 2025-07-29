@@ -11,9 +11,12 @@ from dotenv import load_dotenv
 # Import shared utilities
 import sys
 sys.path.append('../shared')
+sys.path.append('../schemas')
 from auth_utils import AuthUtils
 from database import db
 from response_utils import create_response, create_error_response
+from users import UserSchema
+from tokens import RefreshTokenSchema
 
 # Load environment variables
 load_dotenv(os.path.join(os.path.dirname(__file__), '../.env'))
@@ -43,16 +46,13 @@ def google_auth():
             print("DEBUG: No JSON data received")
             return create_error_response("Invalid JSON data", 400)
         
-        # Validate required fields
-        email = auth_utils.sanitize_string(data.get('email', ''))
-        name = auth_utils.sanitize_string(data.get('name', ''))
-        avatar = auth_utils.sanitize_string(data.get('avatar', ''))
-        
-        print(f"DEBUG: Sanitized data - email: {email}, name: {name}")
-        
-        if not all([email, name]):
-            print("DEBUG: Missing required fields")
-            return create_error_response("Missing required fields", 400)
+        # Validate data using schema
+        try:
+            user_data = UserSchema.validate_create(data)
+            print(f"DEBUG: Schema validated data - email: {user_data['email']}, name: {user_data['name']}")
+        except ValueError as e:
+            print(f"DEBUG: Schema validation failed: {e}")
+            return create_error_response(f"Validation error: {str(e)}", 400)
         
         print("DEBUG: Starting async operations")
         # Reset database connection for new event loop
@@ -63,7 +63,7 @@ def google_auth():
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         try:
-            result = loop.run_until_complete(_handle_google_auth(email, name, avatar))
+            result = loop.run_until_complete(_handle_google_auth(user_data))
             print("DEBUG: Async operation completed successfully")
             print(f"DEBUG: Result type: {type(result)}")
             print(f"DEBUG: Result content: {result}")
@@ -78,41 +78,39 @@ def google_auth():
         traceback.print_exc()
         return create_error_response(f"Authentication failed: {str(e)}", 500)
 
-async def _handle_google_auth(email: str, name: str, avatar: str):
+async def _handle_google_auth(validated_data: dict):
     """Async handler for Google authentication"""
     try:
         print("DEBUG: Getting users collection")
         users_collection = await db.get_users_collection()
         print("DEBUG: Users collection obtained")
         
-        # Find or create user (use email as primary lookup since googleId changes)
-        user = await users_collection.find_one({"email": email})
+        # Find or create user (use email as primary lookup)
+        user = await users_collection.find_one({"email": validated_data["email"]})
         print(f"DEBUG: User lookup by email: {user}")
         
         if not user:
-            # Create new user
-            user_data = {
-                "email": email,
-                "name": name,
-                "avatar": avatar,
-                "role": "user",
-                "createdAt": datetime.now(timezone.utc),
-                "updatedAt": datetime.now(timezone.utc),
-                "lastLoginAt": datetime.now(timezone.utc)
-            }
-            result = await users_collection.insert_one(user_data)
-            user_data["_id"] = str(result.inserted_id)
-            user = user_data
+            # Create new user using validated data
+            result = await users_collection.insert_one(validated_data)
+            validated_data["_id"] = str(result.inserted_id)
+            user = validated_data
             print("DEBUG: Created new user")
         else:
-            # Define updatable fields that should trigger updatedAt when changed
-            updatable_fields = {
-                "name": name,
-                "avatar": avatar,
-                # Future fields can be added here:
-                # "role": role,
-                # "preferences": preferences,
-                # "status": status,
+            # Use schema to validate update data
+            update_data = {
+                "name": validated_data["name"],
+                "avatar": validated_data["avatar"]
+            }
+            
+            try:
+                updatable_fields = UserSchema.validate_update(update_data)
+            except ValueError as e:
+                print(f"DEBUG: Update validation failed: {e}")
+                updatable_fields = {}
+            
+            # Always update lastLoginAt
+            update_fields = {
+                "lastLoginAt": datetime.now(timezone.utc)
             }
             
             # Check if any updatable field actually changed
@@ -120,10 +118,6 @@ async def _handle_google_auth(email: str, name: str, avatar: str):
                 user.get(field) != new_value 
                 for field, new_value in updatable_fields.items()
             )
-            
-            update_fields = {
-                "lastLoginAt": datetime.now(timezone.utc)
-            }
             
             # Only update profile data and updatedAt if something actually changed
             if profile_changed:
@@ -169,13 +163,17 @@ async def _handle_google_auth(email: str, name: str, avatar: str):
                 result = await refresh_tokens_collection.delete_many({"_id": {"$in": token_ids_to_remove}})
                 print(f"DEBUG: Removed {result.deleted_count} old refresh tokens for user {user['_id']}")
         
-        # Insert new refresh token
-        await refresh_tokens_collection.insert_one({
-            "userId": user["_id"],
-            "token": refresh_token,
-            "createdAt": datetime.now(timezone.utc),
-            "expiresAt": datetime.now(timezone.utc) + auth_utils.refresh_token_expiry
-        })
+        # Insert new refresh token using schema
+        try:
+            token_data = RefreshTokenSchema.validate_create(
+                user["_id"], 
+                refresh_token, 
+                auth_utils.refresh_token_expiry.days
+            )
+            await refresh_tokens_collection.insert_one(token_data)
+        except ValueError as e:
+            print(f"DEBUG: Token validation failed: {e}")
+            return create_error_response(f"Token creation failed: {str(e)}", 500)
         
         # Return user data and tokens
         response_data = {
