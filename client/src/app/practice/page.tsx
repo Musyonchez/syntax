@@ -188,40 +188,43 @@ export default function PracticePage() {
                 </Select>
               </div>
 
-              {/* Language Filter */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Language</label>
-                <Select value={languageFilter} onValueChange={setLanguageFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All languages" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All languages</SelectItem>
-                    {languages.map(lang => (
-                      <SelectItem key={lang} value={lang}>
-                        {lang.charAt(0).toUpperCase() + lang.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Language and Difficulty - Combined on sm-md, separate on max-sm and md+ */}
+              <div className="contents max-sm:contents sm:grid sm:grid-cols-2 sm:gap-4 md:contents">
+                {/* Language Filter */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Language</label>
+                  <Select value={languageFilter} onValueChange={setLanguageFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All languages" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All languages</SelectItem>
+                      {languages.map(lang => (
+                        <SelectItem key={lang} value={lang}>
+                          {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* Difficulty Filter */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Difficulty</label>
-                <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All difficulties" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All difficulties</SelectItem>
-                    {difficulties.map(diff => (
-                      <SelectItem key={diff} value={diff.toString()}>
-                        Level {diff}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Difficulty Filter */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Difficulty</label>
+                  <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All difficulties" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All difficulties</SelectItem>
+                      {difficulties.map(diff => (
+                        <SelectItem key={diff} value={diff.toString()}>
+                          Level {diff}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               {/* Search */}
