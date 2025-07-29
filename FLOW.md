@@ -1,6 +1,12 @@
-# SyntaxMem - Authentication Flow Documentation
+# SyntaxMem Authentication Flow
 
-**Simple, Uniform, Consistent** authentication flows for all user operations.
+**Simple, Uniform, Consistent** authentication system using NextAuth.js + Python backend.
+
+**Status**: ✅ **PRODUCTION READY** - Complete authentication system with full test coverage  
+**Last Updated**: 2025-07-29  
+**Features**: Login, Registration, Token Refresh, Logout, Logout All Devices, Session Management
+
+This document outlines the complete authentication flow for SyntaxMem, covering all implemented authentication features with current production-ready implementation details.
 
 ## 🔐 Login Flow (Existing User)
 
@@ -18,8 +24,8 @@ sequenceDiagram
     Client->>NextAuth: signIn("google")
     NextAuth->>Google: OAuth redirect
     Google->>NextAuth: OAuth callback with user data
-    NextAuth->>Backend: POST /google-auth (googleId, email, name, avatar)
-    Backend->>MongoDB: Find user by googleId
+    NextAuth->>Backend: POST /google-auth (email, name, avatar)
+    Backend->>MongoDB: Find user by email
     MongoDB->>Backend: Return existing user
     Backend->>Backend: Update lastLoginAt, name, avatar
     Backend->>MongoDB: Store updated user data
@@ -33,11 +39,11 @@ sequenceDiagram
 ```
 
 ### Key Points
-- **Existing user found** by `googleId` in database
-- **Profile updated** with latest Google data
-- **Login timestamp** recorded
-- **New tokens issued** for this session
-- **NextAuth session** populated with backend data only
+- **Existing user found** by `email` in database ✅
+- **Profile updated** only if data actually changed ✅
+- **Token cleanup** removes expired tokens automatically ✅
+- **Session limits** enforced (2 tokens maximum) ✅
+- **Schema validation** ensures data integrity ✅
 
 ---
 
@@ -57,8 +63,8 @@ sequenceDiagram
     Client->>NextAuth: signIn("google")
     NextAuth->>Google: OAuth redirect
     Google->>NextAuth: OAuth callback with user data
-    NextAuth->>Backend: POST /google-auth (googleId, email, name, avatar)
-    Backend->>MongoDB: Find user by googleId
+    NextAuth->>Backend: POST /google-auth (email, name, avatar)
+    Backend->>MongoDB: Find user by email
     MongoDB->>Backend: User not found
     Backend->>Backend: Create new user object
     Backend->>MongoDB: Insert new user document
@@ -73,11 +79,11 @@ sequenceDiagram
 ```
 
 ### Key Points
-- **New user created** when `googleId` not found
-- **Default role** assigned (`"user"`)
-- **Timestamps set** (createdAt, updatedAt, lastLoginAt)
-- **Same token flow** as existing user
-- **Identical session creation** - no difference client-side
+- **New user created** when `email` not found ✅
+- **Schema validation** ensures proper user creation ✅
+- **Default role** assigned (`"user"`) ✅
+- **Timestamps set** (createdAt, updatedAt, lastLoginAt) ✅
+- **Same token flow** as existing user ✅
 
 ---
 
@@ -105,11 +111,11 @@ sequenceDiagram
 ```
 
 ### Key Points
-- **Refresh tokens stored** in database for revocation
-- **User data refreshed** from database (role changes, etc.)
-- **New access token** issued with latest user data
-- **Refresh token remains** valid until 30-day expiry
-- **Session updated** with new token and user data
+- **Refresh tokens stored** in database for revocation ✅
+- **Global token cleanup** removes expired tokens ✅
+- **User data refreshed** from database (role changes, etc.) ✅
+- **New access token** issued with latest user data ✅
+- **Session updated** with new token and user data ✅
 
 ---
 
@@ -121,25 +127,26 @@ sequenceDiagram
 sequenceDiagram
     participant User
     participant Client
-    participant NextAuth
     participant Backend
     participant MongoDB
+    participant NextAuth
 
     User->>Client: Click "Sign Out"
-    Client->>NextAuth: signOut()
-    NextAuth->>Client: Clear session data
-    Client->>Backend: POST /logout {refreshToken} (optional)
-    Backend->>MongoDB: Delete refresh token from database
+    Client->>Backend: POST /logout {refreshToken}
+    Backend->>MongoDB: Delete specific refresh token
     MongoDB->>Backend: Confirm deletion
     Backend->>Client: Return success
+    Client->>NextAuth: signOut()
+    NextAuth->>Client: Clear session data
     Client->>User: Redirect to home page
 ```
 
 ### Key Points
-- **NextAuth clears** session immediately
-- **Optional backend call** to revoke refresh token
-- **Database cleanup** prevents token reuse
-- **Simple redirect** to public pages
+- **Backend called first** to revoke refresh token ✅
+- **Database cleanup** prevents token reuse ✅
+- **NextAuth clears** session after backend cleanup ✅
+- **Graceful fallback** - still logs out if backend fails ✅
+- **Loading states** provide user feedback ✅
 
 ---
 
@@ -168,10 +175,11 @@ sequenceDiagram
 ```
 
 ### Key Points
-- **Session contains** `backendToken` for API requests
-- **JWT verification** on every protected endpoint
-- **User context** extracted from valid tokens
-- **Automatic refresh** triggered on 401 errors
+- **Session contains** `backendToken` for API requests ✅
+- **JWT verification** on every protected endpoint ✅
+- **Schema validation** ensures request data integrity ✅
+- **User context** extracted from valid tokens ✅
+- **Automatic refresh** triggered on 401 errors ✅
 
 ---
 
