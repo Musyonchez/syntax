@@ -144,7 +144,15 @@ async def _handle_google_auth(validated_data: dict):
         # Store refresh token (limit to 2 tokens per user)
         refresh_tokens_collection = await db.get_refresh_tokens_collection()
         
-        # Check current token count for user
+        # Clean expired tokens for this user first
+        expired_result = await refresh_tokens_collection.delete_many({
+            "userId": user["_id"],
+            "expiresAt": {"$lt": datetime.now(timezone.utc)}
+        })
+        if expired_result.deleted_count > 0:
+            print(f"DEBUG: Cleaned {expired_result.deleted_count} expired tokens for user {user['_id']}")
+        
+        # Check current token count for user (after cleanup)
         current_token_count = await refresh_tokens_collection.count_documents({"userId": user["_id"]})
         
         # If user already has 2 or more tokens, remove excess tokens (keep only 1, so we can add 1 more)
@@ -235,6 +243,14 @@ async def _handle_refresh_token(refresh_token: str):
         
         # Check if refresh token exists in database
         refresh_tokens_collection = await db.get_refresh_tokens_collection()
+        
+        # Clean expired tokens globally (small batch to keep database clean)
+        expired_cleanup = await refresh_tokens_collection.delete_many({
+            "expiresAt": {"$lt": datetime.now(timezone.utc)}
+        })
+        if expired_cleanup.deleted_count > 0:
+            print(f"DEBUG: Global cleanup removed {expired_cleanup.deleted_count} expired tokens")
+        
         stored_token = await refresh_tokens_collection.find_one({
             "userId": user_id,
             "token": refresh_token
