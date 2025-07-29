@@ -30,8 +30,7 @@ async def create_test_data():
     
     # User IDs from your provided data
     user_musyoka = ObjectId("687445a688e3f1882cd2d161")
-    user_bioagro = ObjectId("6880e811f9d50418d256c76e") 
-    user_aftermath = ObjectId("605a8245340e476fa9e9caf595de4739")
+    user_bioagro = ObjectId("6880e811f9d50418d256c76e")
     
     # Official Snippets Data
     official_snippets = [
@@ -155,7 +154,7 @@ async def create_test_data():
         },
         {
             "_id": ObjectId(),
-            "userId": user_aftermath,
+            "userId": user_bioagro,
             "title": "Math Problem Solver",
             "language": "javascript",
             "difficulty": 7,
