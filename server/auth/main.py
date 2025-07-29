@@ -39,7 +39,12 @@ def google_auth():
     """Handle Google OAuth authentication"""
     try:
         print("=== DEBUG: /google-auth endpoint called ===")
-        data = request.get_json()
+        try:
+            data = request.get_json(force=True)
+        except Exception as json_error:
+            print(f"DEBUG: JSON parsing failed: {json_error}")
+            return create_error_response("Invalid JSON format", 400)
+        
         print(f"DEBUG: Received data: {data}")
         
         if not data:
@@ -55,15 +60,10 @@ def google_auth():
             return create_error_response(f"Validation error: {str(e)}", 400)
         
         print("DEBUG: Starting async operations")
-        # Reset database connection for new event loop
-        db.client = None
-        db.db = None
         
         # Run async operations
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
         try:
-            result = loop.run_until_complete(_handle_google_auth(user_data))
+            result = asyncio.run(_handle_google_auth(user_data))
             print("DEBUG: Async operation completed successfully")
             print(f"DEBUG: Result type: {type(result)}")
             print(f"DEBUG: Result content: {result}")
@@ -220,13 +220,11 @@ def refresh_token():
         refresh_token = data.get('refreshToken')
         
         # Run async operations
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
         try:
-            result = loop.run_until_complete(_handle_refresh_token(refresh_token))
+            result = asyncio.run(_handle_refresh_token(refresh_token))
             return result
-        finally:
-            loop.close()
+        except Exception as async_error:
+            raise async_error
             
     except Exception as e:
         return create_error_response(f"Token refresh failed: {str(e)}", 500)
@@ -305,15 +303,10 @@ def logout_all():
         if not user_id:
             return create_error_response("Invalid token payload", 401)
         
-        # Reset database connection for new event loop
-        db.client = None
-        db.db = None
         
         # Run async operations
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
         try:
-            result = loop.run_until_complete(_handle_logout_all(user_id))
+            result = asyncio.run(_handle_logout_all(user_id))
             return result
         except Exception as async_error:
             print(f"DEBUG: Logout all async operation failed: {async_error}")
@@ -354,15 +347,10 @@ def logout():
         
         refresh_token = data.get('refreshToken')
         
-        # Reset database connection for new event loop
-        db.client = None
-        db.db = None
         
         # Run async operations
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
         try:
-            result = loop.run_until_complete(_handle_logout(refresh_token))
+            result = asyncio.run(_handle_logout(refresh_token))
             return result
         except Exception as async_error:
             print(f"DEBUG: Logout async operation failed: {async_error}")
