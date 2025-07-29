@@ -6,6 +6,8 @@ Interactive coding practice platform with masked code completion.
 
 **Principles**: Simple, Uniform, Consistent
 
+*Simple does not mean "not good" - it means choosing elegant solutions over complex ones. The best code is simple to understand, maintain, and extend.*
+
 - **Client**: Next.js 15 + TypeScript + Tailwind
 - **Server**: Python serverless functions (Google Cloud)  
 - **Database**: MongoDB Atlas
@@ -33,3 +35,5 @@ cd server/snippets && python main.py
 ```
 
 Simple. Uniform. Consistent.
+
+**Remember**: Simple ≠ "not good". Simple = elegant, maintainable, excellent.

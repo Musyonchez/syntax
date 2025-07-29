@@ -9,7 +9,7 @@
 **One Principle**: Simple, Uniform, Consistent
 
 Every decision, every line of code, every component must follow this principle:
-- **Simple**: No complexity unless absolutely necessary
+- **Simple**: No complexity unless absolutely necessary *(Simple ≠ "not good" - it means elegant, maintainable, excellent)*
 - **Uniform**: Same patterns everywhere, no exceptions
 - **Consistent**: Predictable structure and behavior throughout
 
@@ -36,8 +36,8 @@ syntax/
 ## 🚨 Development Rules
 
 ### The Sacred Laws (NEVER BREAK)
-1. **Simple First**: Always choose the simplest solution that works
-2. **No Over-Engineering**: If it's complex, it's wrong
+1. **Simple First**: Always choose the simplest solution that works *(elegant, not cheap)*
+2. **No Over-Engineering**: If it's complex, it's wrong *(complexity is the enemy of excellence)*
 3. **Client Drives Server**: Build client pages first, server endpoints second
 4. **One Pattern Everywhere**: Same structure, same naming, same approach
 5. **Test As You Build**: Each feature must work before adding the next
@@ -203,3 +203,5 @@ from shared.utils import create_response
 ---
 
 **Remember**: If it's not simple, uniform, and consistent - it doesn't belong in this codebase. Period. 🎯
+
+*Simple ≠ "not good". Simple = choosing the most elegant solution. The best code is so simple it looks obvious in hindsight.*
