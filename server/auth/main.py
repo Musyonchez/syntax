@@ -105,20 +105,30 @@ async def _handle_google_auth(email: str, name: str, avatar: str):
             user = user_data
             print("DEBUG: Created new user")
         else:
-            # Update existing user with latest profile data
+            # Check if profile data actually changed
+            profile_changed = (
+                user.get("name") != name or 
+                user.get("avatar") != avatar
+            )
+            
+            update_fields = {
+                "lastLoginAt": datetime.now(timezone.utc)
+            }
+            
+            # Only update profile data and updatedAt if something actually changed
+            if profile_changed:
+                update_fields["name"] = name
+                update_fields["avatar"] = avatar
+                update_fields["updatedAt"] = datetime.now(timezone.utc)
+                print("DEBUG: Profile data changed, updating user profile")
+            else:
+                print("DEBUG: Profile unchanged, only updating lastLoginAt")
+            
             await users_collection.update_one(
                 {"_id": user["_id"]},
-                {
-                    "$set": {
-                        "name": name,
-                        "avatar": avatar,
-                        "updatedAt": datetime.now(timezone.utc),
-                        "lastLoginAt": datetime.now(timezone.utc)
-                    }
-                }
+                {"$set": update_fields}
             )
             user["_id"] = str(user["_id"])
-            print("DEBUG: Updated existing user")
         
         # Create tokens
         access_token = auth_utils.create_access_token(user)
