@@ -40,16 +40,24 @@ fi
 TOTAL=$((TOTAL + 1))
 echo ""
 
-# Test 2: Logout All Devices  
-echo "Test 2: Logout All Devices"
+# Test 2: Single Device Logout
+echo "Test 2: Single Device Logout"
+if python test_logout.py; then
+    PASSED=$((PASSED + 1))
+fi
+TOTAL=$((TOTAL + 1))
+echo ""
+
+# Test 3: Logout All Devices  
+echo "Test 3: Logout All Devices"
 if python test_logout_all.py; then
     PASSED=$((PASSED + 1))
 fi
 TOTAL=$((TOTAL + 1))
 echo ""
 
-# Test 3: Session Limits
-echo "Test 3: Session Limits"
+# Test 4: Session Limits
+echo "Test 4: Session Limits"
 if python test_session_limits.py; then
     PASSED=$((PASSED + 1))
 fi

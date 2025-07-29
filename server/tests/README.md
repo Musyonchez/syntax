@@ -56,6 +56,7 @@ cd tests
 
 ### **Auth Module** (`auth/`)
 - `test_token_cleanup.py` - Automatic expired token cleanup
+- `test_logout.py` - Single device logout with token cleanup
 - `test_logout_all.py` - Logout all devices functionality
 - `test_session_limits.py` - 2-token session limits
 
