@@ -1,6 +1,8 @@
-# Server Shell
+# SyntaxMem Server - Simple, Uniform, Consistent
 
-Python serverless functions following simple, uniform, consistent principles.
+Python serverless functions following elegant simplicity principles.
+
+*Simple does not mean "not good" - it means choosing elegant solutions over complex ones.*
 
 ## Core Functions
 - `/auth` - Google OAuth + JWT (port 8081)
@@ -24,3 +26,5 @@ cd snippets && python main.py
 ```
 
 Built server-last, only what client actually needs.
+
+**Principle**: Simple = elegant, maintainable, excellent serverless functions.
