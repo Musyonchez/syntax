@@ -344,5 +344,60 @@ async def _handle_logout_all(user_id: str):
         print(f"DEBUG: Logout all database error: {e}")
         return create_error_response(f"Database error: {str(e)}", 500)
 
+@app.route('/logout', methods=['POST'])
+def logout():
+    """Logout from current device (revoke single refresh token)"""
+    try:
+        data = request.get_json()
+        if not data or not data.get('refreshToken'):
+            return create_error_response("Refresh token required", 400)
+        
+        refresh_token = data.get('refreshToken')
+        
+        # Reset database connection for new event loop
+        db.client = None
+        db.db = None
+        
+        # Run async operations
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            result = loop.run_until_complete(_handle_logout(refresh_token))
+            return result
+        except Exception as async_error:
+            print(f"DEBUG: Logout async operation failed: {async_error}")
+            raise async_error
+            
+    except Exception as e:
+        print(f"DEBUG: Logout exception: {e}")
+        return create_error_response(f"Logout failed: {str(e)}", 500)
+
+async def _handle_logout(refresh_token: str):
+    """Async handler for single device logout"""
+    try:
+        print(f"DEBUG: Processing logout for refresh token")
+        
+        # Get refresh tokens collection
+        refresh_tokens_collection = await db.get_refresh_tokens_collection()
+        
+        # Find and delete the specific refresh token
+        result = await refresh_tokens_collection.delete_one({"token": refresh_token})
+        
+        if result.deleted_count > 0:
+            print(f"DEBUG: Successfully revoked refresh token")
+            return create_response({
+                "revokedToken": True
+            }, "Successfully logged out")
+        else:
+            print(f"DEBUG: Refresh token not found in database")
+            # Still return success - token might have already expired/been cleaned
+            return create_response({
+                "revokedToken": False
+            }, "Logout completed (token not found)")
+        
+    except Exception as e:
+        print(f"DEBUG: Logout database error: {e}")
+        return create_error_response(f"Database error: {str(e)}", 500)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8081, debug=True)
