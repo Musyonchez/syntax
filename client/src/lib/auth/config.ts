@@ -78,8 +78,8 @@ const authConfig = NextAuth({
           const payload = JSON.parse(atob(token.accessToken.split('.')[1]))
           const currentTime = Date.now() / 1000
           
-          // If token expires in less than 5 minutes, refresh it
-          if (payload.exp && payload.exp - currentTime < 300) {
+          // If token expires in less than 5 seconds, refresh it
+          if (payload.exp && payload.exp - currentTime < 5) {
             const refreshResponse = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:8081'}/refresh`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },

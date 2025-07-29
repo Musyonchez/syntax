@@ -39,7 +39,7 @@ def verify_jwt_token_simple(token: str) -> Optional[Dict[str, Any]]:
 
 def create_jwt_token(user_id: str, email: str) -> str:
     """
-    Create short-lived access token for user (1 hour)
+    Create short-lived access token for user (10 seconds for testing)
     """
     now = datetime.now(timezone.utc)
     payload = {
@@ -47,7 +47,7 @@ def create_jwt_token(user_id: str, email: str) -> str:
         'email': email,
         'token_type': 'access',
         'iat': now.timestamp(),
-        'exp': (now.timestamp() + (60 * 60))  # 1 hour
+        'exp': (now.timestamp() + 10)  # 10 seconds for testing
     }
     
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
@@ -55,7 +55,7 @@ def create_jwt_token(user_id: str, email: str) -> str:
 
 def create_refresh_token(user_id: str, email: str) -> str:
     """
-    Create long-lived refresh token for user (30 days)
+    Create long-lived refresh token for user (30 seconds for testing)
     """
     now = datetime.now(timezone.utc)
     payload = {
@@ -63,7 +63,7 @@ def create_refresh_token(user_id: str, email: str) -> str:
         'email': email,
         'token_type': 'refresh',
         'iat': now.timestamp(),
-        'exp': (now.timestamp() + (30 * 24 * 60 * 60))  # 30 days
+        'exp': (now.timestamp() + 30)  # 30 seconds for testing
     }
     
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
