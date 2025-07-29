@@ -105,10 +105,20 @@ async def _handle_google_auth(email: str, name: str, avatar: str):
             user = user_data
             print("DEBUG: Created new user")
         else:
-            # Check if profile data actually changed
-            profile_changed = (
-                user.get("name") != name or 
-                user.get("avatar") != avatar
+            # Define updatable fields that should trigger updatedAt when changed
+            updatable_fields = {
+                "name": name,
+                "avatar": avatar,
+                # Future fields can be added here:
+                # "role": role,
+                # "preferences": preferences,
+                # "status": status,
+            }
+            
+            # Check if any updatable field actually changed
+            profile_changed = any(
+                user.get(field) != new_value 
+                for field, new_value in updatable_fields.items()
             )
             
             update_fields = {
@@ -117,10 +127,13 @@ async def _handle_google_auth(email: str, name: str, avatar: str):
             
             # Only update profile data and updatedAt if something actually changed
             if profile_changed:
-                update_fields["name"] = name
-                update_fields["avatar"] = avatar
+                update_fields.update(updatable_fields)  # Add all updatable fields
                 update_fields["updatedAt"] = datetime.now(timezone.utc)
-                print("DEBUG: Profile data changed, updating user profile")
+                changed_fields = [
+                    field for field, new_value in updatable_fields.items() 
+                    if user.get(field) != new_value
+                ]
+                print(f"DEBUG: Profile data changed ({', '.join(changed_fields)}), updating user profile")
             else:
                 print("DEBUG: Profile unchanged, only updating lastLoginAt")
             
@@ -227,7 +240,6 @@ async def _handle_refresh_token(refresh_token: str):
             "token": new_access_token,
             "user": {
                 "id": user["_id"],
-                "googleId": user["googleId"],
                 "email": user["email"],
                 "name": user["name"],
                 "avatar": user["avatar"],
