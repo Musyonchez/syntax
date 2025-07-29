@@ -12,17 +12,66 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/login",
   },
   callbacks: {
-    async session({ token, session }) {
-      if (token.sub && session.user) {
-        session.user.id = token.sub
+    async signIn({ user, account, profile }) {
+      try {
+        // Send all data to backend for validation and user creation
+        const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:8081'}/google-auth`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            googleId: user.id,
+            email: user.email,
+            name: user.name,
+            avatar: user.image,
+            googleAccessToken: account?.access_token,
+            googleRefreshToken: account?.refresh_token,
+          }),
+        })
+        
+        if (!response.ok) {
+          console.error('Backend auth failed:', response.status)
+          return false // Deny NextAuth session creation
+        }
+        
+        const backendData = await response.json()
+        
+        // Replace user data with backend response
+        user.id = backendData.user.id
+        user.name = backendData.user.name
+        user.email = backendData.user.email
+        user.image = backendData.user.avatar
+        user.backendToken = backendData.token
+        user.role = backendData.user.role
+        user.googleId = backendData.user.googleId
+        
+        return true // Allow NextAuth to create session with backend data
+        
+      } catch (error) {
+        console.error('Auth verification failed:', error)
+        return false // Deny session creation if backend fails
       }
-      return session
     },
     async jwt({ token, user }) {
+      // Store backend data in JWT
       if (user) {
+        token.backendToken = user.backendToken
+        token.role = user.role
+        token.googleId = user.googleId
         token.sub = user.id
       }
       return token
+    },
+    async session({ session, token }) {
+      // Populate session with backend data
+      if (token && session.user) {
+        session.user.id = token.sub as string
+        session.user.backendToken = token.backendToken as string
+        session.user.role = token.role as string
+        session.user.googleId = token.googleId as string
+      }
+      return session
     },
   },
 })

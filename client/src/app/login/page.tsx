@@ -1,6 +1,12 @@
-import { signIn } from "@/lib/auth"
+import { signIn, auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
-export default function Login() {
+export default async function Login() {
+  const session = await auth()
+  
+  if (session?.user) {
+    redirect("/dashboard")
+  }
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] p-8">
       <div className="w-full max-w-md space-y-8">
@@ -18,7 +24,7 @@ export default function Login() {
         <div className="space-y-6">
           <form action={async () => {
             "use server"
-            await signIn("google")
+            await signIn("google", { redirectTo: "/dashboard" })
           }}>
             <button type="submit" className="w-full flex items-center justify-center gap-3 bg-white text-gray-700 border border-gray-300 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
             <svg className="w-5 h-5" viewBox="0 0 24 24">
