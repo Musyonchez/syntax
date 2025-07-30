@@ -1,11 +1,15 @@
-import Link from "next/link"
-import { auth } from "@/lib/auth"
-import { SignOutButton } from "./signout-button"
+"use client"
 
-export async function Navbar() {
-  const session = await auth()
+import Link from "next/link"
+import { useSession } from "next-auth/react"
+import { SignOutButton } from "./signout-button"
+import { ThemeToggle } from "./theme-toggle"
+
+export function Navbar() {
+  const { data: session } = useSession()
+  
   return (
-    <nav className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+    <nav className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -21,6 +25,9 @@ export async function Navbar() {
             >
               Home
             </Link>
+            
+            {/* Theme Toggle */}
+            <ThemeToggle />
             
             {session?.user ? (
               <>
