@@ -1,9 +1,11 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useSession } from "next-auth/react"
-import { SignOutButton } from "./signout-button"
 import { ThemeToggle } from "./theme-toggle"
+import { UserDropdown } from "./user-dropdown"
+import { MobileMenu } from "./mobile-menu"
 
 export function Navbar() {
   const { data: session } = useSession()
@@ -13,37 +15,58 @@ export function Navbar() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="font-bold text-xl text-foreground">
-            SyntaxMem
+          <Link href="/" className="flex items-center space-x-2">
+            <Image
+              src="/logo.png"
+              alt="SyntaxMem"
+              width={32}
+              height={32}
+              className="rounded"
+            />
+            <span className="font-bold text-xl text-foreground">
+              SyntaxMem
+            </span>
           </Link>
           
           {/* Navigation Links */}
           <div className="flex items-center space-x-6">
-            <Link 
-              href="/" 
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Home
-            </Link>
+            {/* Main Navigation */}
+            <div className="hidden md:flex items-center space-x-6">
+              <Link 
+                href="/snippets" 
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Snippets
+              </Link>
+              <Link 
+                href="/practice" 
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Practice
+              </Link>
+              <Link 
+                href="/leaderboard" 
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Leaderboard
+              </Link>
+              <Link 
+                href="/forum" 
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Forum
+              </Link>
+            </div>
             
             {/* Theme Toggle */}
             <ThemeToggle />
             
+            {/* Mobile Menu */}
+            <MobileMenu />
+            
+            {/* User Section */}
             {session?.user ? (
-              <>
-                <Link 
-                  href="/dashboard" 
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Dashboard
-                </Link>
-                <div className="flex items-center space-x-3">
-                  <span className="text-sm text-muted-foreground">
-                    {session.user.name}
-                  </span>
-                  <SignOutButton />
-                </div>
-              </>
+              <UserDropdown />
             ) : (
               <Link 
                 href="/login" 
