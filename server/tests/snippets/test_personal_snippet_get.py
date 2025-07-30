@@ -17,7 +17,7 @@ from database import db
 
 # Test configuration
 SNIPPETS_URL = "http://localhost:8083"
-TEST_TOKEN = "test_jwt_token_here"  # In real tests, get from auth service
+TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjg4YTJmZTg0MmJhM2FjY2QzODAxY2E3IiwiZW1haWwiOiJ0ZXN0LnVzZXIuMTA5NzI5LjgyNDcyMTQ2NUBleGFtcGxlLmNvbSIsInJvbGUiOiJ1c2VyIiwidHlwZSI6ImFjY2VzcyIsImV4cCI6MTc1Mzg5MTkxMCwiaWF0IjoxNzUzODg4MzEwfQ.WK4HgS0InfKbrYyypVIAZv0gEmaL6tnDQUnCIFq3ju4"
 
 async def test_personal_snippet_get():
     """Test retrieving personal snippets"""
