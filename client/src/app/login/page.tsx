@@ -121,27 +121,13 @@ export default async function Login() {
             </div>
           </div>
 
-          {/* Developer Appeal Message */}
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-xl p-4 border border-blue-200/50 dark:border-blue-800/50">
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0">
-                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <div className="text-sm">
-                <p className="font-medium text-blue-900 dark:text-blue-100">Built for Developers</p>
-                <p className="text-blue-700 dark:text-blue-300 mt-1">
-                  GitHub authentication coming soon! We&apos;re adding the login method developers love most.
-                </p>
-              </div>
-            </div>
-          </div>
 
           {/* Terms */}
           <div className="text-center text-sm text-muted-foreground">
             By signing in, you agree to our{" "}
-            <span className="text-foreground font-medium">simple approach to coding mastery</span>
+            <a href="/terms" className="text-foreground hover:underline">Terms of Service</a>
+            {" "}and{" "}
+            <a href="/privacy" className="text-foreground hover:underline">Privacy Policy</a>
           </div>
         </div>
       </div>
