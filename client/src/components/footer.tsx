@@ -9,13 +9,13 @@ export function Footer() {
         <div className="py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex justify-center items-center">
               <Image
                 src="/logo2.png"
                 alt="SyntaxMem"
                 width={100}
                 height={33}
-                className="rounded"
+                className="rounded dark:invert transition-all duration-200"
               />
             </Link>
             <p className="text-sm text-muted-foreground max-w-xs">
