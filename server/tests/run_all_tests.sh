@@ -15,6 +15,16 @@ if ! curl -s http://localhost:8081/health > /dev/null; then
 fi
 
 echo "✅ Auth server is running"
+
+# Check if snippets server is running
+echo "📡 Checking if snippets server is running..."
+if ! curl -s http://localhost:8083/health > /dev/null; then
+    echo "❌ Snippets server not running on port 8083"
+    echo "💡 Start it with: cd ../snippets && python main.py"
+    exit 1
+fi
+
+echo "✅ Snippets server is running"
 echo ""
 
 # Activate virtual environment if it exists
@@ -52,8 +62,18 @@ echo ""
 # TOTAL_TESTS=$((TOTAL_TESTS + 1))
 # cd ..
 
-# Future: Run Snippets Tests
-# echo "📝 Running Snippets Module Tests..."
+# Run Snippets Tests
+echo "📝 Running Snippets Module Tests..."
+cd snippets
+if ./run_snippets_tests.sh; then
+    SNIPPETS_RESULT="PASS"
+    TOTAL_PASSED=$((TOTAL_PASSED + 1))
+else
+    SNIPPETS_RESULT="FAIL"
+fi
+TOTAL_TESTS=$((TOTAL_TESTS + 1))
+cd ..
+echo ""
 
 # Future: Run Sessions Tests  
 # echo "🎯 Running Sessions Module Tests..."
@@ -64,7 +84,7 @@ echo "🎯 COMPLETE TEST SUITE RESULTS"
 echo "========================================="
 echo "Auth Module:       $AUTH_RESULT"
 # echo "Users Module:      $USERS_RESULT"
-# echo "Snippets Module:   $SNIPPETS_RESULT"
+echo "Snippets Module:   $SNIPPETS_RESULT"
 # echo "Sessions Module:   $SESSIONS_RESULT"
 echo ""
 echo "Overall: $TOTAL_PASSED/$TOTAL_TESTS modules passed"

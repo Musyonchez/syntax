@@ -74,9 +74,23 @@ cd tests
 **Security Tests:**
 - `test_security.py` - Injection attacks, XSS, token manipulation
 
+### **Snippets Module** (`snippets/`) - **7 Comprehensive Tests**
+
+**Personal Snippets Tests:**
+- `test_personal_snippet_create.py` - Personal snippet creation with validation
+- `test_personal_snippet_get.py` - Retrieval with filtering (language, difficulty, search)
+- `test_personal_snippet_update.py` - Updates with ownership verification  
+- `test_personal_snippet_delete.py` - Soft deletion with ownership verification
+
+**Official Snippets Tests:**
+- `test_official_snippets_get.py` - Public access to published snippets
+
+**Security & Validation Tests:**
+- `test_authentication_required.py` - Auth requirements for personal endpoints
+- `test_schema_validation.py` - Data validation and normalization
+
 ### **Future Modules**
 - `users/` - User profile management, role changes
-- `snippets/` - CRUD operations, masking algorithm
 - `sessions/` - Practice session lifecycle, scoring
 
 ## 🔧 Test Patterns
