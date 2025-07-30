@@ -32,6 +32,18 @@ class Database:
             await self.connect()
         return self.db.refresh_tokens
     
+    async def get_personal_snippets_collection(self):
+        """Get personal snippets collection"""
+        if self.db is None:
+            await self.connect()
+        return self.db.personal_snippets
+    
+    async def get_official_snippets_collection(self):
+        """Get official snippets collection"""
+        if self.db is None:
+            await self.connect()
+        return self.db.official_snippets
+    
     def close(self):
         """Close database connection"""
         if self.client:

@@ -3,7 +3,8 @@
 
 from .users import UserSchema, CreateUserSchema, UpdateUserSchema
 from .tokens import RefreshTokenSchema
-from .snippets import SnippetSchema, CreateSnippetSchema
+from .personal_snippets import PersonalSnippetSchema, CreatePersonalSnippetSchema, UpdatePersonalSnippetSchema
+from .official_snippets import OfficialSnippetSchema, CreateOfficialSnippetSchema, UpdateOfficialSnippetSchema
 from .sessions import SessionSchema, CreateSessionSchema
 
 __all__ = [
@@ -11,8 +12,12 @@ __all__ = [
     'CreateUserSchema', 
     'UpdateUserSchema',
     'RefreshTokenSchema',
-    'SnippetSchema',
-    'CreateSnippetSchema',
+    'PersonalSnippetSchema',
+    'CreatePersonalSnippetSchema',
+    'UpdatePersonalSnippetSchema',
+    'OfficialSnippetSchema',
+    'CreateOfficialSnippetSchema',
+    'UpdateOfficialSnippetSchema',
     'SessionSchema',
     'CreateSessionSchema'
 ]
