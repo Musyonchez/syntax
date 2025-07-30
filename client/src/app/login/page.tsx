@@ -12,36 +12,101 @@ export default async function Login() {
   return (
     <div className="min-h-[calc(100vh-8rem)] flex">
       {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-foreground/5 to-foreground/10 p-8 items-center justify-center">
-        <div className="max-w-md space-y-8 text-center">
-          <div className="space-y-4">
-            <Image
-              src="/logo.png"
-              alt="SyntaxMem"
-              width={200}
-              height={67}
-              className="mx-auto dark:invert"
-            />
-            <h2 className="text-2xl font-bold text-foreground">
-              Master Coding Through Simplicity
-            </h2>
-            <p className="text-muted-foreground">
-              Interactive practice sessions, curated snippets, and community-driven learning.
-            </p>
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-foreground/5 to-foreground/10 p-8 items-center justify-center relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5 dark:opacity-10">
+          <div className="absolute top-10 left-10 w-20 h-20 border border-foreground/20 rounded-lg rotate-12"></div>
+          <div className="absolute top-32 right-16 w-16 h-16 border border-foreground/20 rounded-lg -rotate-6"></div>
+          <div className="absolute bottom-20 left-20 w-12 h-12 border border-foreground/20 rounded-lg rotate-45"></div>
+          <div className="absolute bottom-40 right-8 w-24 h-24 border border-foreground/20 rounded-lg -rotate-12"></div>
+          
+          {/* Code-like elements */}
+          <div className="absolute top-1/4 left-1/4 text-foreground/10 font-mono text-lg transform -rotate-12">
+            &lt;/&gt;
+          </div>
+          <div className="absolute top-1/2 right-1/4 text-foreground/10 font-mono text-xl transform rotate-12">
+            { }
+          </div>
+          <div className="absolute bottom-1/3 left-1/3 text-foreground/10 font-mono text-lg transform rotate-45">
+            [ ]
+          </div>
+        </div>
+
+        <div className="max-w-md space-y-8 text-center relative z-10">
+          <div className="space-y-6">
+            <div className="relative">
+              <Image
+                src="/logo.png"
+                alt="SyntaxMem"
+                width={200}
+                height={67}
+                className="mx-auto dark:invert drop-shadow-sm"
+              />
+              {/* Subtle glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg blur-xl -z-10"></div>
+            </div>
+            
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-foreground bg-gradient-to-r from-foreground via-foreground to-foreground/80 bg-clip-text">
+                Master Coding Through Simplicity
+              </h2>
+              <p className="text-muted-foreground text-base leading-relaxed">
+                Interactive practice sessions, curated snippets, and community-driven learning.
+              </p>
+            </div>
           </div>
           
-          <div className="space-y-3 text-sm text-muted-foreground">
-            <div className="flex items-center justify-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>Simple. Uniform. Consistent.</span>
+          {/* Enhanced feature cards */}
+          <div className="space-y-4">
+            <div className="bg-background/30 backdrop-blur-sm rounded-xl p-4 border border-foreground/10 hover:border-foreground/20 transition-all duration-300 group">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <span className="text-foreground font-medium">Simple. Uniform. Consistent.</span>
+              </div>
             </div>
-            <div className="flex items-center justify-center space-x-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span>Interactive Practice Sessions</span>
+            
+            <div className="bg-background/30 backdrop-blur-sm rounded-xl p-4 border border-foreground/10 hover:border-foreground/20 transition-all duration-300 group">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <span className="text-foreground font-medium">Interactive Practice Sessions</span>
+              </div>
             </div>
-            <div className="flex items-center justify-center space-x-2">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <span>Community-Driven Learning</span>
+            
+            <div className="bg-background/30 backdrop-blur-sm rounded-xl p-4 border border-foreground/10 hover:border-foreground/20 transition-all duration-300 group">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <span className="text-foreground font-medium">Community-Driven Learning</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats preview */}
+          <div className="pt-4 border-t border-foreground/10">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="space-y-1">
+                <div className="text-lg font-bold text-foreground">500+</div>
+                <div className="text-xs text-muted-foreground">Code Snippets</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-lg font-bold text-foreground">50+</div>
+                <div className="text-xs text-muted-foreground">Practice Sessions</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-lg font-bold text-foreground">1K+</div>
+                <div className="text-xs text-muted-foreground">Developers</div>
+              </div>
             </div>
           </div>
         </div>
