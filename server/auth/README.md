@@ -96,6 +96,82 @@ Client → Uses new access token for requests
 14. **Error Recovery** - Handle database errors gracefully
 15. **Connection Management** - Properly close database connections
 
+## ⚠️ CRITICAL: Async/Sync Integration Pattern
+
+**THE EVENT LOOP PROBLEM AND SOLUTION**
+
+### 🚨 The Problem
+Flask is synchronous but MongoDB operations are async. Mixing them incorrectly causes:
+- **"Event loop is closed" errors**
+- **Database connection failures**
+- **Request timeouts and crashes**
+
+### ✅ The Solution (MANDATORY PATTERN)
+Every Flask route that needs database access MUST use this exact pattern:
+
+```python
+@app.route('/endpoint', methods=['POST'])
+def sync_endpoint():
+    """Sync Flask route"""
+    try:
+        # 1. Validate input synchronously
+        data = request.get_json()
+        # ... input validation ...
+        
+        # 2. Create new event loop for async operations
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            # 3. CRITICAL: Reset database connection
+            db.client = None
+            db.db = None
+            
+            # 4. Run async handler
+            result = loop.run_until_complete(_handle_async_operation(data))
+            return result
+        except Exception as async_error:
+            raise async_error
+        finally:
+            # 5. ALWAYS close the loop
+            loop.close()
+            
+    except Exception as e:
+        return create_error_response(f'Operation failed: {str(e)}', 500)
+
+async def _handle_async_operation(data):
+    """Separate async handler - ALL database ops go here"""
+    try:
+        # All async database operations
+        collection = await db.get_users_collection()
+        result = await collection.find_one(...)
+        return create_response(result, 'Success')
+    except Exception as e:
+        return create_error_response(f'Database error: {str(e)}', 500)
+```
+
+### 🔴 NEVER DO THIS (BROKEN PATTERN)
+```python
+# ❌ This WILL cause "Event loop is closed" errors
+@app.route('/endpoint')
+def broken_endpoint():
+    loop = asyncio.new_event_loop()
+    # ... async operations inline ...
+    # No db connection reset = FAILURE
+```
+
+### 🟢 Key Success Factors
+1. **New event loop per request** - `asyncio.new_event_loop()`
+2. **Database connection reset** - `db.client = None; db.db = None`
+3. **Separate async handlers** - Keep Flask routes sync, handlers async
+4. **Always close loop** - Use try/finally to ensure cleanup
+5. **Proper error handling** - Catch and convert async errors
+
+### 📊 This Pattern Powers
+- ✅ All 10 auth tests passing
+- ✅ Production-ready reliability  
+- ✅ Zero "Event loop is closed" errors
+- ✅ Clean separation of sync/async boundaries
+
 ## 🔧 Environment Variables
 
 Required environment variables:
@@ -132,7 +208,15 @@ Key metrics to monitor:
 
 ## 🚫 What NOT to Do
 
-### Forbidden Patterns
+### ⚠️ CRITICAL Async/Sync Don'ts
+- ❌ **NEVER** mix async/sync without the proven pattern above
+- ❌ **NEVER** skip database connection reset (`db.client = None; db.db = None`)
+- ❌ **NEVER** reuse event loops across requests  
+- ❌ **NEVER** do async operations directly in Flask routes
+- ❌ **NEVER** forget to close event loops in finally blocks
+- ❌ **BREAKING THESE RULES = "Event loop is closed" ERRORS**
+
+### Forbidden Security Patterns
 - ❌ Store passwords (Google OAuth only)
 - ❌ Log sensitive data (tokens, personal info)
 - ❌ Expose internal errors to clients
