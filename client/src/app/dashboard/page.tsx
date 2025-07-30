@@ -67,11 +67,7 @@ export default async function Dashboard() {
                     {session.user.email}
                   </p>
                   <div className="flex items-center space-x-2 mt-1">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      session.user.role === 'admin' 
-                        ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' 
-                        : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-                    }`}>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-foreground/10 text-foreground">
                       {session.user.role === 'admin' ? '👑 Admin' : '🚀 Developer'}
                     </span>
                   </div>
@@ -90,7 +86,7 @@ export default async function Dashboard() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
                       🎯
                     </div>
                     <span className="text-sm font-medium">Practice Sessions</span>
@@ -100,7 +96,7 @@ export default async function Dashboard() {
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
                       📝
                     </div>
                     <span className="text-sm font-medium">Snippets Created</span>
@@ -110,7 +106,7 @@ export default async function Dashboard() {
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
                       🏆
                     </div>
                     <span className="text-sm font-medium">Ranking</span>
@@ -145,7 +141,7 @@ export default async function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Link 
                 href="/practice"
-                className="group bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border border-blue-200/50 dark:border-blue-800/50 rounded-xl p-6 hover:shadow-md transition-all duration-200"
+                className="group bg-gradient-to-br from-foreground/5 to-foreground/10 border border-border rounded-xl p-6 hover:shadow-md hover:bg-foreground/10 transition-all duration-200"
               >
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
@@ -154,15 +150,15 @@ export default async function Dashboard() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-blue-900 dark:text-blue-100">Practice Sessions</h3>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">Interactive masked code completion</p>
+                    <h3 className="font-semibold text-foreground">Practice Sessions</h3>
+                    <p className="text-sm text-muted-foreground">Interactive masked code completion</p>
                   </div>
                 </div>
               </Link>
 
               <Link 
                 href="/snippets"
-                className="group bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border border-purple-200/50 dark:border-purple-800/50 rounded-xl p-6 hover:shadow-md transition-all duration-200"
+                className="group bg-gradient-to-br from-foreground/5 to-foreground/10 border border-border rounded-xl p-6 hover:shadow-md hover:bg-foreground/10 transition-all duration-200"
               >
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
@@ -171,15 +167,15 @@ export default async function Dashboard() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-purple-900 dark:text-purple-100">Code Snippets</h3>
-                    <p className="text-sm text-purple-700 dark:text-purple-300">Browse and manage your snippets</p>
+                    <h3 className="font-semibold text-foreground">Code Snippets</h3>
+                    <p className="text-sm text-muted-foreground">Browse and manage your snippets</p>
                   </div>
                 </div>
               </Link>
 
               <Link 
                 href="/leaderboard"
-                className="group bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border border-green-200/50 dark:border-green-800/50 rounded-xl p-6 hover:shadow-md transition-all duration-200"
+                className="group bg-gradient-to-br from-foreground/5 to-foreground/10 border border-border rounded-xl p-6 hover:shadow-md hover:bg-foreground/10 transition-all duration-200"
               >
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
@@ -188,15 +184,15 @@ export default async function Dashboard() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-green-900 dark:text-green-100">Leaderboard</h3>
-                    <p className="text-sm text-green-700 dark:text-green-300">See how you rank against others</p>
+                    <h3 className="font-semibold text-foreground">Leaderboard</h3>
+                    <p className="text-sm text-muted-foreground">See how you rank against others</p>
                   </div>
                 </div>
               </Link>
 
               <Link 
                 href="/forum"
-                className="group bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 border border-orange-200/50 dark:border-orange-800/50 rounded-xl p-6 hover:shadow-md transition-all duration-200"
+                className="group bg-gradient-to-br from-foreground/5 to-foreground/10 border border-border rounded-xl p-6 hover:shadow-md hover:bg-foreground/10 transition-all duration-200"
               >
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
@@ -205,8 +201,8 @@ export default async function Dashboard() {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-orange-900 dark:text-orange-100">Community Forum</h3>
-                    <p className="text-sm text-orange-700 dark:text-orange-300">Connect with other developers</p>
+                    <h3 className="font-semibold text-foreground">Community Forum</h3>
+                    <p className="text-sm text-muted-foreground">Connect with other developers</p>
                   </div>
                 </div>
               </Link>
@@ -223,40 +219,40 @@ export default async function Dashboard() {
               
               <div className="space-y-3">
                 <div className="flex items-center space-x-3 p-3 bg-foreground/5 rounded-lg">
-                  <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
                     🎯
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">Completed JavaScript Basics practice session</p>
                     <p className="text-xs text-muted-foreground">2 hours ago</p>
                   </div>
-                  <span className="text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 px-2 py-1 rounded-full">
+                  <span className="text-xs bg-foreground/10 text-foreground px-2 py-1 rounded-full">
                     +15 XP
                   </span>
                 </div>
                 
                 <div className="flex items-center space-x-3 p-3 bg-foreground/5 rounded-lg">
-                  <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
                     📝
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">Created new React Hook snippet</p>
                     <p className="text-xs text-muted-foreground">1 day ago</p>
                   </div>
-                  <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-1 rounded-full">
+                  <span className="text-xs bg-foreground/10 text-foreground px-2 py-1 rounded-full">
                     +5 XP
                   </span>
                 </div>
                 
                 <div className="flex items-center space-x-3 p-3 bg-foreground/5 rounded-lg">
-                  <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                  <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
                     🏆
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">Reached top 30 on leaderboard</p>
                     <p className="text-xs text-muted-foreground">3 days ago</p>
                   </div>
-                  <span className="text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 px-2 py-1 rounded-full">
+                  <span className="text-xs bg-foreground/10 text-foreground px-2 py-1 rounded-full">
                     Achievement
                   </span>
                 </div>
