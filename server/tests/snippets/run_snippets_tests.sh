@@ -16,6 +16,7 @@ TESTS=(
     "test_personal_snippet_update.py"
     "test_personal_snippet_delete.py"
     "test_official_snippets_get.py"
+    "test_official_snippet_create.py"
     "test_authentication_required.py"
     "test_schema_validation.py"
 )

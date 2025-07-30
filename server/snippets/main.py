@@ -380,5 +380,68 @@ async def _handle_get_official_snippets(language: str, difficulty: str, tag: str
     except Exception as e:
         return create_error_response(f'Database error: {str(e)}', 500)
 
+@app.route('/official', methods=['POST'])
+def create_official_snippet():
+    """Create a new official snippet (admin/content creator access)"""
+    try:
+        # Get auth token - require admin or content creator role
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return create_error_response('Authorization token required', 401)
+        
+        token = auth_header.split(' ')[1]
+        token_data = auth_utils.verify_token(token, 'access')
+        if not token_data:
+            return create_error_response('Invalid or expired token', 401)
+        
+        user_id = token_data.get('user_id')
+        user_role = token_data.get('role', 'user')
+        
+        # Check if user has permission to create official snippets
+        if user_role != 'admin':
+            return create_error_response('Admin permissions required to create official snippets', 403)
+        
+        # Get and validate data
+        data = request.get_json()
+        if not data:
+            return create_error_response('Invalid JSON data', 400)
+        
+        # Run async operations using auth pattern
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            # Reset database connection for new event loop
+            db.client = None
+            db.db = None
+            result = loop.run_until_complete(_handle_create_official_snippet(user_id, data))
+            return result
+        except Exception as async_error:
+            raise async_error
+        finally:
+            loop.close()
+            
+    except Exception as e:
+        return create_error_response(f'Failed to create official snippet: {str(e)}', 500)
+
+async def _handle_create_official_snippet(user_id: str, data: dict):
+    """Async handler for creating official snippet"""
+    try:
+        # Add creator ID to data and validate using schema
+        data['createdBy'] = user_id
+        try:
+            validated_data = OfficialSnippetSchema.validate_create(data)
+        except ValueError as e:
+            return create_error_response(f'Validation error: {str(e)}', 400)
+        
+        # Insert into database
+        collection = await db.get_official_snippets_collection()
+        result = await collection.insert_one(validated_data)
+        validated_data['_id'] = str(result.inserted_id)
+        
+        return create_response(validated_data, 'Official snippet created successfully')
+        
+    except Exception as e:
+        return create_error_response(f'Database error: {str(e)}', 500)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8083, debug=True)

@@ -18,8 +18,9 @@ The Snippets service handles:
 - `PUT /personal/<id>` - Update personal snippet (ownership verified)
 - `DELETE /personal/<id>` - Soft delete personal snippet (ownership verified)
 
-### Official Snippets (Public Access)
-- `GET /official` - Get published official snippets with filtering
+### Official Snippets 
+- `GET /official` - Get published official snippets with filtering (public access)
+- `POST /official` - Create new official snippet (admin only)
 
 ### Health Check
 - `GET /health` - Service health status
