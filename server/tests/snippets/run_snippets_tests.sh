@@ -9,16 +9,16 @@ echo "================================"
 PASSED=0
 TOTAL=0
 
-# Test files to run
+# Test files to run (in dependency order)
 TESTS=(
-    "test_personal_snippet_create.py"
-    "test_personal_snippet_get.py" 
-    "test_personal_snippet_update.py"
-    "test_personal_snippet_delete.py"
-    "test_official_snippets_get.py"
-    "test_official_snippet_create.py"
-    "test_authentication_required.py"
-    "test_schema_validation.py"
+    "test_01_personal_create.py"
+    "test_02_personal_get.py"
+    "test_03_personal_update.py"
+    "test_04_personal_delete.py"
+    "test_05_admin_create_official.py"
+    "test_06_official_get.py"
+    "test_07_auth_required.py"
+    "test_08_schema_validation.py"
 )
 
 # Run each test
