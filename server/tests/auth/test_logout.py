@@ -32,7 +32,6 @@ async def test_logout():
         # Clean any existing test data
         users_collection = await db.get_users_collection()
         tokens_collection = await db.get_refresh_tokens_collection()
-        await users_collection.delete_many({"email": TEST_USER_EMAIL})
         await tokens_collection.delete_many({"userId": {"$regex": "logout-single-test"}})
         
         # 1. Create user and get refresh token
@@ -105,12 +104,6 @@ async def test_logout():
     finally:
         if session:
             await session.close()
-        # Cleanup test data
-        try:
-            await users_collection.delete_many({"email": TEST_USER_EMAIL})
-            await tokens_collection.delete_many({"userId": user_id}) if user_id else None
-        except:
-            pass
 
 async def main():
     """Run single device logout test"""

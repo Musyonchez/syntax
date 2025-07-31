@@ -83,7 +83,7 @@ async def test_schema_validation():
         # Clean up test user
         users_collection = await db.get_users_collection()
         tokens_collection = await db.get_refresh_tokens_collection()
-        await users_collection.delete_many({"email": "sanitize@example.com"})
+        # Keep user for development - no cleanup
         await tokens_collection.delete_many({"userId": {"$regex": "sanitize"}})
         
         # Test 3: Refresh Token - Missing/Invalid Data

@@ -242,16 +242,6 @@ async def test_security_validation():
         if session:
             await session.close()
         
-        # Cleanup test data
-        try:
-            users_collection = await db.get_users_collection()
-            tokens_collection = await db.get_refresh_tokens_collection()
-            
-            # Clean up all test users created during security tests
-            await users_collection.delete_many({"email": {"$regex": "rapid.*@example.com"}})
-            await tokens_collection.delete_many({"userId": {"$regex": "rapid"}})
-        except:
-            pass
 
 async def main():
     """Run security validation tests"""

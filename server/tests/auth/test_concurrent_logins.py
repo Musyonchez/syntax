@@ -31,7 +31,6 @@ async def test_concurrent_login_handling():
         # Clean any existing test data
         users_collection = await db.get_users_collection()
         tokens_collection = await db.get_refresh_tokens_collection()
-        await users_collection.delete_many({"email": TEST_USER_EMAIL})
         await tokens_collection.delete_many({"userId": {"$regex": "concurrent-test"}})
         
         # Test 1: Concurrent New User Registration
@@ -249,12 +248,6 @@ async def test_concurrent_login_handling():
         traceback.print_exc()
         return False
     finally:
-        # Cleanup test data
-        try:
-            await users_collection.delete_many({"email": TEST_USER_EMAIL})
-            await tokens_collection.delete_many({"userId": {"$regex": "concurrent-test"}})
-        except:
-            pass
 
 async def main():
     """Run concurrent login handling tests"""
