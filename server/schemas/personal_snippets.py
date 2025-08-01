@@ -7,6 +7,14 @@ from typing import Dict, Any, List
 class PersonalSnippetSchema:
     """Personal snippet data validation"""
     
+    # Allowed programming languages
+    ALLOWED_LANGUAGES = [
+        'javascript', 'typescript', 'python', 'java', 'c', 'cpp', 'csharp',
+        'php', 'ruby', 'go', 'rust', 'swift', 'kotlin', 'html', 'css',
+        'scss', 'less', 'sql', 'bash', 'shell', 'json', 'xml', 'yaml',
+        'markdown', 'plaintext'
+    ]
+    
     @staticmethod
     def validate_create(data: Dict[str, Any]) -> Dict[str, Any]:
         """Validate data for creating a new personal snippet"""
@@ -31,6 +39,9 @@ class PersonalSnippetSchema:
         if not language:
             raise ValueError("Language is required")
         
+        if language not in PersonalSnippetSchema.ALLOWED_LANGUAGES:
+            raise ValueError(f"Invalid language. Allowed languages: {', '.join(PersonalSnippetSchema.ALLOWED_LANGUAGES)}")
+        
         # Optional fields with defaults
         description = data.get('description', '').strip()
         tags = data.get('tags', [])
@@ -39,10 +50,18 @@ class PersonalSnippetSchema:
         
         # Validate difficulty
         if difficulty not in ['easy', 'medium', 'hard']:
+            # If difficulty was explicitly provided and invalid, raise error
+            if 'difficulty' in data and data.get('difficulty', '').strip():
+                raise ValueError("Invalid difficulty. Allowed values: easy, medium, hard")
+            # Otherwise use default
             difficulty = 'medium'
         
         # Validate tags
         if not isinstance(tags, list):
+            # If tags was explicitly provided and invalid, raise error
+            if 'tags' in data:
+                raise ValueError("Tags must be an array")
+            # Otherwise use default
             tags = []
         tags = [tag.strip().lower() for tag in tags if isinstance(tag, str) and tag.strip()]
         
@@ -96,19 +115,21 @@ class PersonalSnippetSchema:
             language = data['language'].strip().lower()
             if not language:
                 raise ValueError("Language cannot be empty")
+            if language not in PersonalSnippetSchema.ALLOWED_LANGUAGES:
+                raise ValueError(f"Invalid language. Allowed languages: {', '.join(PersonalSnippetSchema.ALLOWED_LANGUAGES)}")
             update_fields['language'] = language
         
         if 'tags' in data:
             tags = data['tags']
             if not isinstance(tags, list):
-                tags = []
+                raise ValueError("Tags must be an array")
             tags = [tag.strip().lower() for tag in tags if isinstance(tag, str) and tag.strip()]
             update_fields['tags'] = tags
         
         if 'difficulty' in data:
             difficulty = data['difficulty'].strip().lower()
             if difficulty not in ['easy', 'medium', 'hard']:
-                difficulty = 'medium'
+                raise ValueError("Invalid difficulty. Allowed values: easy, medium, hard")
             update_fields['difficulty'] = difficulty
         
         if 'isPrivate' in data:
