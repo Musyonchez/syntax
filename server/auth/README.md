@@ -78,23 +78,24 @@ Client → Uses new access token for requests
 2. **Token Expiry** - Access tokens expire in 1 hour, refresh tokens in 30 days
 3. **Input Validation** - All input must be validated using UserSchema
 4. **Error Handling** - Never expose internal errors to clients
-5. **CORS Configuration** - Only allow configured origins
+5. **Error Layer Separation** - Schemas raise ValueError, services return create_error_response()
+6. **CORS Configuration** - Only allow configured origins
 
 ### Authentication Rules
 
-6. **Bearer Tokens** - All protected endpoints require "Bearer <token>" format
-7. **Token Type Validation** - Verify token type matches endpoint requirement
-8. **User Ownership** - Users can only access/modify their own data
-9. **Session Limits** - Implement reasonable session limits per user
-10. **Secure Logout** - Always invalidate refresh tokens on logout
+7. **Bearer Tokens** - All protected endpoints require "Bearer <token>" format
+8. **Token Type Validation** - Verify token type matches endpoint requirement
+9. **User Ownership** - Users can only access/modify their own data
+10. **Session Limits** - Implement reasonable session limits per user
+11. **Secure Logout** - Always invalidate refresh tokens on logout
 
 ### Database Rules
 
-11. **Schema Validation** - Use UserSchema for all user data operations
-12. **Soft Updates** - Only update fields that are provided and valid
-13. **Timestamp Management** - Always update 'updatedAt' on modifications
-14. **Error Recovery** - Handle database errors gracefully
-15. **Connection Management** - Properly close database connections
+12. **Schema Validation** - Use UserSchema for all user data operations
+13. **Soft Updates** - Only update fields that are provided and valid
+14. **Timestamp Management** - Always update 'updatedAt' on modifications
+15. **Error Recovery** - Handle database errors gracefully
+16. **Connection Management** - Properly close database connections
 
 ## ⚠️ CRITICAL: Async/Sync Integration Pattern
 
@@ -165,6 +166,7 @@ def broken_endpoint():
 3. **Separate async handlers** - Keep Flask routes sync, handlers async
 4. **Always close loop** - Use try/finally to ensure cleanup
 5. **Proper error handling** - Catch and convert async errors
+6. **Error flow pattern** - Schemas raise ValueError → async handlers return create_error_response() → sync routes re-raise with `raise async_error`
 
 ### 📊 This Pattern Powers
 - ✅ All 10 auth tests passing

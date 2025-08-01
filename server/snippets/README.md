@@ -105,6 +105,7 @@ def broken_snippets():
 3. **Separate async handlers** - Keep Flask routes sync, handlers async
 4. **Always close loop** - Use try/finally to ensure cleanup
 5. **Proper error handling** - Catch and convert async errors
+6. **Error flow pattern** - Schemas raise ValueError → async handlers return create_error_response() → sync routes re-raise with `raise async_error`
 
 ### 📊 This Pattern Powers
 - ✅ **7/7 snippet tests passing** (was 2/7 before fix)
@@ -196,23 +197,24 @@ Server → Processes request with public access
 ### The Sacred Laws (NEVER BREAK)
 1. **Ownership Verification** - Users can only modify their own personal snippets
 2. **Schema Validation** - All data must pass PersonalSnippetSchema validation
-3. **Soft Deletes** - Personal snippets are marked inactive, never hard deleted
-4. **JWT Authentication** - Personal snippet endpoints require valid access tokens
-5. **Async Pattern** - MUST use the proven auth service async/sync pattern
+3. **Error Layer Separation** - Schemas raise ValueError, services return create_error_response()
+4. **Soft Deletes** - Personal snippets are marked inactive, never hard deleted
+5. **JWT Authentication** - Personal snippet endpoints require valid access tokens
+6. **Async Pattern** - MUST use the proven auth service async/sync pattern
 
 ### Data Integrity Rules
-6. **Required Fields** - Title, code, and language are mandatory for all snippets
-7. **Lowercase Normalization** - Languages, tags stored in lowercase
-8. **Difficulty Validation** - Only easy/medium/hard allowed, default to medium
-9. **Tag Sanitization** - Clean and normalize all tags
-10. **Timestamp Management** - Always update 'updatedAt' on modifications
+7. **Required Fields** - Title, code, and language are mandatory for all snippets
+8. **Lowercase Normalization** - Languages, tags stored in lowercase
+9. **Difficulty Validation** - Only easy/medium/hard allowed, default to medium
+10. **Tag Sanitization** - Clean and normalize all tags
+11. **Timestamp Management** - Always update 'updatedAt' on modifications
 
 ### Security Rules
-11. **No Data Leakage** - Never return other users' private snippets
-12. **Input Sanitization** - Clean all user input before processing
-13. **Error Handling** - Don't expose internal errors or data structures
-14. **CORS Configuration** - Only allow configured origins
-15. **Connection Management** - Properly reset database connections per request
+12. **No Data Leakage** - Never return other users' private snippets
+13. **Input Sanitization** - Clean all user input before processing
+14. **Error Handling** - Don't expose internal errors or data structures
+15. **CORS Configuration** - Only allow configured origins
+16. **Connection Management** - Properly reset database connections per request
 
 ## 🔧 Environment Variables
 
