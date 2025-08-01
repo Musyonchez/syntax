@@ -24,6 +24,7 @@ TESTS=(
     "test_03_single_logout.py"
     "test_04_logout_all_devices.py"
     "test_05_schema_validation.py"
+    "test_06_session_schema.py"
 )
 
 echo "Running tests in sequence..."

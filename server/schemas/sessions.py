@@ -13,9 +13,16 @@ class SessionSchema:
         if not isinstance(data, dict):
             raise ValueError("Session data must be a dictionary")
         
-        # Required fields
-        user_id = data.get('userId', '').strip()
-        snippet_id = data.get('snippetId', '').strip()
+        # Required fields with type validation
+        user_id_raw = data.get('userId', '')
+        if not isinstance(user_id_raw, str):
+            raise ValueError("User ID must be a string")
+        user_id = user_id_raw.strip()
+        
+        snippet_id_raw = data.get('snippetId', '')
+        if not isinstance(snippet_id_raw, str):
+            raise ValueError("Snippet ID must be a string")
+        snippet_id = snippet_id_raw.strip()
         
         if not user_id:
             raise ValueError("User ID is required")
@@ -23,20 +30,22 @@ class SessionSchema:
         if not snippet_id:
             raise ValueError("Snippet ID is required")
         
-        # Optional fields with defaults
+        # Optional fields with strict type validation
         duration = data.get('duration', 0)
+        if not isinstance(duration, (int, float)):
+            raise ValueError("Duration must be a number")
+        if duration < 0:
+            raise ValueError("Duration must be non-negative")
+        
         score = data.get('score', 0)
+        if not isinstance(score, (int, float)):
+            raise ValueError("Score must be a number")
+        if score < 0:
+            raise ValueError("Score must be non-negative")
+        
         completed = data.get('completed', False)
-        
-        # Validate numeric fields
-        if not isinstance(duration, (int, float)) or duration < 0:
-            duration = 0
-        
-        if not isinstance(score, (int, float)) or score < 0:
-            score = 0
-        
         if not isinstance(completed, bool):
-            completed = False
+            raise ValueError("Completed must be a boolean")
         
         now = datetime.now(timezone.utc)
         
