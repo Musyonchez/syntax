@@ -15,6 +15,7 @@ sys.path.append('../schemas')
 from auth_utils import AuthUtils
 from database import db
 from response_utils import create_response, create_error_response
+from async_handler import run_async_handler, run_with_auth_validation
 from personal_snippets import PersonalSnippetSchema
 from official_snippets import OfficialSnippetSchema
 
@@ -52,39 +53,24 @@ def get_personal_snippets():
         if not auth_header or not auth_header.startswith('Bearer '):
             return create_error_response('Authorization token required', 401)
         
-        token = auth_header.split(' ')[1]
-        token_data = auth_utils.verify_token(token, 'access')
-        if not token_data:
-            return create_error_response('Invalid or expired token', 401)
-        
-        user_id = token_data.get('user_id')
-        
         # Get query parameters for filtering
         language = request.args.get('language')
         difficulty = request.args.get('difficulty')
         tag = request.args.get('tag')
         search = request.args.get('search')
         
-        # Run async operations using auth pattern
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            # Reset database connection for new event loop
-            db.client = None
-            db.db = None
-            result = loop.run_until_complete(_handle_get_personal_snippets(user_id, language, difficulty, tag, search))
-            return result
-        except Exception as async_error:
-            raise async_error
-        finally:
-            loop.close()
+        # Use helper function with auth validation that follows the MANDATORY PATTERN
+        return run_with_auth_validation(_handle_get_personal_snippets, auth_header, language, difficulty, tag, search)
             
     except Exception as e:
         return create_error_response(f'Failed to get personal snippets: {str(e)}', 500)
 
-async def _handle_get_personal_snippets(user_id: str, language: str, difficulty: str, tag: str, search: str):
+async def _handle_get_personal_snippets(token_data: dict, language: str, difficulty: str, tag: str, search: str):
     """Async handler for getting personal snippets"""
     try:
+        # Extract user_id from token_data
+        user_id = token_data.get('user_id')
+        
         # Build query
         query = {'userId': user_id, 'isActive': True}
         

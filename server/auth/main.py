@@ -368,24 +368,10 @@ def logout():
         
         refresh_token = data.get('refreshToken')
         
-        
-        # Run async operations
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            # Reset database connection for new event loop
-            db.client = None
-            db.db = None
-            result = loop.run_until_complete(_handle_logout(refresh_token))
-            return result
-        except Exception as async_error:
-            print(f"DEBUG: Logout async operation failed: {async_error}")
-            raise async_error
-        finally:
-            loop.close()
+        # Use helper function that follows the MANDATORY PATTERN
+        return run_async_handler(_handle_logout, refresh_token)
             
     except Exception as e:
-        print(f"DEBUG: Logout exception: {e}")
         return create_error_response(f"Logout failed: {str(e)}", 500)
 
 async def _handle_logout(refresh_token: str):
