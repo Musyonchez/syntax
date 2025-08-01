@@ -16,8 +16,11 @@ class RefreshTokenSchema:
         if not token or not isinstance(token, str):
             raise ValueError("Valid token is required")
         
-        if not isinstance(expires_in_days, int) or expires_in_days <= 0:
-            expires_in_days = 30
+        if not isinstance(expires_in_days, int):
+            raise ValueError("Expires in days must be an integer")
+        
+        if expires_in_days <= 0:
+            raise ValueError("Expires in days must be positive")
         
         now = datetime.now(timezone.utc)
         expires_at = now + timedelta(days=expires_in_days)

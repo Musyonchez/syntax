@@ -256,24 +256,29 @@ def test_schema_validation():
         # Test 8: Data type validation  
         print("  📝 Step 8: Testing data type validation...")
         
-        # Non-string email
-        type_test_data = {
-            "email": 12345,  # Should be string
-            "name": "Test User",
-            "avatar": "https://example.com/avatar.jpg"
-        }
+        # Test various type validation scenarios
+        type_validation_tests = [
+            ({"email": 12345, "name": "Test User", "avatar": "https://example.com/avatar.jpg"}, "non-string email"),
+            ({"email": "test@example.com", "name": 12345, "avatar": "https://example.com/avatar.jpg"}, "non-string name"),
+            ({"email": "test@example.com", "name": "Test User", "avatar": 12345}, "non-string avatar"),
+            ({"email": "test@example.com", "name": "Test User", "avatar": "https://example.com/avatar.jpg", "role": 12345}, "non-string role"),
+            ({"email": "test@example.com", "name": "Test User", "avatar": "https://example.com/avatar.jpg", "role": ["admin"]}, "non-string role array"),
+            ({"email": "test@example.com", "name": "Test User", "avatar": "https://example.com/avatar.jpg", "role": "invalid_role"}, "invalid role value"),
+        ]
         
-        type_response = requests.post(
-            'http://localhost:8081/google-auth',
-            json=type_test_data,
-            headers={'Content-Type': 'application/json'}
-        )
+        for invalid_data, description in type_validation_tests:
+            type_response = requests.post(
+                'http://localhost:8081/google-auth',
+                json=invalid_data,
+                headers={'Content-Type': 'application/json'}
+            )
+            
+            if type_response.status_code != 400:
+                print(f"  ❌ Expected 400 for {description}, got {type_response.status_code}")
+                print(f"  📄 Response: {type_response.text}")
+                return False
         
-        if type_response.status_code != 400:
-            print(f"  ❌ Non-string email should be rejected (got {type_response.status_code})")
-            return False
-        
-        print("  ✅ Data type validation working")
+        print("  ✅ Data type validation working (including strict role validation)")
         
         # Test 9: Refresh token validation
         print("  📝 Step 9: Testing refresh token validation...")
@@ -330,6 +335,29 @@ def test_schema_validation():
             return False
         
         print("  ✅ Valid data still works after all validation tests")
+        
+        # Test 12: Valid role values still work
+        print("  📝 Step 12: Testing valid role values...")
+        
+        valid_role_tests = [
+            ({"email": f"test_admin_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}@example.com", "name": "Admin User", "avatar": "https://example.com/avatar.jpg", "role": "admin"}, "admin role"),
+            ({"email": f"test_user_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}@example.com", "name": "Regular User", "avatar": "https://example.com/avatar.jpg", "role": "user"}, "user role"),
+            ({"email": f"test_default_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}@example.com", "name": "Default User", "avatar": "https://example.com/avatar.jpg"}, "default role (no role specified)"),
+        ]
+        
+        for valid_data, description in valid_role_tests:
+            role_response = requests.post(
+                'http://localhost:8081/google-auth',
+                json=valid_data,
+                headers={'Content-Type': 'application/json'}
+            )
+            
+            if role_response.status_code != 200:
+                print(f"  ❌ Valid {description} should be accepted (got {role_response.status_code})")
+                print(f"  📄 Response: {role_response.text}")
+                return False
+        
+        print("  ✅ Valid role values properly accepted")
         
         return True
         

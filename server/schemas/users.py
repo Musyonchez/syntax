@@ -120,13 +120,13 @@ class UserSchema:
         avatar = UserSchema._validate_avatar_url(data.get('avatar', ''))
         role = data.get('role', 'user')
         
-        # Validate role
+        # Validate role with strict type checking
         if not isinstance(role, str):
-            role = 'user'
-        else:
-            role = role.strip().lower()
-            if role not in ['user', 'admin']:
-                role = 'user'
+            raise ValueError("Role must be a string")
+        
+        role = role.strip().lower()
+        if role not in ['user', 'admin']:
+            raise ValueError("Role must be 'user' or 'admin'")
         
         now = datetime.now(timezone.utc)
         
@@ -164,15 +164,13 @@ class UserSchema:
                 raise ValueError(f"Avatar validation failed: {str(e)}")
         
         if 'role' in data:
-            role = data.get('role', '')
-            if not isinstance(role, str):
+            if not isinstance(data['role'], str):
                 raise ValueError("Role must be a string")
             
-            role = role.strip().lower()
-            if role in ['user', 'admin']:
-                update_fields['role'] = role
-            else:
+            role = data['role'].strip().lower()
+            if role not in ['user', 'admin']:
                 raise ValueError("Role must be 'user' or 'admin'")
+            update_fields['role'] = role
         
         return update_fields
 
