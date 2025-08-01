@@ -30,6 +30,10 @@ CORS(app, origins=allowed_origins)
 # Initialize auth utils
 auth_utils = AuthUtils(os.getenv('JWT_SECRET'))
 
+# Get admin emails from environment (comma-separated list)
+admin_emails = os.getenv('ADMIN_EMAIL', '').split(',')
+admin_emails = [email.strip().lower() for email in admin_emails if email.strip()]
+
 @app.route('/health')
 def health():
     return create_response({'status': 'ok', 'service': 'auth'})
@@ -97,6 +101,11 @@ async def _handle_google_auth(validated_data: dict):
         print(f"DEBUG: User lookup by email: {user}")
         
         if not user:
+            # Check if email is in admin list and assign role accordingly
+            if validated_data["email"].lower() in admin_emails:
+                validated_data["role"] = "admin"
+                print(f"DEBUG: Auto-assigning admin role to {validated_data['email']}")
+            
             # Create new user using validated data
             result = await users_collection.insert_one(validated_data)
             validated_data["_id"] = str(result.inserted_id)
