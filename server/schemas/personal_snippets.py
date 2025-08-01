@@ -21,11 +21,26 @@ class PersonalSnippetSchema:
         if not isinstance(data, dict):
             raise ValueError("Personal snippet data must be a dictionary")
         
-        # Required fields
-        user_id = data.get('userId', '').strip()
-        title = data.get('title', '').strip()
-        code = data.get('code', '').strip()
-        language = data.get('language', '').strip().lower()
+        # Required fields with type validation
+        user_id_raw = data.get('userId', '')
+        if not isinstance(user_id_raw, str):
+            raise ValueError("User ID must be a string")
+        user_id = user_id_raw.strip()
+        
+        title_raw = data.get('title', '')
+        if not isinstance(title_raw, str):
+            raise ValueError("Title must be a string")
+        title = title_raw.strip()
+        
+        code_raw = data.get('code', '')
+        if not isinstance(code_raw, str):
+            raise ValueError("Code must be a string")
+        code = code_raw.strip()
+        
+        language_raw = data.get('language', '')
+        if not isinstance(language_raw, str):
+            raise ValueError("Language must be a string")
+        language = language_raw.strip().lower()
         
         if not user_id:
             raise ValueError("User ID is required")
@@ -42,10 +57,18 @@ class PersonalSnippetSchema:
         if language not in PersonalSnippetSchema.ALLOWED_LANGUAGES:
             raise ValueError(f"Invalid language. Allowed languages: {', '.join(PersonalSnippetSchema.ALLOWED_LANGUAGES)}")
         
-        # Optional fields with defaults
-        description = data.get('description', '').strip()
+        # Optional fields with defaults and type validation
+        description_raw = data.get('description', '')
+        if not isinstance(description_raw, str):
+            raise ValueError("Description must be a string")
+        description = description_raw.strip()
+        
         tags = data.get('tags', [])
-        difficulty = data.get('difficulty', 'medium').strip().lower()
+        difficulty_raw = data.get('difficulty', 'medium')
+        if not isinstance(difficulty_raw, str):
+            raise ValueError("Difficulty must be a string")
+        difficulty = difficulty_raw.strip().lower()
+        
         is_private = data.get('isPrivate', True)
         
         # Validate difficulty
@@ -95,23 +118,31 @@ class PersonalSnippetSchema:
         
         update_fields = {}
         
-        # Optional updatable fields
+        # Optional updatable fields with type validation
         if 'title' in data:
+            if not isinstance(data['title'], str):
+                raise ValueError("Title must be a string")
             title = data['title'].strip()
             if not title:
                 raise ValueError("Title cannot be empty")
             update_fields['title'] = title
         
         if 'description' in data:
+            if not isinstance(data['description'], str):
+                raise ValueError("Description must be a string")
             update_fields['description'] = data['description'].strip()
         
         if 'code' in data:
+            if not isinstance(data['code'], str):
+                raise ValueError("Code must be a string")
             code = data['code'].strip()
             if not code:
                 raise ValueError("Code cannot be empty")
             update_fields['code'] = code
         
         if 'language' in data:
+            if not isinstance(data['language'], str):
+                raise ValueError("Language must be a string")
             language = data['language'].strip().lower()
             if not language:
                 raise ValueError("Language cannot be empty")
@@ -127,6 +158,8 @@ class PersonalSnippetSchema:
             update_fields['tags'] = tags
         
         if 'difficulty' in data:
+            if not isinstance(data['difficulty'], str):
+                raise ValueError("Difficulty must be a string")
             difficulty = data['difficulty'].strip().lower()
             if difficulty not in ['easy', 'medium', 'hard']:
                 raise ValueError("Invalid difficulty. Allowed values: easy, medium, hard")
