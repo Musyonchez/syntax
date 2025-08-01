@@ -38,7 +38,7 @@ class ClientAuth {
           isAuthenticated: true
         }
       } catch (error) {
-        console.error('Failed to parse stored user data:', error)
+        // Clear invalid stored data
         this.signOut()
       }
     }

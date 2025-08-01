@@ -19,7 +19,9 @@ export async function logoutAllDevices(accessToken: string) {
     const data = await response.json()
     return data
   } catch (error) {
-    console.error('Logout all devices failed:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Logout all devices failed:', error)
+    }
     throw error
   }
 }
@@ -44,7 +46,9 @@ export async function logout(refreshToken: string) {
     const data = await response.json()
     return data
   } catch (error) {
-    console.error('Logout failed:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Logout failed:', error)
+    }
     throw error
   }
 }

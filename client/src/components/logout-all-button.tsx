@@ -2,13 +2,9 @@
 
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
-import { logoutAllDevices } from '@/lib/auth-actions'
+import { serverLogoutAll } from '@/lib/server-auth'
 
-interface LogoutAllButtonProps {
-  accessToken: string
-}
-
-export function LogoutAllButton({ accessToken }: LogoutAllButtonProps) {
+export function LogoutAllButton() {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleLogoutAll = async () => {
@@ -20,9 +16,7 @@ export function LogoutAllButton({ accessToken }: LogoutAllButtonProps) {
     
     try {
       // Call backend to revoke all refresh tokens
-      const result = await logoutAllDevices(accessToken)
-      
-      console.log(`Revoked ${result.data.revokedTokens} sessions`)
+      const result = await serverLogoutAll()
       
       // Sign out of current session
       await signOut({ 
@@ -31,7 +25,9 @@ export function LogoutAllButton({ accessToken }: LogoutAllButtonProps) {
       })
       
     } catch (error) {
-      console.error('Failed to logout all devices:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to logout all devices:', error)
+      }
       alert('Failed to logout all devices. Please try again.')
     } finally {
       setIsLoading(false)

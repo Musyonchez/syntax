@@ -15,7 +15,9 @@ export function SignOutButton() {
       // First, revoke refresh token from backend if we have one
       if (session?.user?.refreshToken) {
         await logout(session.user.refreshToken)
-        console.log('Refresh token revoked from backend')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Refresh token revoked from backend')
+        }
       }
       
       // Then sign out from NextAuth
@@ -25,7 +27,9 @@ export function SignOutButton() {
       })
       
     } catch (error) {
-      console.error('Error during logout:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error during logout:', error)
+      }
       // Still sign out from NextAuth even if backend fails
       await signOut({ 
         callbackUrl: '/',

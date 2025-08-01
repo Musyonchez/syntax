@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { serverLogout } from '@/lib/server-auth'
 
 export function UserDropdown() {
   const { data: session } = useSession()
@@ -37,7 +38,7 @@ export function UserDropdown() {
         aria-label="User menu"
       >
         <Image
-          src={session.user.image || '/logo.png'}
+          src={session.user.image || '/default-avatar.svg'}
           alt={session.user.name || 'User'}
           width={32}
           height={32}
@@ -96,9 +97,19 @@ export function UserDropdown() {
               )}
               
               <button
-                onClick={() => {
+                onClick={async () => {
                   setIsOpen(false)
-                  signOut()
+                  try {
+                    // Revoke tokens on backend first
+                    await serverLogout()
+                  } catch (error) {
+                    if (process.env.NODE_ENV === 'development') {
+                      console.error('Backend logout failed:', error)
+                    }
+                  } finally {
+                    // Always sign out from NextAuth (clears session)
+                    await signOut()
+                  }
                 }}
                 className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-foreground/10 transition-colors"
               >

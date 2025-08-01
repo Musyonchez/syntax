@@ -129,7 +129,7 @@ export default async function Dashboard() {
                   <span className="text-foreground">2 devices</span>
                 </div>
                 <div className="pt-2 border-t border-border">
-                  <LogoutAllButton accessToken={session.user.backendToken} />
+                  <LogoutAllButton />
                 </div>
               </div>
             </div>
