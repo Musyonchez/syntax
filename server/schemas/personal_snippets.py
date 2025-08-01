@@ -63,13 +63,20 @@ class PersonalSnippetSchema:
             raise ValueError("Description must be a string")
         description = description_raw.strip()
         
-        tags = data.get('tags', [])
+        tags_raw = data.get('tags', [])
+        if not isinstance(tags_raw, list):
+            raise ValueError("Tags must be an array")
+        tags = tags_raw
+        
         difficulty_raw = data.get('difficulty', 'medium')
         if not isinstance(difficulty_raw, str):
             raise ValueError("Difficulty must be a string")
         difficulty = difficulty_raw.strip().lower()
         
-        is_private = data.get('isPrivate', True)
+        is_private_raw = data.get('isPrivate', True)
+        if not isinstance(is_private_raw, bool):
+            raise ValueError("isPrivate must be a boolean")
+        is_private = is_private_raw
         
         # Validate difficulty
         if difficulty not in ['easy', 'medium', 'hard']:
@@ -79,18 +86,8 @@ class PersonalSnippetSchema:
             # Otherwise use default
             difficulty = 'medium'
         
-        # Validate tags
-        if not isinstance(tags, list):
-            # If tags was explicitly provided and invalid, raise error
-            if 'tags' in data:
-                raise ValueError("Tags must be an array")
-            # Otherwise use default
-            tags = []
+        # Validate and process tags
         tags = [tag.strip().lower() for tag in tags if isinstance(tag, str) and tag.strip()]
-        
-        # Validate privacy setting
-        if not isinstance(is_private, bool):
-            is_private = True
         
         now = datetime.now(timezone.utc)
         
@@ -166,20 +163,26 @@ class PersonalSnippetSchema:
             update_fields['difficulty'] = difficulty
         
         if 'isPrivate' in data:
-            if isinstance(data['isPrivate'], bool):
-                update_fields['isPrivate'] = data['isPrivate']
+            if not isinstance(data['isPrivate'], bool):
+                raise ValueError("isPrivate must be a boolean")
+            update_fields['isPrivate'] = data['isPrivate']
         
         if 'usageCount' in data:
-            if isinstance(data['usageCount'], int) and data['usageCount'] >= 0:
-                update_fields['usageCount'] = data['usageCount']
+            if not isinstance(data['usageCount'], int):
+                raise ValueError("Usage count must be an integer")
+            if data['usageCount'] < 0:
+                raise ValueError("Usage count must be non-negative")
+            update_fields['usageCount'] = data['usageCount']
         
         if 'lastUsed' in data:
-            if data['lastUsed'] is None or isinstance(data['lastUsed'], datetime):
-                update_fields['lastUsed'] = data['lastUsed']
+            if data['lastUsed'] is not None and not isinstance(data['lastUsed'], datetime):
+                raise ValueError("Last used must be a datetime or null")
+            update_fields['lastUsed'] = data['lastUsed']
         
         if 'isActive' in data:
-            if isinstance(data['isActive'], bool):
-                update_fields['isActive'] = data['isActive']
+            if not isinstance(data['isActive'], bool):
+                raise ValueError("isActive must be a boolean")
+            update_fields['isActive'] = data['isActive']
         
         # Add updatedAt if there are changes
         if update_fields:
