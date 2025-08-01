@@ -113,7 +113,7 @@ async def _handle_google_auth(validated_data: dict):
                 updatable_fields = UserSchema.validate_update(update_data)
             except ValueError as e:
                 print(f"DEBUG: Update validation failed: {e}")
-                updatable_fields = {}
+                return create_error_response(f"Profile update validation failed: {str(e)}", 400)
             
             # Always update lastLoginAt
             update_fields = {
