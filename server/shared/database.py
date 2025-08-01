@@ -12,10 +12,12 @@ class Database:
         """Connect to MongoDB"""
         if not self.client:
             mongodb_uri = os.getenv("MONGODB_URI")
-            database_name = os.getenv("DATABASE_NAME", "syntaxmem")
+            database_name = os.getenv("DATABASE_NAME")
             
             if not mongodb_uri:
                 raise ValueError("MONGODB_URI environment variable not set")
+            if not database_name:
+                raise ValueError("DATABASE_NAME environment variable not set")
             
             self.client = AsyncIOMotorClient(mongodb_uri)
             self.db = self.client[database_name]
