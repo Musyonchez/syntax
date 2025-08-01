@@ -15,6 +15,7 @@ sys.path.append('../schemas')
 from auth_utils import AuthUtils
 from database import db
 from response_utils import create_response, create_error_response
+from async_handler import async_endpoint, run_async_handler
 from users import UserSchema
 from tokens import RefreshTokenSchema
 
@@ -233,21 +234,10 @@ def refresh_token():
         if not data or not data.get('refreshToken'):
             return create_error_response("Refresh token required", 400)
         
-        refresh_token = data.get('refreshToken')
+        refresh_token_value = data.get('refreshToken')
         
-        # Run async operations
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            # Reset database connection for new event loop
-            db.client = None
-            db.db = None
-            result = loop.run_until_complete(_handle_refresh_token(refresh_token))
-            return result
-        except Exception as async_error:
-            raise async_error
-        finally:
-            loop.close()
+        # Use helper function that follows the MANDATORY PATTERN
+        return run_async_handler(_handle_refresh_token, refresh_token_value)
             
     except Exception as e:
         return create_error_response(f"Token refresh failed: {str(e)}", 500)
