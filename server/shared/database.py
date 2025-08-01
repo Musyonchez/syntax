@@ -1,66 +1,55 @@
-"""
-MongoDB database connection utilities for SyntaxMem Flask functions
-"""
 import os
+import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
-from dotenv import load_dotenv
-import logging
+from typing import Optional
 
-# Load environment variables
-load_dotenv()
+class Database:
+    def __init__(self):
+        self.client: Optional[AsyncIOMotorClient] = None
+        self.db = None
+    
+    async def connect(self):
+        """Connect to MongoDB"""
+        if not self.client:
+            mongodb_uri = os.getenv("MONGODB_URI")
+            database_name = os.getenv("DATABASE_NAME")
+            
+            if not mongodb_uri:
+                raise ValueError("MONGODB_URI environment variable not set")
+            if not database_name:
+                raise ValueError("DATABASE_NAME environment variable not set")
+            
+            self.client = AsyncIOMotorClient(mongodb_uri)
+            self.db = self.client[database_name]
+    
+    async def get_users_collection(self):
+        """Get users collection"""
+        if self.db is None:
+            await self.connect()
+        return self.db.users
+    
+    async def get_refresh_tokens_collection(self):
+        """Get refresh tokens collection"""
+        if self.db is None:
+            await self.connect()
+        return self.db.refresh_tokens
+    
+    async def get_personal_snippets_collection(self):
+        """Get personal snippets collection"""
+        if self.db is None:
+            await self.connect()
+        return self.db.personal_snippets
+    
+    async def get_official_snippets_collection(self):
+        """Get official snippets collection"""
+        if self.db is None:
+            await self.connect()
+        return self.db.official_snippets
+    
+    def close(self):
+        """Close database connection"""
+        if self.client:
+            self.client.close()
 
-# Configure logging
-logger = logging.getLogger(__name__)
-
-# MongoDB configuration
-MONGODB_URI = os.getenv('MONGODB_URI')
-DATABASE_NAME = os.getenv('DATABASE_NAME', 'syntaxmem')
-
-if not MONGODB_URI:
-    raise ValueError("MONGODB_URI environment variable is required")
-
-
-async def get_database():
-    """Get MongoDB database instance - create new connection for each request in serverless"""
-    try:
-        # Create a new client for each request to avoid event loop conflicts
-        client = AsyncIOMotorClient(MONGODB_URI)
-        database = client[DATABASE_NAME]
-        
-        # Test connection
-        await client.admin.command('ping')
-        return database
-    except Exception as e:
-        logger.error(f"Failed to connect to MongoDB: {e}")
-        raise
-
-
-# Collection getters
-async def get_users_collection():
-    """Get users collection"""
-    db = await get_database()
-    return db.users
-
-
-async def get_snippets_collection():
-    """Get snippets collection"""
-    db = await get_database()
-    return db.snippets
-
-
-async def get_practice_sessions_collection():
-    """Get practice sessions collection"""
-    db = await get_database()
-    return db.practice_sessions
-
-
-async def get_leaderboard_collection():
-    """Get leaderboard collection"""
-    db = await get_database()
-    return db.leaderboard
-
-
-async def get_forum_posts_collection():
-    """Get forum posts collection"""
-    db = await get_database()
-    return db.forum_posts
+# Global database instance
+db = Database()

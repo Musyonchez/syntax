@@ -1,208 +1,263 @@
 # SyntaxMem Client
 
-Next.js 15 frontend application for the SyntaxMem coding practice platform.
+**Simple, Uniform, Consistent** Next.js frontend for the SyntaxMem platform.
 
-## Features
+## 🎯 Overview
 
-- **Modern Stack**: Next.js 15 + React 19 + TypeScript + Tailwind CSS
-- **Authentication**: NextAuth.js v5 with Google OAuth
-- **Practice Interface**: CodeMirror integration with masked code completion
-- **Real-time Scoring**: Immediate feedback and progress tracking
-- **Responsive Design**: Mobile-first design with dark/light theme support
-- **State Management**: Zustand + TanStack Query for optimal performance
+The SyntaxMem client is a modern React application built with Next.js 15, providing an intuitive interface for coding practice through memory and pattern recognition.
 
-## Development
+### Key Features
+- **🔐 Authentication** - Google OAuth integration with NextAuth.js
+- **📝 Code Snippets** - Browse and manage personal/official code snippets
+- **🎯 Practice Sessions** - Interactive masked code completion exercises
+- **🏆 Leaderboard** - User rankings and achievement tracking
+- **💬 Community Forum** - Developer discussions and knowledge sharing
+- **📊 Dashboard** - Comprehensive user progress and statistics
+
+## 🏗️ Architecture
+
+```
+client/
+├── src/
+│   ├── app/                 # Next.js App Router pages
+│   │   ├── dashboard/       # User dashboard and stats
+│   │   ├── login/           # Authentication pages
+│   │   ├── practice/        # Interactive practice sessions
+│   │   ├── snippets/        # Code snippet management
+│   │   ├── leaderboard/     # Rankings and achievements
+│   │   └── forum/           # Community discussions
+│   ├── components/          # Reusable React components
+│   │   ├── auth/           # Authentication components
+│   │   ├── common/         # Shared UI components
+│   │   ├── layout/         # Navigation and footer
+│   │   └── practice/       # Practice session components
+│   ├── lib/                # Utility libraries
+│   │   ├── auth.ts         # NextAuth configuration
+│   │   └── utils.ts        # Helper functions
+│   └── types/              # TypeScript type definitions
+├── public/                 # Static assets
+└── docs/                   # Component documentation
+```
+
+## 🚀 Technology Stack
+
+### Core Framework
+- **Next.js 15.4.4** - React framework with App Router
+- **React 19** - UI library with latest features
+- **TypeScript** - Type safety and developer experience
+
+### Authentication
+- **NextAuth.js** - Authentication library
+- **Google OAuth** - Secure sign-in integration
+- **JWT Tokens** - Session management
+
+### Styling & UI
+- **Tailwind CSS** - Utility-first CSS framework
+- **Shadcn/UI** - High-quality component library
+- **Radix UI** - Headless component primitives
+- **Lucide Icons** - Beautiful SVG icons
+
+### Development Tools
+- **ESLint** - Code linting and formatting
+- **TypeScript** - Static type checking
+- **PostCSS** - CSS processing
+- **Next.js DevTools** - Development optimization
+
+## 🔧 Development Setup
 
 ### Prerequisites
-- Node.js 18+
-- npm or yarn
-
-### Setup
 ```bash
+Node.js 18+ 
+npm/yarn/pnpm
+```
+
+### Installation
+```bash
+# Clone repository
+git clone <repository-url>
+cd syntaxmem/client
+
 # Install dependencies
 npm install
-
-# Copy environment file
-cp .env.example .env.local
 
 # Start development server
 npm run dev
 ```
 
-### Environment Variables (.env.local)
-```
+### Environment Variables
+Create `.env.local` file:
+```bash
 NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret-key
+NEXTAUTH_SECRET=your-nextauth-secret
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
-NEXT_PUBLIC_AUTH_API_URL=http://localhost:8081
-NEXT_PUBLIC_SNIPPETS_API_URL=http://localhost:8082
-NEXT_PUBLIC_PRACTICE_API_URL=http://localhost:8083
-NEXT_PUBLIC_LEADERBOARD_API_URL=http://localhost:8084
-NEXT_PUBLIC_FORUM_API_URL=http://localhost:8085
+
+# API endpoints
+NEXT_PUBLIC_AUTH_API=http://localhost:8081
+NEXT_PUBLIC_SNIPPETS_API=http://localhost:8083
+NEXT_PUBLIC_PRACTICE_API=http://localhost:8082
 ```
 
-### Scripts
+## 📋 Available Scripts
+
 ```bash
+# Development
 npm run dev          # Start development server
 npm run build        # Build for production
 npm run start        # Start production server
-npm run lint         # Run ESLint
+
+# Code Quality
+npm run lint         # Run ESLint linting
+npm run lint:fix     # Fix linting issues
+npm run type-check   # TypeScript type checking
+
+# Testing
+npm run test         # Run test suite (future)
+npm run test:e2e     # End-to-end tests (future)
 ```
 
-## Architecture
+## 🎨 Component Structure
 
-### Key Technologies
-- **Next.js 15**: App Router, Server Components, optimized builds
-- **React 19**: Latest React features with concurrent rendering
-- **TypeScript**: Strict mode enabled, no `any` types allowed
-- **Tailwind CSS v4**: Utility-first styling with design system
-- **Shadcn/ui**: High-quality, accessible UI components
-- **NextAuth.js v5**: Authentication with Google OAuth
-- **TanStack Query**: Server state management and caching
-- **Zustand**: Lightweight client state management
-- **CodeMirror**: Advanced code editor with syntax highlighting
+### Layout Components
+- **Navbar** - Main navigation with auth state
+- **Footer** - Site footer with links
+- **MobileMenu** - Responsive mobile navigation
 
-### Project Structure
-```
-src/
-├── app/                 # Next.js App Router
-│   ├── page.tsx        # Landing page
-│   ├── practice/       # Practice interface
-│   ├── dashboard/      # User dashboard
-│   ├── auth/           # Authentication pages
-│   └── api/            # API routes
-├── components/
-│   ├── ui/             # Base UI components (Shadcn/ui)
-│   ├── layout/         # Navigation, footer
-│   ├── auth/           # Authentication components
-│   ├── practice/       # Practice session components
-│   ├── home/           # Landing page sections
-│   └── providers/      # Context providers
-├── lib/
-│   ├── api/            # API client functions
-│   ├── auth/           # NextAuth configuration
-│   └── utils.ts        # Utility functions
-├── hooks/              # Custom React hooks
-├── stores/             # Zustand state stores
-└── types/              # TypeScript definitions
-```
+### Feature Components
+- **Dashboard** - User stats and quick actions
+- **Practice Session** - Interactive coding exercises
+- **Code Editor** - Syntax-highlighted code input
+- **Snippet Browser** - Personal and official snippet management
+- **User Dropdown** - Profile and logout actions
 
-## Key Components
+### UI Components
+- **Button** - Customizable button component
+- **Card** - Content container with variants
+- **Dialog** - Modal dialogs and overlays
+- **Input** - Form input components
+- **Avatar** - User profile images
 
-### Practice Interface
-- **Practice Session**: Complete practice workflow management
-- **Code Editor**: CodeMirror with syntax highlighting
-- **Masked Code Editor**: Interactive fill-in-the-blanks interface
-- **Timer**: Real-time session timing
-- **Score Display**: Immediate feedback and results
+## 🔐 Authentication Flow
 
-### Authentication
-- **Signin Form**: Google OAuth integration
-- **Auth Provider**: Session management
-- **Protected Routes**: Automatic redirection
-
-### Layout
-- **Navigation**: Responsive navigation with user menu
-- **Theme Provider**: Dark/light mode support
-- **Footer**: Site footer with links
-
-## API Integration
-
-The client communicates with 5 microservices:
-
-- **Auth API** (8081): User authentication and JWT management
-- **Snippets API** (8082): Code snippet management and masking
-- **Practice API** (8083): Practice sessions and scoring
-- **Leaderboard API** (8084): Rankings and statistics
-- **Forum API** (8085): Community discussions
-
-### API Client
+### Login Process
 ```typescript
-// Simplified API client with automatic JWT injection
-import { practiceApi } from '@/lib/api/practice'
+// Google OAuth with NextAuth.js
+const session = await auth()
+if (!session?.user) {
+  redirect('/login')
+}
 
-const session = await practiceApi.startSession({
-  snippet_id: 'abc123',
-  difficulty: 5
-})
+// JWT token from backend
+const token = session.user.backendToken
 ```
 
-## Development Guidelines
-
-### Code Standards
-- Use TypeScript strict mode (no `any` types)
-- Follow functional component patterns
-- Prefer server components when possible
-- Use proper error boundaries
-- Implement proper loading states
-
-### Component Patterns
+### Protected Routes
+All authenticated pages use server-side auth check:
 ```typescript
-// Standard component structure
-export function ComponentName() {
-  // 1. Hooks and state
-  const [state, setState] = useState()
-  
-  // 2. Event handlers
-  const handleAction = () => {
-    // Handle action
+export default async function ProtectedPage() {
+  const session = await auth()
+  if (!session?.user) {
+    redirect('/login')
   }
-  
-  // 3. Effects
-  useEffect(() => {
-    // Side effects
-  }, [])
-  
-  // 4. Render
-  return (
-    <div>
-      {/* JSX */}
-    </div>
-  )
+  // Render protected content
 }
 ```
 
-### Styling Guidelines
-- Use Tailwind CSS utility classes
-- Follow design system colors and spacing
-- Use CSS transitions instead of heavy animation libraries
-- Maintain responsive design principles
+## 📱 Responsive Design
 
-## Performance Optimizations
+### Breakpoints
+- **Mobile**: `< 768px` - Single column layout
+- **Tablet**: `768px - 1024px` - Adaptive layouts
+- **Desktop**: `> 1024px` - Full multi-column layouts
 
-- **Code Splitting**: Automatic route-based splitting
-- **Image Optimization**: Next.js Image component
-- **Bundle Analysis**: Optimized dependencies
-- **Caching**: TanStack Query for server state
-- **SSR/SSG**: Static generation where appropriate
+### Design Principles
+- **Mobile-first** - Start with mobile design
+- **Progressive enhancement** - Add features for larger screens
+- **Touch-friendly** - Appropriate touch targets
+- **Accessible** - WCAG 2.1 compliance
 
-## Testing
+## 🎯 Feature Status
 
+### ✅ **Production Ready**
+- **Authentication** - Google OAuth with NextAuth.js
+- **Dashboard** - User stats and navigation
+- **Navigation** - Responsive navbar and mobile menu
+- **Theme Support** - Light/dark mode toggle
+- **Landing Page** - Marketing and feature showcase
+
+### 🚧 **In Development**
+- **Practice Sessions** - Interactive coding exercises
+- **Snippet Management** - CRUD operations for code snippets
+- **Leaderboard** - User rankings and achievements
+- **Forum** - Community discussions
+- **Profile Editing** - User profile management
+
+### 📋 **Planned Features**
+- **Offline Support** - Progressive Web App features
+- **Push Notifications** - Achievement and reminder notifications
+- **Advanced Analytics** - Detailed progress tracking
+- **Social Features** - Friend connections and sharing
+- **Mobile App** - React Native companion app
+
+## 🚀 Deployment
+
+### Build Process
 ```bash
-# Run type checking
+# Production build
 npm run build
 
-# Run linting
-npm run lint
-```
-
-## Deployment
-
-The application is optimized for Vercel deployment:
-
-```bash
-# Build for production
-npm run build
-
-# Test production build locally
+# Start production server
 npm run start
 ```
 
-## Contributing
+### Deployment Targets
+- **Vercel** - Recommended (zero-config)
+- **Netlify** - Static site deployment
+- **AWS Amplify** - Full-stack deployment
+- **Docker** - Containerized deployment
 
-1. Follow established patterns in existing components
-2. Maintain TypeScript strict mode
-3. Test changes with `npm run build` and `npm run lint`
-4. Keep components focused and avoid over-engineering
-5. Use CSS transitions instead of heavy animation libraries
+### Production Checklist
+- [ ] Environment variables configured
+- [ ] API endpoints updated for production
+- [ ] Google OAuth configured for production domain
+- [ ] Build optimization verified
+- [ ] Performance metrics acceptable
+- [ ] SEO metadata configured
+- [ ] Error tracking configured
+
+## 📊 Performance
+
+### Core Web Vitals Targets
+- **LCP** < 2.5s - Largest Contentful Paint
+- **FID** < 100ms - First Input Delay  
+- **CLS** < 0.1 - Cumulative Layout Shift
+
+### Optimization Features
+- **Image Optimization** - Next.js automatic image optimization
+- **Code Splitting** - Automatic route-based splitting
+- **Tree Shaking** - Remove unused JavaScript
+- **Minification** - Compress CSS and JavaScript
+- **Caching** - Efficient browser and CDN caching
+
+## 🤝 Contributing
+
+### Development Workflow
+1. Follow existing component patterns
+2. Use TypeScript for all new code
+3. Follow Tailwind CSS conventions
+4. Test components across breakpoints
+5. Ensure accessibility standards
+6. Update documentation
+
+### Code Style
+- **ESLint** configuration enforced
+- **Prettier** for consistent formatting
+- **TypeScript** strict mode enabled
+- **Component naming** - PascalCase for components
+- **File naming** - kebab-case for files
+
+---
+
+**Remember**: Keep components simple, reusable, and accessible. The frontend should provide an intuitive experience while maintaining performance. 🎯
+
+*Great user experience starts with great developer experience.*

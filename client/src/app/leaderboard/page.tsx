@@ -1,25 +1,33 @@
-import { Metadata } from "next"
-import { ComingSoon } from "@/components/common/coming-soon"
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
-export const metadata: Metadata = {
-  title: "Leaderboard",
-  description: "See how you rank against other developers in coding challenges and practice sessions.",
-}
+export default async function Leaderboard() {
+  const session = await auth()
+  
+  if (!session?.user) {
+    redirect("/login")
+  }
 
-export default function LeaderboardPage() {
   return (
-    <ComingSoon
-      title="Global Leaderboard"
-      description="Compete with developers worldwide and see how you rank in coding challenges across different programming languages."
-      features={[
-        "Global rankings by language",
-        "Monthly and all-time leaderboards",
-        "Skill level competitions",
-        "Achievement tracking",
-        "Regional rankings",
-        "Team challenges"
-      ]}
-      estimatedDate="Phase 3 - Community Features"
-    />
+    <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] p-8">
+      <div className="text-center space-y-8 max-w-2xl">
+        <div className="space-y-4">
+          <h1 className="text-3xl font-bold text-foreground">
+            Leaderboard
+          </h1>
+          <p className="text-muted-foreground">
+            See how you rank against other developers
+          </p>
+        </div>
+        
+        <div className="bg-muted/50 rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-4">Coming Soon</h2>
+          <p className="text-muted-foreground">
+            The leaderboard system is currently under development. 
+            Soon you&apos;ll be able to compete with other developers and track your progress.
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }

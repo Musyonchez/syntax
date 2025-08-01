@@ -1,222 +1,225 @@
-# SyntaxMem - AI Assistant Context
+# SyntaxMem - Simple, Uniform, Consistent
 
-**Last Updated**: 2025-07-26  
-**Current Status**: Production Ready ✅ | Client Optimized ✅ | Server Enhanced ✅  
-**Branch**: development  
+**Last Updated**: 2025-07-29  
+**Status**: Phase 2 Complete ✅ | Authentication System Production-Ready 🚀  
+**Branch**: main  
 
-## 🎯 Project Overview
-SyntaxMem is an interactive coding practice platform where users complete masked code snippets to improve programming skills. Think "fill-in-the-blanks" for code learning.
+## 🎯 Core Doctrine
 
-**Architecture**: Next.js 15 client + Python serverless backend (Google Cloud Functions) + MongoDB Atlas
+**One Principle**: Simple, Uniform, Consistent
 
-## 📁 Current Project State
+Every decision, every line of code, every component must follow this principle:
+- **Simple**: No complexity unless absolutely necessary *(Simple ≠ "not good" - it means elegant, maintainable, excellent)*
+- **Uniform**: Same patterns everywhere, no exceptions
+- **Consistent**: Predictable structure and behavior throughout
 
-### Client (`/client/`) - Optimized & Production Ready ✅
-- **Framework**: Next.js 15 + React 19 + TypeScript + Tailwind CSS + Shadcn/ui
-- **Authentication**: NextAuth.js v5 with Google OAuth (JWT-only, simplified auth flow)
-- **State**: Zustand stores + TanStack Query for server state
-- **Practice Interface**: Complete CodeMirror integration with masked code editor
-- **Status**: Phase 1 & 2 complete, recently optimized to remove 500+ lines of bloated code
-- **Next**: Community features (leaderboard, snippets management, forum UI)
+## 📁 Project Structure
 
-### Server (`/server/`) - Production Ready ✅
-- **Functions**: auth (8081), snippets (8082), practice (8083), leaderboard (8084), forum (8085)
-- **Shared**: Enhanced utilities with proper logging, validation, and security
-- **Status**: All microservices production-ready with comprehensive improvements
-- **Recent**: Major security and performance enhancements applied to all functions
-
-## 🚀 Development Commands
-
-### Client Development
-```bash
-cd client
-npm run dev          # Start dev server (http://localhost:3000)
-npm run build        # Production build
-npm run lint         # ESLint check
+### Production-Ready Architecture
+```
+syntax/
+├── client/     # Next.js 15 frontend with auth integration
+├── server/     # Python serverless functions
+│   ├── auth/       # Google OAuth + JWT (port 8081) ✅ COMPLETE
+│   ├── practice/   # Practice sessions (port 8082) 🚧 PLANNED
+│   ├── snippets/   # Code management (port 8083) 🚧 PLANNED
+│   ├── shared/     # Common utilities ✅ COMPLETE
+│   ├── schemas/    # Data validation ✅ COMPLETE
+│   └── tests/      # Modular test suite ✅ COMPLETE
+└── old/        # Previous implementation (preserved)
 ```
 
-### Server Development  
-```bash
-# Run each service in separate terminals
-cd server/functions/auth && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8081 --debug
-cd server/functions/snippets && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8082 --debug
-cd server/functions/practice && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8083 --debug
-cd server/functions/leaderboard && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8084 --debug
-cd server/functions/forum && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8085 --debug
-```
+### Why This Structure?
+- **3 functions max**: auth, practice, snippets (removed leaderboard, forum bloat)
+- **Client-first**: Build UI first, then only the server endpoints it needs
+- **Serverless**: Google Cloud Functions for cost efficiency
+- **Iterative**: Add features one at a time, test each addition
 
-## 🎨 Code Style & Standards
+## 🚨 Development Rules
 
-### TypeScript Standards
-- **Strict mode enabled** - no `any` types
-- **Functional components** with hooks
-- **Server components** by default, client components only when needed
-- **Zod validation** for all API schemas
+### The Sacred Laws (NEVER BREAK)
+1. **Simple First**: Always choose the simplest solution that works *(elegant, not cheap)*
+2. **No Over-Engineering**: If it's complex, it's wrong *(complexity is the enemy of excellence)*
+3. **Client Drives Server**: Build client pages first, server endpoints second
+4. **One Pattern Everywhere**: Same structure, same naming, same approach
+5. **Test As You Build**: Each feature must work before adding the next
 
-### Component Patterns
+### Client Rules
+- **Next.js 15** with App Router (simple routing)
+- **TypeScript strict** (no `any` types ever)
+- **Tailwind CSS** (no custom CSS complexity)
+- **Minimal components** (each does one thing well)
+- **No unnecessary animations** (CSS transitions only)
+
+### Server Rules
+- **Flask functions** (simple, straightforward)
+- **Same structure** in every function (uniform imports, patterns)
+- **Minimal endpoints** (only what client actually uses)
+- **Consistent responses** (same format everywhere)
+- **Simple error handling** (no complex exception hierarchies)
+
+### Database Rules
+- **MongoDB** (document-based simplicity)
+- **Simple collections** (users, snippets, sessions)
+- **No complex joins** (keep queries simple)
+- **Consistent field names** (same naming everywhere)
+
+## ✅ Completed Phases
+
+### Phase 1: Foundation ✅ COMPLETE
+1. **Landing page** ✅ Simple hero + Google signin
+2. **Google OAuth** ✅ Complete backend auth endpoint
+3. **Protected dashboard** ✅ Shows user profile + security controls
+
+### Phase 2: Session Management ✅ COMPLETE
+1. **Token cleanup** ✅ Automatic expired token removal
+2. **Logout all devices** ✅ Backend endpoint + frontend button
+3. **Session limits** ✅ 2-token maximum per user
+4. **Schema validation** ✅ Complete data validation system
+5. **Modular test suite** ✅ Automated testing for all features
+
+## 🚧 Planned Phases
+
+### Phase 3: Core Features
+1. **Practice sessions** - Interactive masked code completion
+2. **Code snippets** - CRUD operations with masking algorithm
+3. **Scoring system** - Simple progress tracking
+
+### Phase 4: Polish
+1. **Browse snippets** - Filtered list with search
+2. **User stats** - Practice progress and achievements
+3. **Admin features** - Content management
+
+## 📋 File Patterns
+
+### Client Component Structure
 ```typescript
-// Component structure (keep consistent)
-export function ComponentName() {
-  // 1. State and hooks first
-  // 2. Event handlers
-  // 3. Effects
-  // 4. Return JSX
+// components/simple-name.tsx
+export function SimpleName() {
+  // 1. State (minimal)
+  // 2. Handlers (simple)
+  // 3. Return JSX (clean)
 }
-
-// File naming
-components/feature/component-name.tsx  // kebab-case
-types/feature.ts                       // feature-based grouping
-lib/api/feature.ts                     // feature-based API
 ```
 
-### UI Component Standards
-- **Use Shadcn/ui components** from `/components/ui/`
-- **Consistent spacing**: `className="space-y-4"` for vertical, `space-x-4` for horizontal
-- **Color classes**: Use theme colors like `text-foreground`, `bg-background`
-- **Icons**: Use Lucide React icons consistently
-- **Animations**: CSS transitions preferred over heavy animation libraries
-
-### Python Function Standards
+### Server Function Structure
 ```python
-# Flask function structure (keep consistent)
-@app.post("/endpoint")
-async def function_name():
-    try:
-        # 1. Validate input with proper validation functions
-        # 2. Database operations
-        # 3. Business logic
-        # 4. Return response with create_response()
-    except Exception as e:
-        logger.error(f"Operation failed: {e}")
-        return create_error_response("Operation failed", 500)
+# server/function/main.py
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/endpoint')
+def simple_endpoint():
+    # 1. Validate input
+    # 2. Process (simple logic)
+    # 3. Return response
+    return {'success': True, 'data': result}
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=808X, debug=True)
 ```
 
-## 🗂️ File Organization Rules
+## 🎨 Code Standards
 
-### Client Structure (maintain this structure)
-```
-src/
-├── app/                 # Next.js App Router pages
-├── components/
-│   ├── ui/             # Shadcn/ui base components
-│   ├── layout/         # Navigation, Footer (optimized)
-│   ├── auth/           # Authentication components
-│   ├── practice/       # Practice interface (complete)
-│   ├── home/           # Landing page components
-│   └── common/         # Shared components
-├── lib/
-│   ├── api/            # API client functions (simplified)
-│   ├── auth/           # NextAuth config (optimized)
-│   └── utils.ts        # Utility functions
-├── stores/             # Zustand state stores (minimal)
-├── types/              # TypeScript definitions
-└── hooks/              # Custom React hooks
+### Naming Conventions
+- **Files**: `kebab-case.tsx`, `main.py`
+- **Components**: `PascalCase`
+- **Functions**: `snake_case` (Python), `camelCase` (TypeScript)
+- **Variables**: `camelCase` (TypeScript), `snake_case` (Python)
+
+### Import Order (Always)
+```typescript
+// 1. React/Next
+import { useState } from 'react'
+// 2. Libraries  
+import axios from 'axios'
+// 3. Components
+import { Button } from './button'
+// 4. Utils
+import { cn } from '@/lib/utils'
 ```
 
-### Server Structure (maintain this structure)
-```
-server/
-├── functions/          # Individual Cloud Functions
-│   ├── auth/           # Port 8081 - JWT & Google OAuth
-│   ├── snippets/       # Port 8082 - Code management
-│   ├── practice/       # Port 8083 - Sessions & scoring
-│   ├── leaderboard/    # Port 8084 - Rankings
-│   └── forum/          # Port 8085 - Discussions
-├── shared/             # Shared utilities
-│   ├── database.py     # MongoDB connections
-│   ├── auth_middleware.py # JWT validation
-│   ├── masking.py      # Code masking engine
-│   ├── config.py       # Environment config
-│   └── utils.py        # Response utilities
+```python
+# 1. Standard library
+import os
+# 2. Third party
+from flask import Flask
+# 3. Local
+from shared.utils import create_response
 ```
 
-## 🔧 Key Technical Decisions
+## 🚫 What NOT to Do
 
-### Database Schema (MongoDB)
-- **Users**: googleId, email, name, avatar, role, preferences, stats
-- **Snippets**: Dual system (official/personal), language, difficulty, type, status
-- **Practice Sessions**: userId, snippetId, maskedCode, answers, score, timeSpent
-- **Leaderboard**: Official snippets only, language-based rankings
-- **Forum Posts**: posts, replies, voting, categories
+### Forbidden Complexity
+- ❌ Multiple state management libraries
+- ❌ Over-engineered animations
+- ❌ Complex component hierarchies
+- ❌ Microservices for everything
+- ❌ Premature optimization
+- ❌ Feature creep
 
-### Authentication Flow
-1. Google OAuth via NextAuth.js (client)
-2. Simplified token exchange with backend `/auth/google-auth`
-3. JWT token storage (client localStorage via NextAuth)
-4. Backend validates JWT on protected routes
+### Forbidden Patterns
+- ❌ Creating components with 500+ lines
+- ❌ Adding libraries without justification
+- ❌ Building features "just in case"
+- ❌ Complex error handling
+- ❌ Debug code in production
 
-### Code Masking Algorithm
-- Uses Pygments tokenization for Python/JavaScript
-- Difficulty scale 1-10 affects masking probability
-- Priority: keywords → functions → variables
-- Preserves imports, comments, strings
+## 🔄 Development Workflow
 
-## 📋 Current Status
+### The Simple Cycle
+1. **Pick one small feature**
+2. **Build client UI first** (static, simple)
+3. **Add server endpoint** (minimal, focused)
+4. **Connect and test** (make it work)
+5. **Commit and move on** (don't over-polish)
 
-### ✅ Complete & Production Ready
-1. **Authentication System** - Google OAuth, JWT handling, secure flows
-2. **Practice Interface** - CodeMirror integration, masked code editor, scoring
-3. **API Infrastructure** - All 5 microservices with comprehensive validation
-4. **Database Operations** - MongoDB with proper aggregation pipelines
-5. **Security** - Input validation, sanitization, error handling across all services
-6. **Code Quality** - Removed 500+ lines of bloated code, optimized components
+### Example: Adding Practice Feature
+1. Create `/practice` page with static masked code
+2. Add `/practice/start` endpoint that returns one snippet
+3. Connect client to fetch and display real data
+4. Add submit functionality (client form + server endpoint)
+5. Done. Move to next feature.
 
-### 🔄 Ready for Implementation (Phase 3)
-1. **Leaderboard UI** - Rankings display, filtering, real-time updates
-2. **Snippets Management** - Browse, create, edit, submit snippets interface
-3. **Forum System** - Posts, comments, voting UI components
+## 🎯 Success Metrics ✅
 
-## 🚨 Critical Rules for AI Assistants
+### Achieved Goals
+- **Authentication system** - Production-ready with full test coverage
+- **Modular architecture** - Easy to extend and maintain
+- **Automated testing** - All features validated automatically
+- **Clean codebase** - Follows Simple, Uniform, Consistent doctrine
+- **Security features** - Token cleanup, logout all devices, session limits
 
-### Always Maintain
-1. **Type safety** - No `any` types, proper Zod validation
-2. **Component consistency** - Follow established patterns
-3. **Error handling** - Proper try/catch with structured logging
-4. **Authentication** - Verify JWT tokens on all protected routes
-5. **Code quality** - Avoid over-engineering, keep components focused
+### Ongoing Targets
+- **Build time stays fast** (under 30 seconds)
+- **New features take hours, not days** (simplicity)
+- **Code is boring and predictable** (uniform, consistent)
+- **Anyone can understand it immediately** (simple)
 
-### Never Break
-1. **File structure** - Don't reorganize existing folders
-2. **Naming conventions** - Keep kebab-case for files, PascalCase for components
-3. **Import paths** - Use `@/` prefix for absolute imports
-4. **Database schema** - Don't modify collection structures without updating all related code
-5. **Security** - Never expose JWT secrets or remove auth middleware
-6. **Simplicity** - Don't add unnecessary complexity or heavy animation libraries
+## 🗂️ Old vs New
 
-### Before Making Changes
-1. **Check existing patterns** in similar components
-2. **Test builds** with `npm run build` and `npm run lint`
-3. **Verify server functions** compile and start properly
-4. **Keep components focused** - avoid creating overly complex components
-5. **Use CSS transitions** instead of heavy animation libraries when possible
+### What We Learned from `/old/`
+- ✅ **Good**: Core features work, auth flow solid, masking algorithm effective
+- ❌ **Bad**: Over-engineered, 5 services, complex state management, 500+ lines of bloat
+- 🎯 **New Approach**: Keep the good ideas, rebuild with doctrine
 
-## 🔗 Recent Major Improvements (July 26, 2025)
+### Preserved Knowledge
+- Google OAuth flow pattern
+- JWT token structure
+- Code masking algorithm
+- MongoDB schema design
+- Practice session scoring logic
 
-### Client Optimizations
-- **API Client**: Simplified from 213 to 108 lines (49% reduction)
-- **Authentication**: Removed complex token refresh logic, simplified config
-- **Theme Management**: Removed redundant Zustand store, use next-themes only
-- **Navigation**: Reduced from 433 to 151 lines (65% reduction)
-- **Performance**: Removed excessive Framer Motion animations
+## 🚀 Production Ready
 
-### Server Enhancements
-- **Security**: Added comprehensive input validation across all functions
-- **Logging**: Replaced debug prints with structured logging
-- **Error Handling**: Standardized error responses and exception handling
-- **Performance**: Optimized MongoDB queries and pagination
-- **Consistency**: Applied uniform patterns across all microservices
-
-## 💡 Environment Setup
-```bash
-# Client
-cp client/.env.example client/.env.local
-# Add: NEXTAUTH_URL, NEXTAUTH_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
-
-# Server  
-cp server/.env.example server/.env
-# Add: MONGODB_URI, JWT_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
-```
+**Current Status**: Phase 2 complete - Authentication system production-ready
+**Next Step**: Build core features (practice sessions, code snippets)
+**Foundation**: Complete auth system with automated testing
+**Principle**: Simple, Uniform, Consistent
 
 ---
 
-**Remember**: Keep things simple and focused. The codebase is now optimized and production-ready. Avoid over-engineering and maintain the clean, efficient patterns that have been established! 🚀
+**Remember**: If it's not simple, uniform, and consistent - it doesn't belong in this codebase. Period. 🎯
+
+*Simple ≠ "not good". Simple = choosing the most elegant solution. The best code is so simple it looks obvious in hindsight.*

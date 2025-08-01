@@ -1,25 +1,33 @@
-import { Metadata } from "next"
-import { ComingSoon } from "@/components/common/coming-soon"
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
-export const metadata: Metadata = {
-  title: "Forum",
-  description: "Connect with the SyntaxMem community, discuss coding challenges, and get help from other developers.",
-}
+export default async function Forum() {
+  const session = await auth()
+  
+  if (!session?.user) {
+    redirect("/login")
+  }
 
-export default function ForumPage() {
   return (
-    <ComingSoon
-      title="Developer Forum"
-      description="Connect with fellow developers, discuss coding challenges, share solutions, and get help from the SyntaxMem community."
-      features={[
-        "Discussion threads by topic",
-        "Code sharing and reviews",
-        "Q&A with the community",
-        "Voting on posts and answers",
-        "Expert developer responses",
-        "Learning resources sharing"
-      ]}
-      estimatedDate="Phase 3 - Community Features"
-    />
+    <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] p-8">
+      <div className="text-center space-y-8 max-w-2xl">
+        <div className="space-y-4">
+          <h1 className="text-3xl font-bold text-foreground">
+            Community Forum
+          </h1>
+          <p className="text-muted-foreground">
+            Connect with other developers and share knowledge
+          </p>
+        </div>
+        
+        <div className="bg-muted/50 rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-4">Coming Soon</h2>
+          <p className="text-muted-foreground">
+            The community forum is currently under development. 
+            Soon you&apos;ll be able to discuss coding topics and get help from the community.
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }
