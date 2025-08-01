@@ -91,7 +91,7 @@ export default async function Dashboard() {
                     </div>
                     <span className="text-sm font-medium">Practice Sessions</span>
                   </div>
-                  <span className="text-lg font-bold text-foreground">12</span>
+                  <span className="text-sm text-muted-foreground">Coming soon</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
@@ -101,7 +101,7 @@ export default async function Dashboard() {
                     </div>
                     <span className="text-sm font-medium">Snippets Created</span>
                   </div>
-                  <span className="text-lg font-bold text-foreground">8</span>
+                  <span className="text-sm text-muted-foreground">Coming soon</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
@@ -111,7 +111,7 @@ export default async function Dashboard() {
                     </div>
                     <span className="text-sm font-medium">Ranking</span>
                   </div>
-                  <span className="text-lg font-bold text-foreground">#24</span>
+                  <span className="text-sm text-muted-foreground">Coming soon</span>
                 </div>
               </div>
             </div>
@@ -130,6 +130,9 @@ export default async function Dashboard() {
                 </div>
                 <div className="pt-2 border-t border-border">
                   <LogoutAllButton />
+                </div>
+                <div className="text-xs text-muted-foreground mt-2">
+                  Session data will be available when practice features are implemented
                 </div>
               </div>
             </div>
@@ -212,50 +215,14 @@ export default async function Dashboard() {
             <div className="bg-background border border-border rounded-xl p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-foreground">Recent Activity</h3>
-                <button className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  View all
-                </button>
               </div>
               
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3 p-3 bg-foreground/5 rounded-lg">
-                  <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
-                    🎯
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Completed JavaScript Basics practice session</p>
-                    <p className="text-xs text-muted-foreground">2 hours ago</p>
-                  </div>
-                  <span className="text-xs bg-foreground/10 text-foreground px-2 py-1 rounded-full">
-                    +15 XP
-                  </span>
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="w-12 h-12 bg-foreground/10 rounded-lg flex items-center justify-center mb-3">
+                  🚀
                 </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-foreground/5 rounded-lg">
-                  <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
-                    📝
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Created new React Hook snippet</p>
-                    <p className="text-xs text-muted-foreground">1 day ago</p>
-                  </div>
-                  <span className="text-xs bg-foreground/10 text-foreground px-2 py-1 rounded-full">
-                    +5 XP
-                  </span>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-foreground/5 rounded-lg">
-                  <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
-                    🏆
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Reached top 30 on leaderboard</p>
-                    <p className="text-xs text-muted-foreground">3 days ago</p>
-                  </div>
-                  <span className="text-xs bg-foreground/10 text-foreground px-2 py-1 rounded-full">
-                    Achievement
-                  </span>
-                </div>
+                <p className="text-sm text-muted-foreground mb-1">Activity tracking coming soon</p>
+                <p className="text-xs text-muted-foreground">Your practice sessions and achievements will appear here</p>
               </div>
             </div>
           </div>
