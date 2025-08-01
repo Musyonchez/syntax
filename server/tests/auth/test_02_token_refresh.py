@@ -159,7 +159,31 @@ def test_token_refresh():
             return False
         
         print("  ✅ Missing token properly rejected")
-        
+
+        # Test with malformed (non-string) refresh token: integer
+        print("  📝 Step 5: Testing with integer refresh token...")
+        int_token_response = requests.post(
+            'http://localhost:8081/refresh',
+            json={'refreshToken': 12345},
+            headers={'Content-Type': 'application/json'}
+        )
+        if int_token_response.status_code != 400:
+            print(f"  ❌ Expected 400 for integer token, got {int_token_response.status_code}")
+            return False
+        print("  ✅ Integer token properly rejected")
+
+        # Test with malformed (non-string) refresh token: null
+        print("  📝 Step 6: Testing with null refresh token...")
+        null_token_response = requests.post(
+            'http://localhost:8081/refresh',
+            json={'refreshToken': None},
+            headers={'Content-Type': 'application/json'}
+        )
+        if null_token_response.status_code != 400:
+            print(f"  ❌ Expected 400 for null token, got {null_token_response.status_code}")
+            return False
+        print("  ✅ Null token properly rejected")
+
         return True
         
     except requests.exceptions.ConnectionError:

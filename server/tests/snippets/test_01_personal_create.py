@@ -169,7 +169,17 @@ def test_personal_snippet_creation():
             ({}, "empty data"),
             ({"title": "Test"}, "missing code and language"),
             ({"title": "Test", "code": "console.log('test')"}, "missing language"),
-            ({"code": "console.log('test')", "language": "javascript"}, "missing title")
+            ({"code": "console.log('test')", "language": "javascript"}, "missing title"),
+            # Invalid data types
+            ({"title": 123, "code": "print(1)", "language": "python"}, "title is int"),
+            ({"title": ["array"], "code": "print(1)", "language": "python"}, "title is list"),
+            ({"title": "Test", "code": None, "language": "python"}, "code is None"),
+            ({"title": "Test", "code": 12345, "language": "python"}, "code is int"),
+            ({"title": "Test", "code": "print(1)", "language": None}, "language is None"),
+            ({"title": "Test", "code": "print(1)", "language": 123}, "language is int"),
+            ({"title": "Test", "code": "print(1)", "language": "python", "tags": "notalist"}, "tags is string"),
+            ({"title": "Test", "code": "print(1)", "language": "python", "tags": 123}, "tags is int"),
+            ({"title": "Test", "code": "print(1)", "language": "python", "tags": {"not": "alist"}}, "tags is dict"),
         ]
         
         for invalid_data, description in invalid_data_tests:
@@ -186,7 +196,7 @@ def test_personal_snippet_creation():
                 print(f"  ❌ Expected 400 for {description}, got {invalid_response.status_code}")
                 return False
         
-        print("  ✅ Missing required fields properly rejected")
+        print("  ✅ Missing required fields and invalid data types properly rejected")
         
         # Step 6: Test creating snippet with different languages and difficulties
         print("  📝 Step 6: Testing different languages and difficulties...")
