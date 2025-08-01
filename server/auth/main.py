@@ -15,7 +15,7 @@ sys.path.append('../schemas')
 from auth_utils import AuthUtils
 from database import db
 from response_utils import create_response, create_error_response
-from async_handler import async_endpoint, run_async_handler
+from async_handler import run_async_handler
 from users import UserSchema
 from tokens import RefreshTokenSchema
 
