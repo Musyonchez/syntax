@@ -350,7 +350,7 @@ async def _handle_get_official_snippets(language: str, difficulty: str, tag: str
     """Async handler for getting official snippets"""
     try:
         # Build query
-        query = {'isActive': True}
+        query = {'isActive': True, 'isPublished': True}
         
         if language:
             query['language'] = language.lower()
