@@ -270,7 +270,36 @@ class ApiClient {
       throw new Error(data.message)
     }
 
-    return data.data.token
+    const newToken = data.data.token
+    
+    // Update NextAuth session with new token
+    await this.updateNextAuthSession(newToken)
+    
+    return newToken
+  }
+
+  private async updateNextAuthSession(newToken: string): Promise<void> {
+    try {
+      // Update the NextAuth session with the new backend token
+      const response = await fetch('/api/auth/update-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          backendToken: newToken,
+        }),
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Session update failed: ${response.status}`)
+      }
+      
+      console.log('Successfully updated NextAuth session with new token')
+    } catch (error) {
+      console.warn('Failed to update NextAuth session with new token:', error)
+      // Don't throw - the token refresh itself succeeded
+    }
   }
 
   private async handleSessionExpired(): Promise<void> {

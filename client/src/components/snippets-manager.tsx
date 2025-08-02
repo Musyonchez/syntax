@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { apiClient, type PersonalSnippet, type OfficialSnippet, type SnippetFilters } from '@/lib/api-client'
 import { SnippetCard } from './snippet-card'
 import { CreateSnippetModal } from './create-snippet-modal'
-import { SearchAndFilters } from './search-and-filters'
 
 interface SnippetsManagerProps {
   accessToken: string
