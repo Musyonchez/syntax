@@ -40,6 +40,7 @@ const DIFFICULTY_COLORS: Record<string, string> = {
 
 export function ViewSnippetModal({ snippet, type, onClose }: ViewSnippetModalProps) {
   const [copied, setCopied] = useState(false)
+  const [solutionCopied, setSolutionCopied] = useState(false)
 
   const copyToClipboard = async () => {
     try {
@@ -48,6 +49,17 @@ export function ViewSnippetModal({ snippet, type, onClose }: ViewSnippetModalPro
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
       console.error('Failed to copy code:', err)
+    }
+  }
+
+  const copySolutionToClipboard = async () => {
+    if (!isOfficial || !officialSnippet?.solution) return
+    try {
+      await navigator.clipboard.writeText(officialSnippet.solution)
+      setSolutionCopied(true)
+      setTimeout(() => setSolutionCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy solution:', err)
     }
   }
 
@@ -187,13 +199,24 @@ export function ViewSnippetModal({ snippet, type, onClose }: ViewSnippetModalPro
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-medium text-foreground">Solution</h3>
               <button
-                onClick={() => navigator.clipboard.writeText(officialSnippet.solution)}
+                onClick={copySolutionToClipboard}
                 className="flex items-center space-x-2 px-3 py-1 text-sm bg-foreground/10 hover:bg-foreground/20 text-foreground rounded-md transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                <span>Copy Solution</span>
+                {solutionCopied ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span>Copy Solution</span>
+                  </>
+                )}
               </button>
             </div>
             <div className="bg-green-50 rounded-lg p-4 border border-green-200">

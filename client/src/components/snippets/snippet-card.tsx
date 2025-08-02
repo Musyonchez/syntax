@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { apiClient, type PersonalSnippet, type OfficialSnippet } from '@/lib/api-client'
 import { EditSnippetModal } from '../modals/edit-snippet-modal'
 import { ViewSnippetModal } from '../modals/view-snippet-modal'
+import { ConfirmModal } from '../modals/confirm-modal'
 
 interface SnippetCardProps {
   snippet: PersonalSnippet | OfficialSnippet
@@ -46,25 +47,30 @@ const DIFFICULTY_COLORS: Record<string, string> = {
 export function SnippetCard({ snippet, type, accessToken, refreshToken, onUpdated, onDeleted }: SnippetCardProps) {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
   const handleDelete = async () => {
     if (!onDeleted || type !== 'personal') return
-    
-    if (!confirm('Are you sure you want to delete this snippet? This action cannot be undone.')) {
-      return
-    }
+    setShowDeleteConfirm(true)
+  }
 
+  const confirmDelete = async () => {
+    setShowDeleteConfirm(false)
+    setIsDeleting(true)
     try {
-      setIsDeleting(true)
       await apiClient.deletePersonalSnippet(snippet._id, accessToken, refreshToken)
-      onDeleted(snippet._id)
+      onDeleted?.(snippet._id)
     } catch (error) {
       console.error('Failed to delete snippet:', error)
       alert('Failed to delete snippet. Please try again.')
     } finally {
       setIsDeleting(false)
     }
+  }
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false)
   }
 
   const isOfficial = type === 'official'
@@ -140,9 +146,9 @@ export function SnippetCard({ snippet, type, accessToken, refreshToken, onUpdate
           )}
         </div>
 
-        {/* Tags - Always render container to maintain uniform spacing */}
-        <div className="flex flex-wrap gap-1 min-h-[24px]">
-          {snippet.tags && snippet.tags.length > 0 ? (
+        {/* Tags - Use min-height for consistent spacing */}
+        <div className="flex flex-wrap gap-1 min-h-[32px] items-start">
+          {snippet.tags && snippet.tags.length > 0 && (
             <>
               {snippet.tags.slice(0, 3).map((tag, index) => (
                 <span
@@ -158,21 +164,17 @@ export function SnippetCard({ snippet, type, accessToken, refreshToken, onUpdate
                 </span>
               )}
             </>
-          ) : (
-            // Empty placeholder when no tags to maintain uniform spacing
-            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs text-transparent select-none">
-              #placeholder
-            </span>
           )}
         </div>
 
         {/* Code Preview - flex-1 to take remaining space */}
         <div className="bg-muted/50 rounded-lg p-3 flex-1">
-          <pre className="text-xs text-foreground font-mono overflow-hidden">
-            <code className="line-clamp-4">
-              {snippet.code}
-            </code>
-          </pre>
+          <div
+            className="text-xs text-foreground font-mono overflow-hidden line-clamp-4 whitespace-pre"
+            style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 4 }}
+          >
+            {snippet.code}
+          </div>
         </div>
       </div>
 
@@ -215,6 +217,19 @@ export function SnippetCard({ snippet, type, accessToken, refreshToken, onUpdate
           snippet={snippet}
           type={type}
           onClose={() => setShowViewModal(false)}
+        />
+      )}
+
+      {showDeleteConfirm && (
+        <ConfirmModal
+          title="Delete Snippet"
+          description="Are you sure you want to delete this snippet? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+          loading={isDeleting}
+          isDestructive={true}
         />
       )}
     </div>

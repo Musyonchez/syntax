@@ -42,12 +42,18 @@ export async function POST(request: NextRequest) {
     // Create response with updated session cookie
     const response = NextResponse.json({ success: true })
     
-    // Set the updated session token cookie
-    response.cookies.set('next-auth.session-token', encodedToken, {
+    // Use NextAuth's cookie name configuration for better compatibility
+    const cookieName = process.env.NEXTAUTH_URL?.startsWith('https://') 
+      ? '__Secure-next-auth.session-token' 
+      : 'next-auth.session-token'
+    
+    // Set the updated session token cookie with NextAuth compatible settings
+    response.cookies.set(cookieName, encodedToken, {
       httpOnly: true,
       sameSite: 'lax',
       path: '/',
       secure: process.env.NODE_ENV === 'production',
+      maxAge: 30 * 24 * 60 * 60, // 30 days (match NextAuth default)
     })
 
     return response
