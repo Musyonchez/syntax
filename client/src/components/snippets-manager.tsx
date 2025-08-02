@@ -73,6 +73,26 @@ export function SnippetsManager({ accessToken, refreshToken }: SnippetsManagerPr
 
   return (
     <div className="space-y-6">
+      {/* Page Header */}
+      <div className="relative">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+            Code Snippets
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            Manage your personal code snippets and browse curated content
+          </p>
+        </div>
+        {activeTab === 'personal' && (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="absolute top-0 right-0 bg-foreground text-background px-4 py-2 rounded-lg font-medium hover:bg-foreground/90 transition-colors"
+          >
+            + Create Snippet
+          </button>
+        )}
+      </div>
+
       {/* Tab Navigation - Centered with Filters */}
       <div className="flex flex-col items-center space-y-4">
         <div className="flex items-center space-x-4">
@@ -120,15 +140,6 @@ export function SnippetsManager({ accessToken, refreshToken }: SnippetsManagerPr
             )}
           </button>
         </div>
-
-        {activeTab === 'personal' && (
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-foreground text-background px-4 py-2 rounded-lg font-medium hover:bg-foreground/90 transition-colors"
-          >
-            + Create Snippet
-          </button>
-        )}
       </div>
 
       {/* Filter Controls */}
