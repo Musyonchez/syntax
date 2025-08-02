@@ -7,6 +7,15 @@
 
 ---
 
+## 🐛 **Current UI Issues**
+- [ ] **Duplicate usage count display** - Remove redundant "0" shown between tags and creation date in snippet cards
+  - Issue: Usage count appears in both card view and modal statistics section
+  - Location: Snippet card footer between tags (`array-methods`) and `Created 8/1/2025`
+  - Expected: Only show in modal statistics, remove from card view
+  - Status: Needs investigation - usage count not found in snippet-card.tsx code
+
+---
+
 ## 🚀 **Next Phase: Admin Features & Core Features**
 
 **Current Status:** Authentication system production-ready with 14/14 tests passing. Phase 2 complete with auth + snippets services production-ready.
