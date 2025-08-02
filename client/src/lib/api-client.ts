@@ -41,6 +41,40 @@ interface SnippetsResponse {
 }
 
 class ApiClient {
+  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>()
+  
+  private getCacheKey(endpoint: string, token: string): string {
+    return `${endpoint}_${token.substring(0, 20)}`
+  }
+  
+  private getFromCache<T>(key: string): T | null {
+    const cached = this.cache.get(key)
+    if (!cached) return null
+    
+    if (Date.now() - cached.timestamp > cached.ttl) {
+      this.cache.delete(key)
+      return null
+    }
+    
+    return cached.data
+  }
+  
+  private setCache(key: string, data: any, ttlMs: number = 60000): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl: ttlMs
+    })
+  }
+  
+  clearSnippetsCache(): void {
+    // Clear all snippet-related cache when data changes
+    for (const key of this.cache.keys()) {
+      if (key.includes('personal_snippets')) {
+        this.cache.delete(key)
+      }
+    }
+  }
   private async request<T>(
     url: string, 
     options: RequestInit = {}
@@ -67,6 +101,13 @@ class ApiClient {
   }
 
   async getPersonalSnippets(token: string, refreshToken?: string): Promise<SnippetsResponse> {
+    const cacheKey = this.getCacheKey('personal_snippets', token)
+    
+    // Check cache first
+    const cached = this.getFromCache<SnippetsResponse>(cacheKey)
+    if (cached) {
+      return cached
+    }
     
     try {
       const response = await this.request<SnippetsResponse>(
@@ -82,6 +123,8 @@ class ApiClient {
         throw new Error(response.message)
       }
 
+      // Cache the result for 1 minute
+      this.setCache(cacheKey, response.data, 60000)
       return response.data
     } catch (error) {
       // If 401 and we have refresh token, try to refresh and retry
@@ -103,6 +146,8 @@ class ApiClient {
             throw new Error(response.message)
           }
 
+          // Cache the refreshed result
+          this.setCache(cacheKey, response.data, 60000)
           return response.data
         } catch (refreshError) {
           // Both tokens expired - sign out and redirect
