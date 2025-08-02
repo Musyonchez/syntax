@@ -23,7 +23,8 @@ export function CreateSnippetModal({ accessToken, refreshToken, onCreated, onClo
     code: '',
     language: 'javascript',
     tags: [],
-    difficulty: 'easy'
+    difficulty: 'easy',
+    isPrivate: true
   })
   const [tagInput, setTagInput] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
