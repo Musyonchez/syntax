@@ -94,8 +94,8 @@ export function SnippetCard({ snippet, type, accessToken, refreshToken, onUpdate
                   {snippet.description}
                 </p>
               ) : (
-                // Empty placeholder to maintain uniform spacing (exactly 2 lines)
-                <p className="text-sm text-transparent select-none line-clamp-2 leading-5">
+                // Empty placeholder with aria-hidden to maintain spacing without screen reader interference
+                <p className="text-sm text-transparent select-none line-clamp-2 leading-5" aria-hidden="true">
                   Placeholder description text that spans exactly two lines to maintain consistent spacing and layout
                 </p>
               )}
@@ -170,7 +170,7 @@ export function SnippetCard({ snippet, type, accessToken, refreshToken, onUpdate
         {/* Code Preview - flex-1 to take remaining space */}
         <div className="bg-muted/50 rounded-lg p-3 flex-1">
           <div
-            className="text-xs text-foreground font-mono overflow-hidden line-clamp-4 whitespace-pre"
+            className="text-xs text-foreground font-mono overflow-hidden whitespace-pre"
             style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 4 }}
           >
             {snippet.code}
