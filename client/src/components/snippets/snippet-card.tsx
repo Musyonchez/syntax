@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { apiClient, type PersonalSnippet, type OfficialSnippet } from '@/lib/api-client'
-import { EditSnippetModal } from './edit-snippet-modal'
-import { ViewSnippetModal } from './view-snippet-modal'
+import { EditSnippetModal } from '../modals/edit-snippet-modal'
+import { ViewSnippetModal } from '../modals/view-snippet-modal'
 
 interface SnippetCardProps {
   snippet: PersonalSnippet | OfficialSnippet

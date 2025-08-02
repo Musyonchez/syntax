@@ -1,8 +1,8 @@
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
-import { LogoutAllButton } from "@/components/logout-all-button"
-import { DashboardStats } from "@/components/dashboard-stats"
-import { RecentSnippets } from "@/components/recent-snippets"
+import { LogoutAllButton } from "@/components/auth/logout-all-button"
+import { DashboardStats } from "@/components/dashboard/dashboard-stats"
+import { RecentSnippets } from "@/components/snippets/recent-snippets"
 import Image from "next/image"
 import Link from "next/link"
 

@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
-import { SnippetsManager } from "@/components/snippets-manager"
+import { SnippetsManager } from "@/components/snippets/snippets-manager"
 
 export default async function Snippets() {
   const session = await auth()
