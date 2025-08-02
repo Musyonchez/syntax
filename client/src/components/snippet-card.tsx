@@ -81,11 +81,19 @@ export function SnippetCard({ snippet, type, accessToken, refreshToken, onUpdate
             <h3 className="text-lg font-semibold text-foreground truncate">
               {snippet.title}
             </h3>
-            {snippet.description && (
-              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                {snippet.description}
-              </p>
-            )}
+            {/* Always render description area to maintain uniform spacing */}
+            <div className="mt-1 h-[2.5rem] flex items-start">
+              {snippet.description ? (
+                <p className="text-sm text-muted-foreground line-clamp-2 leading-5">
+                  {snippet.description}
+                </p>
+              ) : (
+                // Empty placeholder to maintain uniform spacing (exactly 2 lines)
+                <p className="text-sm text-transparent select-none line-clamp-2 leading-5">
+                  Placeholder description text that spans exactly two lines to maintain consistent spacing and layout
+                </p>
+              )}
+            </div>
           </div>
           
           {type === 'personal' && (
@@ -132,24 +140,31 @@ export function SnippetCard({ snippet, type, accessToken, refreshToken, onUpdate
           )}
         </div>
 
-        {/* Tags */}
-        {snippet.tags && snippet.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {snippet.tags.slice(0, 3).map((tag, index) => (
-              <span
-                key={index}
-                className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-foreground/10 text-foreground"
-              >
-                #{tag}
-              </span>
-            ))}
-            {snippet.tags.length > 3 && (
-              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-foreground/10 text-muted-foreground">
-                +{snippet.tags.length - 3} more
-              </span>
-            )}
-          </div>
-        )}
+        {/* Tags - Always render container to maintain uniform spacing */}
+        <div className="flex flex-wrap gap-1 min-h-[24px]">
+          {snippet.tags && snippet.tags.length > 0 ? (
+            <>
+              {snippet.tags.slice(0, 3).map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-foreground/10 text-foreground"
+                >
+                  #{tag}
+                </span>
+              ))}
+              {snippet.tags.length > 3 && (
+                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-foreground/10 text-muted-foreground">
+                  +{snippet.tags.length - 3} more
+                </span>
+              )}
+            </>
+          ) : (
+            // Empty placeholder when no tags to maintain uniform spacing
+            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs text-transparent select-none">
+              #placeholder
+            </span>
+          )}
+        </div>
 
         {/* Code Preview - flex-1 to take remaining space */}
         <div className="bg-muted/50 rounded-lg p-3 flex-1">
