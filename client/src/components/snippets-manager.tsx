@@ -72,8 +72,8 @@ export function SnippetsManager({ accessToken, refreshToken }: SnippetsManagerPr
 
   return (
     <div className="space-y-6">
-      {/* Tab Navigation */}
-      <div className="flex items-center justify-between">
+      {/* Tab Navigation - Centered */}
+      <div className="flex flex-col items-center space-y-4">
         <div className="flex space-x-1 bg-muted p-1 rounded-lg">
           <button
             onClick={() => setActiveTab('personal')}

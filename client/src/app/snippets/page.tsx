@@ -12,15 +12,13 @@ export default async function Snippets() {
   return (
     <div className="min-h-[calc(100vh-8rem)] p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-          <div className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-              Code Snippets
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Manage your personal code snippets and browse curated content
-            </p>
-          </div>
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+            Code Snippets
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            Manage your personal code snippets and browse curated content
+          </p>
         </div>
 
         <SnippetsManager 
