@@ -24,8 +24,7 @@ export function EditSnippetModal({ snippet, accessToken, refreshToken, onUpdated
     code: snippet.code,
     language: snippet.language,
     tags: snippet.tags || [],
-    difficulty: snippet.difficulty as 'easy' | 'medium' | 'hard',
-    isPrivate: snippet.isPrivate
+    difficulty: snippet.difficulty as 'easy' | 'medium' | 'hard'
   })
   const [tagInput, setTagInput] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -228,19 +227,6 @@ export function EditSnippetModal({ snippet, accessToken, refreshToken, onUpdated
             />
           </div>
 
-          {/* Privacy */}
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="isPrivate"
-              checked={formData.isPrivate || false}
-              onChange={(e) => setFormData(prev => ({ ...prev, isPrivate: e.target.checked }))}
-              className="rounded border-border text-foreground focus:ring-foreground/20"
-            />
-            <label htmlFor="isPrivate" className="text-sm text-foreground">
-              Keep this snippet private
-            </label>
-          </div>
 
           {/* Submit Buttons */}
           <div className="flex justify-end space-x-3 pt-4 border-t border-border">

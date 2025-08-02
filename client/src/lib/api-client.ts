@@ -5,8 +5,8 @@
 
 const API_ENDPOINTS = {
   auth: process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:8081',
-  snippets: process.env.NEXT_PUBLIC_SNIPPETS_API_URL || 'http://localhost:8082',
-  practice: process.env.NEXT_PUBLIC_PRACTICE_API_URL || 'http://localhost:8083'
+  snippets: process.env.NEXT_PUBLIC_SNIPPETS_API_URL || 'http://localhost:8083',
+  practice: process.env.NEXT_PUBLIC_PRACTICE_API_URL || 'http://localhost:8082'
 }
 
 interface ApiResponse<T> {

@@ -24,7 +24,7 @@ syntax/
 ├── server/     # Python serverless functions
 │   ├── auth/       # Google OAuth + JWT (port 8081) ✅ COMPLETE
 │   ├── practice/   # Practice sessions (port 8082) 🚧 PLANNED
-│   ├── snippets/   # Code management (port 8083) 🚧 PLANNED
+│   ├── snippets/   # Code management (port 8083) ✅ COMPLETE
 │   ├── shared/     # Common utilities ✅ COMPLETE
 │   ├── schemas/    # Data validation ✅ COMPLETE
 │   └── tests/      # Modular test suite ✅ COMPLETE
@@ -250,8 +250,8 @@ npm run lint         # ESLint check
 ```bash
 # Run each service in separate terminals
 cd server/auth && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8081 --debug
-cd server/snippets && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8082 --debug
-cd server/practice && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8083 --debug
+cd server/snippets && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8083 --debug
+cd server/practice && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8082 --debug
 cd server/leaderboard && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8084 --debug
 cd server/forum && source venv/bin/activate && python -m flask --app main run --host=0.0.0.0 --port=8085 --debug
 

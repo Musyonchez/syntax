@@ -23,8 +23,7 @@ export function CreateSnippetModal({ accessToken, refreshToken, onCreated, onClo
     code: '',
     language: 'javascript',
     tags: [],
-    difficulty: 'medium',
-    isPrivate: true
+    difficulty: 'easy'
   })
   const [tagInput, setTagInput] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -227,19 +226,6 @@ export function CreateSnippetModal({ accessToken, refreshToken, onCreated, onClo
             />
           </div>
 
-          {/* Privacy */}
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="isPrivate"
-              checked={formData.isPrivate}
-              onChange={(e) => setFormData(prev => ({ ...prev, isPrivate: e.target.checked }))}
-              className="rounded border-border text-foreground focus:ring-foreground/20"
-            />
-            <label htmlFor="isPrivate" className="text-sm text-foreground">
-              Keep this snippet private
-            </label>
-          </div>
 
           {/* Submit Buttons */}
           <div className="flex justify-end space-x-3 pt-4 border-t border-border">
