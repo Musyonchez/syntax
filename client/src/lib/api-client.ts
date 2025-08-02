@@ -122,6 +122,7 @@ interface CacheEntry<T> {
 
 class ApiClient {
   private cache = new Map<string, CacheEntry<unknown>>()
+  private refreshPromise: Promise<string> | null = null
   
   private async getCacheKey(endpoint: string, token: string): Promise<string> {
     // Use Web Crypto API to create a secure hash of the token
@@ -253,6 +254,22 @@ class ApiClient {
   }
 
   private async refreshToken(refreshToken: string): Promise<string> {
+    // Prevent concurrent refresh attempts
+    if (this.refreshPromise) {
+      return this.refreshPromise
+    }
+
+    this.refreshPromise = this.performTokenRefresh(refreshToken)
+    
+    try {
+      const newToken = await this.refreshPromise
+      return newToken
+    } finally {
+      this.refreshPromise = null
+    }
+  }
+
+  private async performTokenRefresh(refreshToken: string): Promise<string> {
     const response = await fetch(`${API_ENDPOINTS.auth}/refresh`, {
       method: 'POST',
       headers: {
@@ -349,6 +366,11 @@ class ApiClient {
         }
       }
     } catch (error) {
+      // Re-throw session expired errors to trigger logout
+      if (error instanceof Error && error.message.includes('Session expired')) {
+        throw error
+      }
+      
       console.error('Failed to fetch user stats:', error)
       return {
         personalSnippets: 0,
