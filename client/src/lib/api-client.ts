@@ -40,8 +40,14 @@ interface SnippetsResponse {
   count: number
 }
 
+interface CacheEntry<T> {
+  data: T
+  timestamp: number
+  ttl: number
+}
+
 class ApiClient {
-  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>()
+  private cache = new Map<string, CacheEntry<unknown>>()
   
   private getCacheKey(endpoint: string, token: string): string {
     return `${endpoint}_${token.substring(0, 20)}`
@@ -56,10 +62,10 @@ class ApiClient {
       return null
     }
     
-    return cached.data
+    return cached.data as T
   }
   
-  private setCache(key: string, data: any, ttlMs: number = 60000): void {
+  private setCache<T>(key: string, data: T, ttlMs: number = 60000): void {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
@@ -128,7 +134,7 @@ class ApiClient {
       return response.data
     } catch (error) {
       // If 401 and we have refresh token, try to refresh and retry
-      if (error.message?.includes('401') && refreshToken) {
+      if (error instanceof Error && error.message?.includes('401') && refreshToken) {
         try {
           const newToken = await this.refreshToken(refreshToken)
           
@@ -149,7 +155,7 @@ class ApiClient {
           // Cache the refreshed result
           this.setCache(cacheKey, response.data, 60000)
           return response.data
-        } catch (refreshError) {
+        } catch {
           // Both tokens expired - sign out and redirect
           await this.handleSessionExpired()
           throw new Error('Session expired. Please log in again.')
@@ -207,7 +213,7 @@ class ApiClient {
         callbackUrl: '/login',
         redirect: true 
       })
-    } catch (error) {
+    } catch {
       // If all else fails, force redirect to login
       window.location.href = '/login'
     }
