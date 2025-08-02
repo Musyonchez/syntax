@@ -4,7 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useSession } from "next-auth/react"
 import { ThemeToggle } from "./theme-toggle"
-import { UserDropdown } from "./user-dropdown"
+import { UserDropdown } from "../auth/user-dropdown"
 import { MobileMenu } from "./mobile-menu"
 
 export function Navbar() {

@@ -5,8 +5,8 @@
 
 const API_ENDPOINTS = {
   auth: process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:8081',
-  snippets: process.env.NEXT_PUBLIC_SNIPPETS_API_URL || 'http://localhost:8082',
-  practice: process.env.NEXT_PUBLIC_PRACTICE_API_URL || 'http://localhost:8083'
+  snippets: process.env.NEXT_PUBLIC_SNIPPETS_API_URL || 'http://localhost:8083',
+  practice: process.env.NEXT_PUBLIC_PRACTICE_API_URL || 'http://localhost:8082'
 }
 
 interface ApiResponse<T> {
@@ -25,12 +25,17 @@ interface UserStats {
 
 interface PersonalSnippet {
   _id: string
+  userId: string
   title: string
-  description: string
-  language: string
-  difficulty: string
-  tags: string[]
+  description?: string
   code: string
+  language: string
+  tags?: string[]
+  difficulty: 'easy' | 'medium' | 'hard'
+  isPrivate?: boolean
+  usageCount?: number
+  lastUsed?: string
+  isActive?: boolean
   createdAt: string
   updatedAt: string
 }
@@ -38,6 +43,75 @@ interface PersonalSnippet {
 interface SnippetsResponse {
   snippets: PersonalSnippet[]
   count: number
+}
+
+interface OfficialSnippetsResponse {
+  snippets: OfficialSnippet[]
+  count: number
+}
+
+interface OfficialSnippet {
+  _id: string
+  title: string
+  description: string
+  code: string
+  language: string
+  category: string
+  tags: string[]
+  difficulty: 'easy' | 'medium' | 'hard'
+  learningObjectives: string[]
+  hints: string
+  solution: string
+  createdBy: string
+  approvedBy: string
+  estimatedTime: number
+  isPublished: boolean
+  isActive: boolean
+  practiceCount: number
+  averageScore: number
+  createdAt: string
+  updatedAt: string
+}
+
+interface CreatePersonalSnippetData {
+  title: string
+  description?: string
+  code: string
+  language: string
+  tags?: string[]
+  difficulty?: 'easy' | 'medium' | 'hard'
+  isPrivate?: boolean
+}
+
+interface UpdatePersonalSnippetData {
+  title?: string
+  description?: string
+  code?: string
+  language?: string
+  tags?: string[]
+  difficulty?: 'easy' | 'medium' | 'hard'
+  isPrivate?: boolean
+}
+
+interface CreateOfficialSnippetData {
+  title: string
+  description?: string
+  code: string
+  language: string
+  category: string
+  tags?: string[]
+  difficulty?: 'easy' | 'medium' | 'hard'
+  learningObjectives?: string[]
+  hints?: string
+  solution: string
+  estimatedTime?: number
+}
+
+interface SnippetFilters {
+  language?: string
+  difficulty?: string
+  tag?: string
+  search?: string
 }
 
 interface CacheEntry<T> {
@@ -196,7 +270,36 @@ class ApiClient {
       throw new Error(data.message)
     }
 
-    return data.data.token
+    const newToken = data.data.token
+    
+    // Update NextAuth session with new token
+    await this.updateNextAuthSession(newToken)
+    
+    return newToken
+  }
+
+  private async updateNextAuthSession(newToken: string): Promise<void> {
+    try {
+      // Update the NextAuth session with the new backend token
+      const response = await fetch('/api/auth/update-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          backendToken: newToken,
+        }),
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Session update failed: ${response.status}`)
+      }
+      
+      console.log('Successfully updated NextAuth session with new token')
+    } catch (error) {
+      console.warn('Failed to update NextAuth session with new token:', error)
+      // Don't throw - the token refresh itself succeeded
+    }
   }
 
   private async handleSessionExpired(): Promise<void> {
@@ -256,7 +359,196 @@ class ApiClient {
       }
     }
   }
+
+  async createPersonalSnippet(data: CreatePersonalSnippetData, token: string, refreshToken?: string): Promise<PersonalSnippet> {
+    try {
+      const response = await this.request<PersonalSnippet>(
+        `${API_ENDPOINTS.snippets}/personal`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(data),
+        }
+      )
+
+      if (!response.success) {
+        throw new Error(response.message)
+      }
+
+      // Clear snippets cache after creation
+      await this.clearSnippetsCache(token)
+      return response.data
+    } catch (error) {
+      if (error instanceof Error && error.message?.includes('401') && refreshToken) {
+        try {
+          const newToken = await this.refreshToken(refreshToken)
+          const response = await this.request<PersonalSnippet>(
+            `${API_ENDPOINTS.snippets}/personal`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${newToken}`,
+              },
+              body: JSON.stringify(data),
+            }
+          )
+
+          if (!response.success) {
+            throw new Error(response.message)
+          }
+
+          await this.clearSnippetsCache(newToken)
+          return response.data
+        } catch {
+          await this.handleSessionExpired()
+          throw new Error('Session expired. Please log in again.')
+        }
+      }
+      throw error
+    }
+  }
+
+  async updatePersonalSnippet(id: string, data: UpdatePersonalSnippetData, token: string, refreshToken?: string): Promise<PersonalSnippet> {
+    try {
+      const response = await this.request<PersonalSnippet>(
+        `${API_ENDPOINTS.snippets}/personal/${id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(data),
+        }
+      )
+
+      if (!response.success) {
+        throw new Error(response.message)
+      }
+
+      await this.clearSnippetsCache(token)
+      return response.data
+    } catch (error) {
+      if (error instanceof Error && error.message?.includes('401') && refreshToken) {
+        try {
+          const newToken = await this.refreshToken(refreshToken)
+          const response = await this.request<PersonalSnippet>(
+            `${API_ENDPOINTS.snippets}/personal/${id}`,
+            {
+              method: 'PUT',
+              headers: {
+                'Authorization': `Bearer ${newToken}`,
+              },
+              body: JSON.stringify(data),
+            }
+          )
+
+          if (!response.success) {
+            throw new Error(response.message)
+          }
+
+          await this.clearSnippetsCache(newToken)
+          return response.data
+        } catch {
+          await this.handleSessionExpired()
+          throw new Error('Session expired. Please log in again.')
+        }
+      }
+      throw error
+    }
+  }
+
+  async deletePersonalSnippet(id: string, token: string, refreshToken?: string): Promise<{ deleted: boolean }> {
+    try {
+      const response = await this.request<{ deleted: boolean }>(
+        `${API_ENDPOINTS.snippets}/personal/${id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      )
+
+      if (!response.success) {
+        throw new Error(response.message)
+      }
+
+      await this.clearSnippetsCache(token)
+      return response.data
+    } catch (error) {
+      if (error instanceof Error && error.message?.includes('401') && refreshToken) {
+        try {
+          const newToken = await this.refreshToken(refreshToken)
+          const response = await this.request<{ deleted: boolean }>(
+            `${API_ENDPOINTS.snippets}/personal/${id}`,
+            {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${newToken}`,
+              },
+            }
+          )
+
+          if (!response.success) {
+            throw new Error(response.message)
+          }
+
+          await this.clearSnippetsCache(newToken)
+          return response.data
+        } catch {
+          await this.handleSessionExpired()
+          throw new Error('Session expired. Please log in again.')
+        }
+      }
+      throw error
+    }
+  }
+
+  async getOfficialSnippets(filters?: SnippetFilters): Promise<OfficialSnippetsResponse> {
+    const cacheKey = `official_snippets_${JSON.stringify(filters || {})}`
+    
+    const cached = this.getFromCache<OfficialSnippetsResponse>(cacheKey)
+    if (cached) {
+      return cached
+    }
+    
+    const queryParams = new URLSearchParams()
+    if (filters?.language) queryParams.set('language', filters.language)
+    if (filters?.difficulty) queryParams.set('difficulty', filters.difficulty)
+    if (filters?.tag) queryParams.set('tag', filters.tag)
+    if (filters?.search) queryParams.set('search', filters.search)
+    
+    const url = `${API_ENDPOINTS.snippets}/official${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    
+    try {
+      const response = await this.request<OfficialSnippetsResponse>(url)
+
+      if (!response.success) {
+        throw new Error(response.message)
+      }
+
+      this.setCache(cacheKey, response.data, 300000) // Cache for 5 minutes
+      return response.data
+    } catch (error) {
+      console.error('Failed to fetch official snippets:', error)
+      throw error
+    }
+  }
 }
 
 export const apiClient = new ApiClient()
-export type { UserStats, PersonalSnippet, SnippetsResponse }
+export type { 
+  UserStats, 
+  PersonalSnippet, 
+  SnippetsResponse,
+  OfficialSnippet,
+  OfficialSnippetsResponse,
+  CreatePersonalSnippetData,
+  UpdatePersonalSnippetData,
+  CreateOfficialSnippetData,
+  SnippetFilters
+}
