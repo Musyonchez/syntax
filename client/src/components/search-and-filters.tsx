@@ -7,6 +7,7 @@ interface SearchAndFiltersProps {
   filters: SnippetFilters
   onFiltersChange: (filters: SnippetFilters) => void
   showCategory?: boolean
+  showOnlyToggle?: boolean
 }
 
 const LANGUAGES = [
@@ -22,7 +23,7 @@ const CATEGORIES = [
   'api', 'testing', 'deployment', 'security', 'utilities'
 ]
 
-export function SearchAndFilters({ filters, onFiltersChange, showCategory = false }: SearchAndFiltersProps) {
+export function SearchAndFilters({ filters, onFiltersChange, showCategory = false, showOnlyToggle = false }: SearchAndFiltersProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const updateFilter = (key: keyof SnippetFilters, value: string) => {
@@ -41,34 +42,33 @@ export function SearchAndFilters({ filters, onFiltersChange, showCategory = fals
 
   const hasActiveFilters = Object.keys(filters).length > 0
 
+  // If only showing toggle, return just the button
+  if (showOnlyToggle) {
+    return (
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <svg 
+          className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+        <span>Filters</span>
+        {hasActiveFilters && (
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-foreground text-background">
+            {Object.keys(filters).length}
+          </span>
+        )}
+      </button>
+    )
+  }
+
   return (
     <div className="space-y-4">
-      {/* Search Bar */}
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg className="h-5 w-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-        <input
-          type="text"
-          placeholder="Search snippets by title or description..."
-          value={filters.search || ''}
-          onChange={(e) => updateFilter('search', e.target.value)}
-          className="block w-full pl-10 pr-12 py-3 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground/20"
-        />
-        {filters.search && (
-          <button
-            onClick={() => updateFilter('search', '')}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
-          >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
-      </div>
-
       {/* Filter Toggle */}
       <div className="flex items-center justify-between">
         <button
@@ -180,6 +180,32 @@ export function SearchAndFilters({ filters, onFiltersChange, showCategory = fals
           )}
         </div>
       )}
+
+      {/* Search Bar */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg className="h-5 w-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          placeholder="Search snippets by title or description..."
+          value={filters.search || ''}
+          onChange={(e) => updateFilter('search', e.target.value)}
+          className="block w-full pl-10 pr-12 py-3 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground/20"
+        />
+        {filters.search && (
+          <button
+            onClick={() => updateFilter('search', '')}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
     </div>
   )
 }
