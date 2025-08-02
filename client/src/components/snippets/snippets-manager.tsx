@@ -20,8 +20,9 @@ export function SnippetsManager({ accessToken, refreshToken }: SnippetsManagerPr
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [filters, setFilters] = useState<SnippetFilters>({})
-  const [filtersExpanded, setFiltersExpanded] = useState(false)
+  // Filters only apply to the "official" tab
+  const [officialFilters, setOfficialFilters] = useState<SnippetFilters>({})
+  const [officialFiltersExpanded, setOfficialFiltersExpanded] = useState(false)
 
   const loadSnippets = useCallback(async () => {
     try {
@@ -32,7 +33,7 @@ export function SnippetsManager({ accessToken, refreshToken }: SnippetsManagerPr
         const response = await apiClient.getPersonalSnippets(accessToken, refreshToken)
         setPersonalSnippets(response.snippets)
       } else {
-        const response = await apiClient.getOfficialSnippets(filters)
+        const response = await apiClient.getOfficialSnippets(officialFilters)
         setOfficialSnippets(response.snippets)
       }
     } catch (err) {
@@ -44,16 +45,17 @@ export function SnippetsManager({ accessToken, refreshToken }: SnippetsManagerPr
     } finally {
       setLoading(false)
     }
-  }, [activeTab, filters, accessToken, refreshToken])
+  }, [activeTab, officialFilters, accessToken, refreshToken])
 
   // Load snippets based on active tab
   useEffect(() => {
     loadSnippets()
   }, [loadSnippets])
 
-  const handleSnippetCreated = (snippet: PersonalSnippet) => {
-    setPersonalSnippets(prev => [snippet, ...prev])
-    setShowCreateModal(false)
+  const handleSnippetCreated = (_snippet: PersonalSnippet) => {
+    // Instead of optimistically updating, reload the list to avoid duplicates
+    loadSnippets();
+    setShowCreateModal(false);
   }
 
   const handleSnippetUpdated = (updatedSnippet: PersonalSnippet) => {
@@ -118,31 +120,33 @@ export function SnippetsManager({ accessToken, refreshToken }: SnippetsManagerPr
             </button>
           </div>
 
-          {/* Filters Toggle moved here */}
-          <button
-            onClick={() => setFiltersExpanded(!filtersExpanded)}
-            className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <svg 
-              className={`w-4 h-4 transition-transform ${filtersExpanded ? 'rotate-180' : ''}`} 
-              fill="none" 
+          {/* Filters Toggle - only for official tab */}
+          {activeTab === 'official' && (
+            <button
+              onClick={() => setOfficialFiltersExpanded(!officialFiltersExpanded)}
+              className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <svg 
+                className={`w-4 h-4 transition-transform ${officialFiltersExpanded ? 'rotate-180' : ''}`} 
+                fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
             <span>Filters</span>
-            {Object.keys(filters).length > 0 && (
+            {Object.keys(officialFilters).length > 0 && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-foreground text-background">
-                {Object.keys(filters).length}
+                {Object.keys(officialFilters).length}
               </span>
             )}
           </button>
+          )}
         </div>
       </div>
 
-      {/* Filter Controls */}
-      {filtersExpanded && (
+      {/* Filter Controls - only for official tab */}
+      {activeTab === 'official' && officialFiltersExpanded && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
           {/* Language Filter */}
           <div>
@@ -150,15 +154,15 @@ export function SnippetsManager({ accessToken, refreshToken }: SnippetsManagerPr
               Language
             </label>
             <select
-              value={filters.language || ''}
+              value={officialFilters.language || ''}
               onChange={(e) => {
-                const newFilters = { ...filters }
+                const newFilters = { ...officialFilters }
                 if (e.target.value === '') {
                   delete newFilters.language
                 } else {
                   newFilters.language = e.target.value
                 }
-                setFilters(newFilters)
+                setOfficialFilters(newFilters)
               }}
               className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-foreground/20"
             >
@@ -177,15 +181,15 @@ export function SnippetsManager({ accessToken, refreshToken }: SnippetsManagerPr
               Difficulty
             </label>
             <select
-              value={filters.difficulty || ''}
+              value={officialFilters.difficulty || ''}
               onChange={(e) => {
-                const newFilters = { ...filters }
+                const newFilters = { ...officialFilters }
                 if (e.target.value === '') {
                   delete newFilters.difficulty
                 } else {
                   newFilters.difficulty = e.target.value
                 }
-                setFilters(newFilters)
+                setOfficialFilters(newFilters)
               }}
               className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-foreground/20"
             >
@@ -198,23 +202,22 @@ export function SnippetsManager({ accessToken, refreshToken }: SnippetsManagerPr
             </select>
           </div>
 
-          {/* Category/Tag Filter */}
+          {/* Category Filter */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              {activeTab === 'official' ? 'Category' : 'Tag'}
+              Category
             </label>
-            {activeTab === 'official' ? (
-              <select
-                value={filters.tag || ''}
-                onChange={(e) => {
-                  const newFilters = { ...filters }
-                  if (e.target.value === '') {
-                    delete newFilters.tag
-                  } else {
-                    newFilters.tag = e.target.value
-                  }
-                  setFilters(newFilters)
-                }}
+            <select
+              value={officialFilters.tag || ''}
+              onChange={(e) => {
+                const newFilters = { ...officialFilters }
+                if (e.target.value === '') {
+                  delete newFilters.tag
+                } else {
+                  newFilters.tag = e.target.value
+                }
+                setOfficialFilters(newFilters)
+              }}
                 className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-foreground/20"
               >
                 <option value="">All categories</option>
@@ -224,30 +227,13 @@ export function SnippetsManager({ accessToken, refreshToken }: SnippetsManagerPr
                   </option>
                 ))}
               </select>
-            ) : (
-              <input
-                type="text"
-                placeholder="Enter tag name"
-                value={filters.tag || ''}
-                onChange={(e) => {
-                  const newFilters = { ...filters }
-                  if (e.target.value === '') {
-                    delete newFilters.tag
-                  } else {
-                    newFilters.tag = e.target.value
-                  }
-                  setFilters(newFilters)
-                }}
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20"
-              />
-            )}
           </div>
 
           {/* Clear Filters */}
-          {Object.keys(filters).length > 0 && (
+          {Object.keys(officialFilters).length > 0 && (
             <div className="flex items-end">
               <button
-                onClick={() => setFilters({})}
+                onClick={() => setOfficialFilters({})}
                 className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-md hover:bg-foreground/5"
               >
                 Clear all
@@ -257,35 +243,36 @@ export function SnippetsManager({ accessToken, refreshToken }: SnippetsManagerPr
         </div>
       )}
 
-      {/* Search Bar */}
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg className="h-5 w-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-        <input
-          type="text"
-          placeholder="Search snippets by title or description..."
-          value={filters.search || ''}
-          onChange={(e) => {
-            const newFilters = { ...filters }
-            if (e.target.value === '') {
-              delete newFilters.search
-            } else {
-              newFilters.search = e.target.value
-            }
-            setFilters(newFilters)
-          }}
-          className="block w-full pl-10 pr-12 py-3 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground/20"
-        />
-        {filters.search && (
-          <button
-            onClick={() => {
-              const newFilters = { ...filters }
-              delete newFilters.search
-              setFilters(newFilters)
+      {/* Search Bar - only for official tab */}
+      {activeTab === 'official' && (
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input
+            type="text"
+            placeholder="Search snippets by title or description..."
+            value={officialFilters.search || ''}
+            onChange={(e) => {
+              const newFilters = { ...officialFilters }
+              if (e.target.value === '') {
+                delete newFilters.search
+              } else {
+                newFilters.search = e.target.value
+              }
+              setOfficialFilters(newFilters)
             }}
+            className="block w-full pl-10 pr-12 py-3 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground/20"
+          />
+          {officialFilters.search && (
+            <button
+              onClick={() => {
+                const newFilters = { ...officialFilters }
+                delete newFilters.search
+                setOfficialFilters(newFilters)
+              }}
             className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -294,6 +281,7 @@ export function SnippetsManager({ accessToken, refreshToken }: SnippetsManagerPr
           </button>
         )}
       </div>
+      )}
 
       {/* Loading State */}
       {loading && (

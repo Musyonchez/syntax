@@ -419,6 +419,7 @@ class ApiClient {
         {
           method: 'PUT',
           headers: {
+            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify(data),
@@ -440,6 +441,7 @@ class ApiClient {
             {
               method: 'PUT',
               headers: {
+                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${newToken}`,
               },
               body: JSON.stringify(data),
