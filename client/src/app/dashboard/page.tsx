@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { LogoutAllButton } from "@/components/logout-all-button"
+import { DashboardStats } from "@/components/dashboard-stats"
+import { RecentSnippets } from "@/components/recent-snippets"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -10,6 +12,7 @@ export default async function Dashboard() {
   if (!session?.user) {
     redirect("/login")
   }
+
 
   return (
     <div className="min-h-[calc(100vh-8rem)] p-4 md:p-8">
@@ -81,40 +84,10 @@ export default async function Dashboard() {
             </div>
 
             {/* Stats Card */}
-            <div className="bg-background border border-border rounded-xl p-6 space-y-4">
-              <h3 className="font-semibold text-foreground">Your Progress</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
-                      🎯
-                    </div>
-                    <span className="text-sm font-medium">Practice Sessions</span>
-                  </div>
-                  <span className="text-lg font-bold text-foreground">12</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
-                      📝
-                    </div>
-                    <span className="text-sm font-medium">Snippets Created</span>
-                  </div>
-                  <span className="text-lg font-bold text-foreground">8</span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
-                      🏆
-                    </div>
-                    <span className="text-sm font-medium">Ranking</span>
-                  </div>
-                  <span className="text-lg font-bold text-foreground">#24</span>
-                </div>
-              </div>
-            </div>
+            <DashboardStats 
+              accessToken={session.user.backendToken} 
+              refreshToken={session.user.refreshToken}
+            />
 
             {/* Security Card */}
             <div className="bg-background border border-border rounded-xl p-6 space-y-4">
@@ -208,56 +181,12 @@ export default async function Dashboard() {
               </Link>
             </div>
 
-            {/* Recent Activity */}
-            <div className="bg-background border border-border rounded-xl p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-foreground">Recent Activity</h3>
-                <button className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  View all
-                </button>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3 p-3 bg-foreground/5 rounded-lg">
-                  <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
-                    🎯
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Completed JavaScript Basics practice session</p>
-                    <p className="text-xs text-muted-foreground">2 hours ago</p>
-                  </div>
-                  <span className="text-xs bg-foreground/10 text-foreground px-2 py-1 rounded-full">
-                    +15 XP
-                  </span>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-foreground/5 rounded-lg">
-                  <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
-                    📝
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Created new React Hook snippet</p>
-                    <p className="text-xs text-muted-foreground">1 day ago</p>
-                  </div>
-                  <span className="text-xs bg-foreground/10 text-foreground px-2 py-1 rounded-full">
-                    +5 XP
-                  </span>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-foreground/5 rounded-lg">
-                  <div className="w-8 h-8 bg-foreground/10 rounded-lg flex items-center justify-center">
-                    🏆
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Reached top 30 on leaderboard</p>
-                    <p className="text-xs text-muted-foreground">3 days ago</p>
-                  </div>
-                  <span className="text-xs bg-foreground/10 text-foreground px-2 py-1 rounded-full">
-                    Achievement
-                  </span>
-                </div>
-              </div>
-            </div>
+            {/* Recent Snippets */}
+            <RecentSnippets 
+              accessToken={session.user.backendToken}
+              refreshToken={session.user.refreshToken}
+            />
+            
           </div>
         </div>
       </div>
