@@ -49,8 +49,14 @@ interface CacheEntry<T> {
 class ApiClient {
   private cache = new Map<string, CacheEntry<unknown>>()
   
-  private getCacheKey(endpoint: string, token: string): string {
-    return `${endpoint}_${token.substring(0, 20)}`
+  private async getCacheKey(endpoint: string, token: string): Promise<string> {
+    // Use Web Crypto API to create a secure hash of the token
+    const encoder = new TextEncoder()
+    const data = encoder.encode(token)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+    return `${endpoint}_${hashHex.substring(0, 16)}` // Use first 16 chars of secure hash
   }
   
   private getFromCache<T>(key: string): T | null {
@@ -73,11 +79,17 @@ class ApiClient {
     })
   }
   
-  clearSnippetsCache(): void {
-    // Clear all snippet-related cache when data changes
-    for (const key of this.cache.keys()) {
-      if (key.includes('personal_snippets')) {
-        this.cache.delete(key)
+  async clearSnippetsCache(token?: string): Promise<void> {
+    if (token) {
+      // Clear cache for specific user's snippets
+      const cacheKey = await this.getCacheKey('personal_snippets', token)
+      this.cache.delete(cacheKey)
+    } else {
+      // Clear all snippet-related cache when token not provided
+      for (const key of this.cache.keys()) {
+        if (key.startsWith('personal_snippets_')) {
+          this.cache.delete(key)
+        }
       }
     }
   }
@@ -107,7 +119,7 @@ class ApiClient {
   }
 
   async getPersonalSnippets(token: string, refreshToken?: string): Promise<SnippetsResponse> {
-    const cacheKey = this.getCacheKey('personal_snippets', token)
+    const cacheKey = await this.getCacheKey('personal_snippets', token)
     
     // Check cache first
     const cached = this.getFromCache<SnippetsResponse>(cacheKey)
