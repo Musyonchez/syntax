@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
+import { SnippetsManager } from "@/components/snippets-manager"
 
 export default async function Snippets() {
   const session = await auth()
@@ -9,24 +10,24 @@ export default async function Snippets() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-8rem)] p-8">
-      <div className="text-center space-y-8 max-w-2xl">
-        <div className="space-y-4">
-          <h1 className="text-3xl font-bold text-foreground">
-            Code Snippets
-          </h1>
-          <p className="text-muted-foreground">
-            Browse and manage your coding snippets collection
-          </p>
+    <div className="min-h-[calc(100vh-8rem)] p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+              Code Snippets
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Manage your personal code snippets and browse curated content
+            </p>
+          </div>
         </div>
-        
-        <div className="bg-muted/50 rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Coming Soon</h2>
-          <p className="text-muted-foreground">
-            The snippets management system is currently under development. 
-            Soon you&apos;ll be able to create, organize, and practice with custom code snippets.
-          </p>
-        </div>
+
+        <SnippetsManager 
+          accessToken={session.user.backendToken}
+          refreshToken={session.user.refreshToken}
+          userRole={session.user.role}
+        />
       </div>
     </div>
   )
