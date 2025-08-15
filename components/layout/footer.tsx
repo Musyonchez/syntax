@@ -8,10 +8,10 @@ export function Footer() {
       <div className="absolute inset-0 bg-grid-gray-900/[0.02] bg-[size:40px_40px]"></div>
       
       <div className="relative max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
+        <div className="lg:grid lg:grid-cols-5 lg:gap-12 space-y-12 lg:space-y-0 text-center lg:text-left">
           {/* Company Info */}
           <div className="lg:col-span-2">
-            <div className="flex items-center mb-6">
+            <div className="flex items-center justify-center lg:justify-start mb-6">
               <Image
                 src="/logo.png"
                 alt="SyntaxMem"
@@ -20,13 +20,13 @@ export function Footer() {
                 className="h-8"
               />
             </div>
-            <p className="text-gray-600 mb-6 max-w-md leading-relaxed">
+            <p className="text-gray-600 mb-6 max-w-md leading-relaxed mx-auto lg:mx-0">
               Transform your programming skills with interactive masked code completion exercises. 
               Join thousands of developers improving their coding abilities daily.
             </p>
             
             {/* Social Proof */}
-            <div className="flex items-center space-x-6 mb-6">
+            <div className="flex items-center justify-center lg:justify-start space-x-6 mb-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-900">10K+</div>
                 <div className="text-xs text-gray-500">Developers</div>
@@ -44,7 +44,7 @@ export function Footer() {
             {/* Newsletter */}
             <div className="mb-6">
               <h4 className="text-sm font-semibold text-gray-900 mb-3">Stay Updated</h4>
-              <div className="flex max-w-md">
+              <div className="flex max-w-md mx-auto lg:mx-0">
                 <input
                   type="email"
                   placeholder="Enter your email"
@@ -57,85 +57,91 @@ export function Footer() {
             </div>
           </div>
           
-          {/* Product Links */}
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-6">Product</h4>
-            <ul className="space-y-4">
-              <li>
-                <Link href="/practice" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
-                  Practice Sessions
-                </Link>
-              </li>
-              <li>
-                <Link href="/snippets" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
-                  Code Snippets
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
-                  Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link href="/analytics" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
-                  Analytics
-                </Link>
-              </li>
-            </ul>
-          </div>
-          
-          {/* Resources */}
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-6">Resources</h4>
-            <ul className="space-y-4">
-              <li>
-                <Link href="/docs" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
-                  Documentation
-                </Link>
-              </li>
-              <li>
-                <Link href="/tutorials" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
-                  Tutorials
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link href="/changelog" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
-                  Changelog
-                </Link>
-              </li>
-            </ul>
-          </div>
-          
-          {/* Support */}
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-6">Support</h4>
-            <ul className="space-y-4">
-              <li>
-                <Link href="/help" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/status" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
-                  System Status
-                </Link>
-              </li>
-              <li>
-                <Link href="/feedback" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
-                  Feedback
-                </Link>
-              </li>
-            </ul>
+          {/* Links Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 lg:contents">
+            {/* Product Links */}
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-6">Product</h4>
+              <ul className="space-y-4">
+                <li>
+                  <Link href="/practice" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
+                    Practice Sessions
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/snippets" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
+                    Code Snippets
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
+                    Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/analytics" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
+                    Analytics
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Resources */}
+            <div>
+              <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-6">Resources</h4>
+              <ul className="space-y-4">
+                <li>
+                  <Link href="/docs" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
+                    Documentation
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/tutorials" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
+                    Tutorials
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/blog" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/changelog" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
+                    Changelog
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Support */}
+            <div className="md:col-span-1">
+              <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-6">Support</h4>
+              <ul className="space-y-4">
+                <li>
+                  <Link href="/help" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
+                    Help Center
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/status" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
+                    System Status
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/feedback" className="text-gray-600 hover:text-blue-600 transition-colors duration-200 text-sm">
+                    Feedback
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Empty 4th grid item for mobile layout */}
+            <div className="md:hidden"></div>
           </div>
         </div>
         
