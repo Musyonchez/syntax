@@ -1,7 +1,12 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import { MongoDBAdapter } from '@auth/mongodb-adapter';
+import { MongoClient } from 'mongodb';
+
+const client = new MongoClient(process.env.MONGODB_URI!);
 
 const handler = NextAuth({
+  adapter: MongoDBAdapter(client),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -12,7 +17,7 @@ const handler = NextAuth({
     signIn: '/login',
   },
   session: {
-    strategy: 'jwt',
+    strategy: 'database',
   },
 });
 
