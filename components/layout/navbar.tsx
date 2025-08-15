@@ -57,12 +57,6 @@ export function Navbar() {
               >
                 Snippets
               </Link>
-              <Link
-                href="/dashboard"
-                className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-              >
-                Dashboard
-              </Link>
               <div className="h-6 w-px bg-gray-300 mx-2"></div>
               {status === 'loading' ? (
                 <div className="h-9 w-20 bg-gray-200 rounded-lg animate-pulse"></div>
@@ -185,13 +179,6 @@ export function Navbar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Snippets
-              </Link>
-              <Link
-                href="/dashboard"
-                className="block text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-lg text-base font-medium transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Dashboard
               </Link>
               <div className="pt-2">
                 {status === 'loading' ? (
