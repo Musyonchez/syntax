@@ -1,8 +1,8 @@
 # SyntaxMem - Simple, Uniform, Consistent
 
 **Last Updated**: 2025-08-15  
-**Status**: Fresh Start 🚀 | Unified Next.js Architecture  
-**Branch**: main
+**Status**: Environment Setup Complete ✅ | Ready for Development  
+**Branch**: initial-setup
 
 ## 🎯 Core Doctrine
 
@@ -266,27 +266,36 @@ npm run type-check   # TypeScript validation
 
 ## 🛠️ Environment Setup
 
+### Quick Setup
+
+```bash
+# Copy environment template
+cp .env.example .env.local
+
+# Fill in your actual values in .env.local
+```
+
 ### Required Environment Variables
 
 ```bash
 # Authentication
-NEXTAUTH_SECRET=your-secret-here
+NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
 NEXTAUTH_URL=http://localhost:3000
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# Database
-MONGODB_URI=mongodb://localhost:27017/syntaxmem
+# Database (MongoDB Atlas)
+MONGODB_URI=your-mongodb-atlas-connection-string
 
-# Optional
+# Environment
 NODE_ENV=development
 ```
 
 ## 🚀 Ready to Build
 
-**Current Status**: Fresh start with unified Next.js architecture  
-**Next Steps**: Implement authentication and basic pages  
-**Foundation**: Clean Next.js 15 app with TypeScript and Tailwind  
+**Current Status**: Environment setup complete with MongoDB Atlas ready  
+**Next Steps**: Implement authentication with NextAuth.js and Google OAuth  
+**Foundation**: Clean Next.js 15 app with TypeScript, Tailwind, and env config  
 **Principle**: Simple, Uniform, Consistent
 
 ---
