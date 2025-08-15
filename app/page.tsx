@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
@@ -266,10 +265,10 @@ export default function Home() {
                   Our intelligent system provides instant feedback and hints.
                 </p>
                 <div className="bg-gray-900 p-4 rounded-xl text-left overflow-hidden">
-                  <div className="text-green-400 text-xs mb-2">// JavaScript Example</div>
+                  <div className="text-green-400 text-xs mb-2">{/* JavaScript Example */}</div>
                   <div className="text-white text-sm font-mono">
                     <div>const [count, setCount] = <span className="bg-blue-500 text-white px-1 rounded">____</span>(0);</div>
-                    <div className="text-gray-400">// Type: useState</div>
+                    <div className="text-gray-400">{/* Type: useState */}</div>
                   </div>
                 </div>
               </div>

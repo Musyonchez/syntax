@@ -27,8 +27,8 @@ export default function NotFound() {
               Oops! Page Not Found
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              The page you're looking for seems to have vanished into the code void. 
-              Don't worry, even the best developers encounter 404s!
+              The page you&apos;re looking for seems to have vanished into the code void. 
+              Don&apos;t worry, even the best developers encounter 404s!
             </p>
           </div>
           
@@ -43,7 +43,7 @@ export default function NotFound() {
               <div className="ml-auto text-gray-400 text-sm">error.js</div>
             </div>
             <div className="text-green-400 text-sm font-mono">
-              <div className="text-gray-500">// Houston, we have a problem</div>
+              <div className="text-gray-500">{/* Houston, we have a problem */}</div>
               <div>
                 <span className="text-blue-400">function</span>{' '}
                 <span className="text-yellow-300">findPage</span>() {'{'}
@@ -51,7 +51,7 @@ export default function NotFound() {
               <div className="ml-4">
                 <span className="text-blue-400">return</span>{' '}
                 <span className="text-red-400">null</span>; 
-                <span className="text-gray-500"> // Page not found</span>
+                <span className="text-gray-500">{/* Page not found */}</span>
               </div>
               <div>{'}'}</div>
             </div>

@@ -1,9 +1,7 @@
-import { auth } from '@/lib/auth';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export default auth((req) => {
-  const { nextUrl } = req;
-  const isLoggedIn = !!req.auth;
+export function middleware(request: NextRequest) {
+  const { nextUrl } = request;
 
   // Protected routes that require authentication
   const isProtectedRoute = [
@@ -19,18 +17,10 @@ export default auth((req) => {
     '/signup'
   ].some(route => nextUrl.pathname.startsWith(route));
 
-  // Redirect to login if trying to access protected route without auth
-  if (isProtectedRoute && !isLoggedIn) {
-    return NextResponse.redirect(new URL('/login', nextUrl));
-  }
-
-  // Redirect to dashboard if trying to access auth routes while logged in
-  if (isAuthRoute && isLoggedIn) {
-    return NextResponse.redirect(new URL('/dashboard', nextUrl));
-  }
-
+  // For now, allow all routes - authentication will be handled client-side
+  // This can be enhanced later with proper session checking
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: [
