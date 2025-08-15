@@ -47,7 +47,7 @@ syntax/
 - **User Dashboard** - Comprehensive stats, activity feed, and progress tracking
 - **Protected Routes** - Client-side authentication guards for secure pages
 - **Responsive Navigation** - User dropdown menu and mobile-optimized interface
-- **MongoDB Integration** - User sessions and data persistence with Atlas
+- **Supabase Integration** - User sessions and data persistence with serverless compatibility
 - **Premium UI Components** - Glassmorphism design with smooth animations
 
 ### 🚧 Coming Soon
@@ -60,8 +60,8 @@ syntax/
 - **Next.js 15** - App Router with Server Components
 - **TypeScript** - End-to-end type safety  
 - **Tailwind CSS** - Utility-first styling with custom design system
-- **MongoDB Atlas** - Document-based data storage with user sessions
-- **NextAuth.js** - Google OAuth authentication with database sessions
+- **Supabase** - PostgreSQL database with realtime features and built-in auth
+- **NextAuth.js** - Google OAuth authentication with Supabase adapter
 
 ## 🛠️ Development
 
@@ -84,8 +84,10 @@ NEXTAUTH_URL=http://localhost:3000
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# Database (MongoDB Atlas)
-MONGODB_URI=your-mongodb-atlas-connection-string
+# Database (Supabase)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-public-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-secret-key
 ```
 
 ## 📝 Development Guidelines
@@ -170,7 +172,7 @@ vercel deploy
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Tailwind CSS](https://tailwindcss.com)
 - [NextAuth.js](https://next-auth.js.org)
-- [MongoDB](https://www.mongodb.com)
+- [Supabase](https://supabase.com)
 
 ## 📄 License
 

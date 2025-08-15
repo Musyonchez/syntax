@@ -76,10 +76,10 @@ syntax/
 
 ### Database Rules
 
-- **MongoDB** (document-based simplicity)
-- **Mongoose ODM** (for schema validation and consistency)
-- **Simple collections** (users, snippets, sessions)
-- **No complex joins** (keep queries simple)
+- **Supabase** (PostgreSQL with realtime features)
+- **Built-in Auth** (integrated authentication system)
+- **Simple tables** (users, snippets, sessions)
+- **Type-safe queries** (auto-generated TypeScript types)
 - **Consistent field names** (same naming everywhere)
 
 ## ✅ Implementation Status
@@ -92,16 +92,16 @@ syntax/
    - Premium navbar with sticky positioning and mobile menu
    - Comprehensive footer with social proof and newsletter
    - Gradient color palette and modern typography
-2. **Environment Setup** ✅ MongoDB Atlas, Google OAuth credentials
+2. **Environment Setup** ✅ Supabase project, Google OAuth credentials
 3. **Project Structure** ✅ Clean Next.js 15 app with TypeScript
 
 ### Phase 2: Authentication ✅ COMPLETE
-1. **NextAuth.js Integration** ✅ Google OAuth provider with MongoDB adapter
+1. **NextAuth.js Integration** ✅ Google OAuth provider with Supabase adapter
 2. **Premium Login Page** ✅ OAuth-only authentication, GitHub "Coming Soon"
 3. **Protected Routes** ✅ Client-side route protection with loading states
 4. **User Dashboard** ✅ Comprehensive dashboard with stats and progress
 5. **Responsive Navigation** ✅ User dropdown, mobile menu with click-outside
-6. **Session Management** ✅ MongoDB-stored sessions with user data persistence
+6. **Session Management** ✅ Supabase-stored sessions with user data persistence
 
 ### Phase 3: Core Features (Next)
 1. **Snippet Management** - CRUD operations via API routes
@@ -226,8 +226,8 @@ import type { User } from '@/types';
 - **Next.js 15**: App Router, API Routes, Server Components
 - **TypeScript**: Strict mode, no any types
 - **Tailwind CSS**: Utility-first styling
-- **MongoDB**: Document database
-- **Mongoose**: ODM for schema validation
+- **Supabase**: PostgreSQL database with realtime features
+- **Built-in Auth**: Integrated authentication and user management
 
 ### Authentication
 
@@ -256,8 +256,9 @@ npm run type-check   # TypeScript validation
 ### Database Commands
 
 ```bash
-# MongoDB connection will be handled via environment variables
-# MONGODB_URI=mongodb://localhost:27017/syntaxmem
+# Supabase connection will be handled via environment variables
+# SUPABASE_URL=https://your-project.supabase.co
+# SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
 ## 🎯 Success Metrics
@@ -297,8 +298,10 @@ NEXTAUTH_URL=http://localhost:3000
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# Database (MongoDB Atlas)
-MONGODB_URI=your-mongodb-atlas-connection-string
+# Database (Supabase)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-public-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-secret-key
 
 # Environment
 NODE_ENV=development
@@ -308,7 +311,7 @@ NODE_ENV=development
 
 **Current Status**: Authentication system complete with Google OAuth and comprehensive dashboard  
 **Next Steps**: Implement core features - snippet management and practice sessions  
-**Foundation**: Production-ready authentication with MongoDB persistence and responsive design  
+**Foundation**: Production-ready authentication with Supabase persistence and responsive design  
 **Principle**: Simple, Uniform, Consistent
 
 ### 🎯 Authentication Features Completed
@@ -316,7 +319,7 @@ NODE_ENV=development
 - **User Dashboard**: Statistics, recent activity, quick actions, and progress tracking
 - **Responsive Navigation**: Desktop dropdown and mobile menu with click-outside
 - **Protected Routes**: Client-side authentication guards for secure pages
-- **MongoDB Integration**: User sessions and data persistence in Atlas
+- **Supabase Integration**: User sessions and data persistence with serverless compatibility
 - **Premium UI**: Glassmorphism design consistent across all auth components
 
 ## 🎨 Design System Established
