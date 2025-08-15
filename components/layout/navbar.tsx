@@ -10,12 +10,24 @@ export function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { data: session, status } = useSession();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      // Close desktop dropdown
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
+      }
+      
+      // Close mobile menu
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        // Check if click is not on the mobile menu button
+        const target = event.target as Element;
+        const isMobileButton = target.closest('[data-mobile-menu-button]');
+        if (!isMobileButton) {
+          setIsMenuOpen(false);
+        }
       }
     }
 
@@ -146,6 +158,7 @@ export function Navbar() {
           {/* Mobile menu button */}
           <div className="md:hidden">
             <button
+              data-mobile-menu-button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 p-2 rounded-lg transition-colors"
             >
@@ -164,7 +177,7 @@ export function Navbar() {
         
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200/50 bg-white/95 backdrop-blur-md">
+          <div ref={mobileMenuRef} className="md:hidden border-t border-gray-200/50 bg-white/95 backdrop-blur-md">
             <div className="py-4 space-y-1">
               <Link
                 href="/practice"
