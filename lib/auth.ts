@@ -16,6 +16,7 @@ const { auth, signIn, signOut } = NextAuth({
   ],
   pages: {
     signIn: '/login',
+    error: '/error',
   },
   session: {
     strategy: 'database',
