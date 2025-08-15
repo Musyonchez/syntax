@@ -43,7 +43,7 @@ export default function DashboardPage() {
                     alt={session.user.name || 'User'}
                     width={64}
                     height={64}
-                    className="hidden md:block w-16 h-16 rounded-full ring-4 ring-blue-100"
+                    className="hidden sm:block w-16 h-16 rounded-full ring-4 ring-blue-100"
                   />
                 )}
                 <div>
@@ -55,16 +55,16 @@ export default function DashboardPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 md:flex-row">
+              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 md:flex-row w-full sm:w-auto">
                 <Link
                   href="/practice"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 w-full sm:w-auto"
                 >
                   Start Practice
                 </Link>
                 <Link
                   href="/snippets"
-                  className="bg-white hover:bg-gray-50 border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                  className="bg-white hover:bg-gray-50 border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md w-full sm:w-auto"
                 >
                   Browse Snippets
                 </Link>
