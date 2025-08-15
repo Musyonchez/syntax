@@ -1,13 +1,12 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
-import { MongoDBAdapter } from '@auth/mongodb-adapter';
-import { MongoClient } from 'mongodb';
-
-// Create MongoDB client for production
-const client = new MongoClient(process.env.MONGODB_URI!);
+import { SupabaseAdapter } from '@auth/supabase-adapter';
 
 const { auth, signIn, signOut } = NextAuth({
-  adapter: MongoDBAdapter(client),
+  adapter: SupabaseAdapter({
+    url: process.env.SUPABASE_URL!,
+    secret: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  }),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
