@@ -14,7 +14,7 @@ npm install
 
 # Set up environment variables
 cp .env.example .env.local
-# Edit .env.local with your values
+# Edit .env.local with your MongoDB Atlas URL and Google OAuth credentials
 
 # Start development server
 npm run dev
@@ -70,13 +70,13 @@ npm run type-check   # TypeScript validation
 
 ```bash
 # Authentication
-NEXTAUTH_SECRET=your-secret-here
+NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
 NEXTAUTH_URL=http://localhost:3000
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# Database
-MONGODB_URI=mongodb://localhost:27017/syntaxmem
+# Database (MongoDB Atlas)
+MONGODB_URI=your-mongodb-atlas-connection-string
 ```
 
 ## 📝 Development Guidelines
