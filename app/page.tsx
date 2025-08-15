@@ -235,6 +235,7 @@ export default function Home() {
                   <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-3xl flex items-center justify-center mx-auto shadow-xl group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-110">
                     <span className="text-2xl font-bold">1</span>
                   </div>
+                  <div className="absolute -inset-4 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full opacity-20 blur-lg group-hover:opacity-30 transition-opacity duration-300"></div>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Choose Your Challenge</h3>
                 <p className="text-gray-600 leading-relaxed mb-6">
