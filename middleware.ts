@@ -13,8 +13,7 @@ export function middleware(request: NextRequest) {
 
   // Auth routes that should redirect to dashboard if already logged in
   const isAuthRoute = [
-    '/login',
-    '/signup'
+    '/login'
   ].some(route => nextUrl.pathname.startsWith(route));
 
   // For now, allow all routes - authentication will be handled client-side
