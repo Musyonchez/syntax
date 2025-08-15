@@ -177,7 +177,7 @@ export function Navbar() {
         
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div ref={mobileMenuRef} className="md:hidden border-t border-gray-200/50 bg-white/95 backdrop-blur-md">
+          <div ref={mobileMenuRef} className="md:hidden border-t border-gray-200/50 bg-white/95 backdrop-blur-md -mx-4">
             <div className="py-4 space-y-1">
               <Link
                 href="/practice"
