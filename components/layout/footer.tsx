@@ -114,7 +114,7 @@ export function Footer() {
             </div>
             
             {/* Support */}
-            <div className="col-span-2 md:col-span-1 text-left">
+            <div className="md:col-span-1">
               <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-6">Support</h4>
               <ul className="space-y-4">
                 <li>
@@ -139,6 +139,9 @@ export function Footer() {
                 </li>
               </ul>
             </div>
+            
+            {/* Empty 4th grid item for mobile layout */}
+            <div className="md:hidden"></div>
           </div>
         </div>
         
