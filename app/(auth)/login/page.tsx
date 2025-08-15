@@ -7,10 +7,14 @@ import { createClient } from '@/lib/supabase/client';
 export default function LoginPage() {
   const handleGoogleLogin = async () => {
     const supabase = createClient()
+    
+    // Get the correct base URL for redirect
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`
+        redirectTo: `${baseUrl}/dashboard`
       }
     })
     

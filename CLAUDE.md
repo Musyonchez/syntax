@@ -2,7 +2,7 @@
 
 **Last Updated**: 2025-08-15  
 **Status**: Authentication System Complete ✅ | Ready for Core Features  
-**Branch**: feature/authentication
+**Branch**: main
 
 ## 🎯 Core Doctrine
 
@@ -92,16 +92,16 @@ syntax/
    - Premium navbar with sticky positioning and mobile menu
    - Comprehensive footer with social proof and newsletter
    - Gradient color palette and modern typography
-2. **Environment Setup** ✅ Supabase project, Google OAuth credentials
+2. **Environment Setup** ✅ Supabase project configured
 3. **Project Structure** ✅ Clean Next.js 15 app with TypeScript
 
 ### Phase 2: Authentication ✅ COMPLETE
-1. **NextAuth.js Integration** ✅ Google OAuth provider with Supabase adapter
+1. **Supabase Auth Integration** ✅ Google OAuth provider with built-in auth
 2. **Premium Login Page** ✅ OAuth-only authentication, GitHub "Coming Soon"
 3. **Protected Routes** ✅ Client-side route protection with loading states
 4. **User Dashboard** ✅ Comprehensive dashboard with stats and progress
 5. **Responsive Navigation** ✅ User dropdown, mobile menu with click-outside
-6. **Session Management** ✅ Supabase-stored sessions with user data persistence
+6. **Session Management** ✅ Supabase sessions with automatic user state
 
 ### Phase 3: Core Features (Next)
 1. **Snippet Management** - CRUD operations via API routes
@@ -176,7 +176,7 @@ import { NextRequest } from 'next/server';
 // 2. Libraries
 import { z } from 'zod';
 // 3. Internal
-import { auth } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/client';
 // 4. Types
 import type { User } from '@/types';
 ```
@@ -256,9 +256,9 @@ npm run type-check   # TypeScript validation
 ### Database Commands
 
 ```bash
-# Supabase connection will be handled via environment variables
-# SUPABASE_URL=https://your-project.supabase.co
-# SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+# Supabase connection handled via environment variables
+# NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
 ## 🎯 Success Metrics
@@ -292,16 +292,9 @@ cp .env.example .env.local
 ### Required Environment Variables
 
 ```bash
-# Authentication
-NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
-NEXTAUTH_URL=http://localhost:3000
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-
-# Database (Supabase)
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-public-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-secret-key
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-public-key
 
 # Environment
 NODE_ENV=development
@@ -309,9 +302,9 @@ NODE_ENV=development
 
 ## 🚀 Ready to Build
 
-**Current Status**: Authentication system complete with Google OAuth and comprehensive dashboard  
+**Current Status**: Authentication system complete with Supabase Auth and Google OAuth  
 **Next Steps**: Implement core features - snippet management and practice sessions  
-**Foundation**: Production-ready authentication with Supabase persistence and responsive design  
+**Foundation**: Production-ready authentication with serverless compatibility  
 **Principle**: Simple, Uniform, Consistent
 
 ### 🎯 Authentication Features Completed

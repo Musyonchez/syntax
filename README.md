@@ -14,7 +14,7 @@ npm install
 
 # Set up environment variables
 cp .env.example .env.local
-# Edit .env.local with your MongoDB Atlas URL and Google OAuth credentials
+# Edit .env.local with your Supabase credentials
 
 # Start development server
 npm run dev
@@ -43,7 +43,7 @@ syntax/
 
 ### ✅ Currently Available
 - **Premium Landing Page** - Professional SaaS-grade design with modern UI/UX
-- **Google OAuth Authentication** - Streamlined login with NextAuth.js integration
+- **Google OAuth Authentication** - Streamlined login with Supabase Auth integration
 - **User Dashboard** - Comprehensive stats, activity feed, and progress tracking
 - **Protected Routes** - Client-side authentication guards for secure pages
 - **Responsive Navigation** - User dropdown menu and mobile-optimized interface
@@ -61,7 +61,7 @@ syntax/
 - **TypeScript** - End-to-end type safety  
 - **Tailwind CSS** - Utility-first styling with custom design system
 - **Supabase** - PostgreSQL database with realtime features and built-in auth
-- **NextAuth.js** - Google OAuth authentication with Supabase adapter
+- **Supabase Auth** - Google OAuth authentication with built-in user management
 
 ## 🛠️ Development
 
@@ -78,16 +78,12 @@ npm run type-check   # TypeScript validation
 ### Environment Variables
 
 ```bash
-# Authentication
-NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
-NEXTAUTH_URL=http://localhost:3000
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-public-key
 
-# Database (Supabase)
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-public-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-secret-key
+# Environment
+NODE_ENV=development
 ```
 
 ## 📝 Development Guidelines
@@ -148,17 +144,14 @@ vercel deploy
 - **Navigation**: Sticky navbar with mobile menu and glassmorphism
 - **Footer**: Comprehensive footer with social proof and newsletter
 - **Design System**: Established color palette, typography, and component standards
-- **Environment**: MongoDB Atlas and Google OAuth credentials configured
-
-### 🚧 In Progress
-- **Authentication System**: NextAuth.js integration with Google OAuth
+- **Authentication System**: Complete Supabase Auth integration with Google OAuth
 
 ### 📋 Next Steps
-1. Implement authentication pages (login, signup)
-2. Create protected route middleware
-3. Build user dashboard
-4. Develop snippet management system
-5. Create practice session functionality
+1. Develop snippet management system
+2. Create practice session functionality
+3. Add GitHub OAuth as additional provider
+4. Implement advanced analytics
+5. Build admin dashboard
 
 ## 🤝 Contributing
 
@@ -171,8 +164,8 @@ vercel deploy
 
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Tailwind CSS](https://tailwindcss.com)
-- [NextAuth.js](https://next-auth.js.org)
 - [Supabase](https://supabase.com)
+- [Supabase Auth](https://supabase.com/docs/guides/auth)
 
 ## 📄 License
 
