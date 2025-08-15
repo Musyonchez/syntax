@@ -1,23 +1,23 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'loading') return;
-    if (!session) {
+    if (loading) return;
+    if (!user) {
       router.push('/login');
     }
-  }, [session, status, router]);
+  }, [user, loading, router]);
 
-  if (status === 'loading') {
+  if (loading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -25,7 +25,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (!session) {
+  if (!user) {
     return null;
   }
 
@@ -37,10 +37,10 @@ export default function DashboardPage() {
           <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 p-8">
             <div className="flex flex-col items-center text-center md:flex-row md:items-center md:justify-between md:text-left">
               <div className="flex items-center space-x-4 mb-6 md:mb-0">
-                {session.user?.image && (
+                {user.user_metadata?.avatar_url && (
                   <Image
-                    src={session.user.image}
-                    alt={session.user.name || 'User'}
+                    src={user.user_metadata.avatar_url}
+                    alt={user.user_metadata?.full_name || 'User'}
                     width={64}
                     height={64}
                     className="hidden sm:block w-16 h-16 rounded-full ring-4 ring-blue-100"
@@ -48,7 +48,7 @@ export default function DashboardPage() {
                 )}
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900">
-                    Welcome back, {session.user?.name?.split(' ')[0]}!
+                    Welcome back, {user.user_metadata?.full_name?.split(' ')[0]}!
                   </h1>
                   <p className="text-gray-600 mt-1">
                     Ready to continue your coding journey?

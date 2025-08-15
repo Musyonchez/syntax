@@ -3,12 +3,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useAuth } from '@/hooks/useAuth';
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { data: session, status } = useSession();
+  const { user, loading, signOut } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -70,25 +70,25 @@ export function Navbar() {
                 Snippets
               </Link>
               <div className="h-6 w-px bg-gray-300 mx-2"></div>
-              {status === 'loading' ? (
+              {loading ? (
                 <div className="h-9 w-20 bg-gray-200 rounded-lg animate-pulse"></div>
-              ) : session ? (
+              ) : user ? (
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-lg transition-all duration-200 group"
                   >
-                    {session.user?.image && (
+                    {user.user_metadata?.avatar_url && (
                       <Image
-                        src={session.user.image}
-                        alt={session.user.name || 'User'}
+                        src={user.user_metadata.avatar_url}
+                        alt={user.user_metadata?.full_name || 'User'}
                         width={32}
                         height={32}
                         className="w-8 h-8 rounded-full ring-2 ring-transparent group-hover:ring-blue-200 transition-all duration-200"
                       />
                     )}
                     <span className="text-sm font-medium">
-                      {session.user?.name?.split(' ')[0]}
+                      {user.user_metadata?.full_name?.split(' ')[0]}
                     </span>
                     <svg
                       className={`w-4 h-4 transition-transform duration-200 ${
@@ -107,10 +107,10 @@ export function Navbar() {
                     <div className="absolute right-0 mt-2 w-56 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-200/50 py-2 z-50">
                       <div className="px-4 py-3 border-b border-gray-100">
                         <div className="text-sm font-medium text-gray-900">
-                          {session.user?.name}
+                          {user.user_metadata?.full_name}
                         </div>
                         <div className="text-sm text-gray-600 truncate">
-                          {session.user?.email}
+                          {user.email}
                         </div>
                       </div>
                       
@@ -129,9 +129,9 @@ export function Navbar() {
                         <div className="border-t border-gray-100 my-1"></div>
                         
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             setIsDropdownOpen(false);
-                            signOut();
+                            await signOut();
                           }}
                           className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
                         >
@@ -200,15 +200,15 @@ export function Navbar() {
                 Snippets
               </Link>
               <div className="pt-2">
-                {status === 'loading' ? (
+                {loading ? (
                   <div className="h-12 bg-gray-200 rounded-lg animate-pulse"></div>
-                ) : session ? (
+                ) : user ? (
                   <div className="space-y-3">
                     <div className="flex items-center px-4 py-3 bg-gray-50 rounded-lg">
-                      {session.user?.image && (
+                      {user.user_metadata?.avatar_url && (
                         <Image
-                          src={session.user.image}
-                          alt={session.user.name || 'User'}
+                          src={user.user_metadata.avatar_url}
+                          alt={user.user_metadata?.full_name || 'User'}
                           width={32}
                           height={32}
                           className="w-8 h-8 rounded-full mr-3"
@@ -216,10 +216,10 @@ export function Navbar() {
                       )}
                       <div>
                         <div className="text-base font-medium text-gray-900">
-                          {session.user?.name}
+                          {user.user_metadata?.full_name}
                         </div>
                         <div className="text-sm text-gray-600 truncate">
-                          {session.user?.email}
+                          {user.email}
                         </div>
                       </div>
                     </div>
@@ -236,8 +236,8 @@ export function Navbar() {
                     </Link>
                     
                     <button
-                      onClick={() => {
-                        signOut();
+                      onClick={async () => {
+                        await signOut();
                         setIsMenuOpen(false);
                       }}
                       className="flex items-center w-full text-red-600 hover:text-red-700 hover:bg-red-50 px-4 py-3 rounded-lg text-base font-medium transition-colors"

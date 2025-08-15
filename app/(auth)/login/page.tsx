@@ -1,10 +1,24 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
+  const handleGoogleLogin = async () => {
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`
+      }
+    })
+    
+    if (error) {
+      console.error('Error logging in:', error.message)
+    }
+  }
+
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
       {/* Background Elements */}
@@ -38,7 +52,7 @@ export default function LoginPage() {
           <div className="space-y-4">
             {/* Google Sign In */}
             <button
-              onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+              onClick={handleGoogleLogin}
               className="w-full flex items-center justify-center px-6 py-4 bg-white hover:bg-gray-50 border border-gray-300 hover:border-gray-400 rounded-xl text-gray-700 font-medium transition-all duration-200 shadow-sm hover:shadow-md group"
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
