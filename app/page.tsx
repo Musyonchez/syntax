@@ -98,118 +98,308 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="bg-white py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Why Choose SyntaxMem?
+      <section id="features" className="relative bg-white py-24 overflow-hidden">
+        {/* Background Decoration */}
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full opacity-20 blur-3xl"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <div className="inline-block px-4 py-2 bg-blue-50 rounded-full mb-6">
+              <span className="text-blue-600 font-semibold text-sm">POWERFUL FEATURES</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Why Developers Choose 
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent block">
+                SyntaxMem
+              </span>
             </h2>
-            <p className="text-xl text-gray-600">
-              Designed for developers who learn by doing
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Built by developers, for developers. Our platform combines cutting-edge technology 
+              with proven learning methodologies to accelerate your coding journey.
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-8 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                </svg>
+            <div className="group relative bg-white p-8 rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">Interactive Practice</h3>
+                <p className="text-gray-600 text-center leading-relaxed">
+                  Master coding patterns through hands-on practice. Fill in the blanks, build muscle memory, 
+                  and learn by doing with real-world code examples.
+                </p>
+                <div className="mt-6 flex justify-center">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    ⚡ Instant Feedback
+                  </span>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Interactive Practice</h3>
-              <p className="text-gray-600">
-                Fill in the blanks in real code snippets. Build muscle memory through repetition.
-              </p>
             </div>
             
-            <div className="text-center p-8 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+            <div className="group relative bg-white p-8 rounded-2xl border border-gray-100 hover:border-green-200 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">Smart Analytics</h3>
+                <p className="text-gray-600 text-center leading-relaxed">
+                  Track your progress with detailed insights. Identify strengths, pinpoint weaknesses, 
+                  and get personalized recommendations to accelerate your learning.
+                </p>
+                <div className="mt-6 flex justify-center">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    📊 Data-Driven
+                  </span>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Track Progress</h3>
-              <p className="text-gray-600">
-                Monitor your improvement with detailed analytics and performance metrics.
-              </p>
             </div>
             
-            <div className="text-center p-8 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
+            <div className="group relative bg-white p-8 rounded-2xl border border-gray-100 hover:border-purple-200 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-violet-50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">Multi-Language</h3>
+                <p className="text-gray-600 text-center leading-relaxed">
+                  Practice across JavaScript, Python, TypeScript, React, and more. Expand your 
+                  skill set with curated content for every major programming language.
+                </p>
+                <div className="mt-6 flex justify-center">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    🚀 Always Growing
+                  </span>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Multiple Languages</h3>
-              <p className="text-gray-600">
-                Practice JavaScript, Python, TypeScript, and more. Expand your skills across technologies.
-              </p>
+            </div>
+          </div>
+          
+          {/* Stats Section */}
+          <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-gray-900 mb-2">10K+</div>
+              <div className="text-gray-600">Active Developers</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-gray-900 mb-2">500K+</div>
+              <div className="text-gray-600">Exercises Completed</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-gray-900 mb-2">15+</div>
+              <div className="text-gray-600">Programming Languages</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-gray-900 mb-2">98%</div>
+              <div className="text-gray-600">Success Rate</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="bg-gray-50 py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              How It Works
+      <section id="how-it-works" className="relative bg-gradient-to-b from-gray-50 to-white py-24 overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-grid-gray-900/[0.04] bg-[size:20px_20px]"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <div className="inline-block px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-full mb-6">
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-semibold text-sm">HOW IT WORKS</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Master Coding in
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent block">
+                Three Simple Steps
+              </span>
             </h2>
-            <p className="text-xl text-gray-600">
-              Simple, effective learning in three steps
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Our proven methodology helps thousands of developers improve their coding skills 
+              through structured, interactive practice sessions.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                1
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Choose Your Challenge</h3>
-              <p className="text-gray-600">
-                Select from hundreds of code snippets across different languages and difficulty levels.
-              </p>
-            </div>
+          <div className="relative">
+            {/* Connection Lines */}
+            <div className="hidden md:block absolute top-1/2 left-1/4 right-1/4 h-px bg-gradient-to-r from-blue-200 via-purple-200 to-blue-200 transform -translate-y-1/2"></div>
             
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                2
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              {/* Step 1 */}
+              <div className="relative text-center group">
+                <div className="relative mb-8">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-3xl flex items-center justify-center mx-auto shadow-xl group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-110">
+                    <span className="text-2xl font-bold">1</span>
+                  </div>
+                  <div className="absolute -inset-4 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full opacity-20 blur-lg group-hover:opacity-30 transition-opacity duration-300"></div>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Choose Your Challenge</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  Browse our curated library of code snippets across 15+ programming languages. 
+                  Pick challenges that match your skill level and learning goals.
+                </p>
+                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                  <div className="text-sm text-gray-500 mb-2">Popular Languages</div>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">JavaScript</span>
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">Python</span>
+                    <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">TypeScript</span>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Fill in the Blanks</h3>
-              <p className="text-gray-600">
-                Complete the masked code by typing the missing parts. Get instant feedback on your answers.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-                3
+              
+              {/* Step 2 */}
+              <div className="relative text-center group">
+                <div className="relative mb-8">
+                  <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-3xl flex items-center justify-center mx-auto shadow-xl group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-110">
+                    <span className="text-2xl font-bold">2</span>
+                  </div>
+                  <div className="absolute -inset-4 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full opacity-20 blur-lg group-hover:opacity-30 transition-opacity duration-300"></div>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Fill in the Blanks</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  Complete the masked code by typing the missing keywords, variables, and logic. 
+                  Our intelligent system provides instant feedback and hints.
+                </p>
+                <div className="bg-gray-900 p-4 rounded-xl text-left overflow-hidden">
+                  <div className="text-green-400 text-xs mb-2">// JavaScript Example</div>
+                  <div className="text-white text-sm font-mono">
+                    <div>const [count, setCount] = <span className="bg-blue-500 text-white px-1 rounded">____</span>(0);</div>
+                    <div className="text-gray-400">// Type: useState</div>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Track & Improve</h3>
-              <p className="text-gray-600">
-                Review your performance, identify areas for improvement, and level up your skills.
-              </p>
+              
+              {/* Step 3 */}
+              <div className="relative text-center group">
+                <div className="relative mb-8">
+                  <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-3xl flex items-center justify-center mx-auto shadow-xl group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-110">
+                    <span className="text-2xl font-bold">3</span>
+                  </div>
+                  <div className="absolute -inset-4 bg-gradient-to-r from-green-400 to-green-600 rounded-full opacity-20 blur-lg group-hover:opacity-30 transition-opacity duration-300"></div>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Track & Improve</h3>
+                <p className="text-gray-600 leading-relaxed mb-6">
+                  Review detailed analytics, identify knowledge gaps, and get personalized 
+                  recommendations to accelerate your learning journey.
+                </p>
+                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                  <div className="text-sm text-gray-500 mb-3">Your Progress</div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span>Accuracy</span>
+                      <span className="font-medium">94%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-green-500 h-2 rounded-full" style={{width: '94%'}}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
+          
+          {/* CTA in this section */}
+          <div className="text-center mt-16">
+            <Link
+              href="/practice"
+              className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl text-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            >
+              Start Your First Session
+              <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-600 py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to Level Up Your Coding?
-          </h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Join thousands of developers improving their skills with SyntaxMem
-          </p>
-          <Link
-            href="/practice"
-            className="bg-white hover:bg-gray-100 text-blue-600 px-8 py-3 rounded-lg text-lg font-medium transition-colors inline-block"
-          >
-            Start Your First Session
-          </Link>
+      {/* Final CTA Section */}
+      <section className="relative bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 py-24 overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:60px_60px]"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500 rounded-full opacity-10 blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500 rounded-full opacity-10 blur-3xl"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="inline-block px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6">
+              <span className="text-white font-semibold text-sm">🚀 START YOUR JOURNEY</span>
+            </div>
+            
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
+              Ready to Transform Your
+              <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent block">
+                Coding Skills?
+              </span>
+            </h2>
+            
+            <p className="text-xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Join over 10,000 developers who have already accelerated their programming journey with SyntaxMem. 
+              Start practicing today and see immediate improvements in your coding confidence.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
+              <Link
+                href="/practice"
+                className="group relative bg-white hover:bg-gray-50 text-gray-900 px-8 py-4 rounded-xl text-lg font-bold transition-all duration-300 shadow-2xl hover:shadow-white/20 transform hover:-translate-y-1"
+              >
+                <span className="flex items-center">
+                  Start Practicing Free
+                  <svg className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+              </Link>
+              
+              <Link
+                href="/snippets"
+                className="group flex items-center px-8 py-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 border border-white/20 hover:border-white/30 text-white rounded-xl text-lg font-medium transition-all duration-300"
+              >
+                <svg className="mr-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Browse Code Snippets
+              </Link>
+            </div>
+            
+            {/* Trust Indicators */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+              <div className="text-center p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
+                <div className="text-3xl font-bold text-white mb-2">10,000+</div>
+                <div className="text-gray-300">Developers Trust Us</div>
+              </div>
+              
+              <div className="text-center p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
+                <div className="text-3xl font-bold text-white mb-2">500K+</div>
+                <div className="text-gray-300">Exercises Completed</div>
+              </div>
+              
+              <div className="text-center p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
+                <div className="text-3xl font-bold text-white mb-2">4.9/5</div>
+                <div className="text-gray-300">Average Rating</div>
+              </div>
+            </div>
+            
+            {/* Security Badge */}
+            <div className="mt-12 flex justify-center">
+              <div className="inline-flex items-center px-4 py-2 bg-green-500/20 rounded-full border border-green-400/30">
+                <svg className="w-4 h-4 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-green-400 text-sm font-medium">100% Free • No Credit Card Required</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>
