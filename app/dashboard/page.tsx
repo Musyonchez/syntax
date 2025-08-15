@@ -35,15 +35,15 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div className="mb-8">
           <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 p-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-              <div className="flex items-center space-x-4 mb-4 md:mb-0">
+            <div className="flex flex-col items-center text-center md:flex-row md:items-center md:justify-between md:text-left">
+              <div className="flex items-center space-x-4 mb-6 md:mb-0">
                 {session.user?.image && (
                   <Image
                     src={session.user.image}
                     alt={session.user.name || 'User'}
                     width={64}
                     height={64}
-                    className="w-16 h-16 rounded-full ring-4 ring-blue-100"
+                    className="hidden md:block w-16 h-16 rounded-full ring-4 ring-blue-100"
                   />
                 )}
                 <div>
@@ -55,7 +55,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex space-x-3">
+              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 md:flex-row">
                 <Link
                   href="/practice"
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
