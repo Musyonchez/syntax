@@ -3,9 +3,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { data: session, status } = useSession();
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
@@ -46,12 +48,39 @@ export function Navbar() {
                 Dashboard
               </Link>
               <div className="h-6 w-px bg-gray-300 mx-2"></div>
-              <Link
-                href="/login"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-              >
-                Sign In
-              </Link>
+              {status === 'loading' ? (
+                <div className="h-9 w-20 bg-gray-200 rounded-lg animate-pulse"></div>
+              ) : session ? (
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2">
+                    {session.user?.image && (
+                      <Image
+                        src={session.user.image}
+                        alt={session.user.name || 'User'}
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full"
+                      />
+                    )}
+                    <span className="text-sm font-medium text-gray-700">
+                      {session.user?.name?.split(' ')[0]}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => signOut()}
+                    className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                >
+                  Sign In
+                </Link>
+              )}
             </div>
           </div>
           
@@ -100,13 +129,43 @@ export function Navbar() {
                 Dashboard
               </Link>
               <div className="pt-2">
-                <Link
-                  href="/login"
-                  className="block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-3 rounded-lg text-base font-semibold transition-all duration-200 text-center"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Sign In
-                </Link>
+                {status === 'loading' ? (
+                  <div className="h-12 bg-gray-200 rounded-lg animate-pulse"></div>
+                ) : session ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center px-4 py-2 bg-gray-50 rounded-lg">
+                      {session.user?.image && (
+                        <Image
+                          src={session.user.image}
+                          alt={session.user.name || 'User'}
+                          width={32}
+                          height={32}
+                          className="w-8 h-8 rounded-full mr-3"
+                        />
+                      )}
+                      <span className="text-base font-medium text-gray-700">
+                        {session.user?.name}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        signOut();
+                        setIsMenuOpen(false);
+                      }}
+                      className="block w-full text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-lg text-base font-medium transition-colors text-center"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-3 rounded-lg text-base font-semibold transition-all duration-200 text-center"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                )}
               </div>
             </div>
           </div>
