@@ -75,16 +75,33 @@ npm run lint         # Code linting
 npm run type-check   # TypeScript validation
 ```
 
-### Environment Variables
+### Environment Setup
 
+**Development (.env.local):**
 ```bash
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-public-key
+# Copy the example file
+cp .env.example .env.local
 
-# Environment
+# Fill in your development Supabase project details
+NEXT_PUBLIC_SUPABASE_URL=https://your-dev-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-dev-anon-key
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NODE_ENV=development
 ```
+
+**Production (Vercel Environment Variables):**
+```bash
+# Add these to your Vercel project settings
+NEXT_PUBLIC_SUPABASE_URL=https://your-prod-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-prod-anon-key
+NEXT_PUBLIC_SITE_URL=https://your-domain.vercel.app
+NODE_ENV=production
+```
+
+**Environment Separation:**
+- **Development**: Uses your current Supabase project for local testing
+- **Production**: Set up separate Supabase project for live users (recommended)
+- **OAuth Redirects**: Automatically configured based on NEXT_PUBLIC_SITE_URL
 
 ## 📝 Development Guidelines
 
